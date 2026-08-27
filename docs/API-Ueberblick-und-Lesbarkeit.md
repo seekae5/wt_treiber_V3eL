@@ -6,10 +6,10 @@
 > **Suchst du den Einstieg statt der Analyse? → [Schnellstart](Schnellstart.md)** — fünf
 > lauffähige Rezepte auf einer Seite.
 >
-> **Umsetzungsstand:** **E1**–**E6**, **E8** und **E9** sind **erledigt**. Offen bleiben
-> **E7** (Messparameter-Objekt), die Sidecar-Lücke, **E11** (Typaliasse) und das README —
-> alle vier auf Wunsch zurückgestellt. Siehe Teil F. Testsuite danach: **993 Tests grün**,
-> `ruff` sauber. Die Befunde D1–D6 und D8–D10 sind entsprechend gekennzeichnet und beschreiben
+> **Umsetzungsstand:** **E1**–**E6**, **E8**, **E9** und die **Sidecar-Lücke** sind
+> **erledigt**. Offen bleiben **E7** (Messparameter-Objekt), **E11** (Typaliasse), die
+> internen Variablennamen und das README. Siehe Teil F. Testsuite danach:
+> **1007 Tests grün**, `ruff` sauber. Die Befunde D1–D6 und D8–D10 sind entsprechend gekennzeichnet und beschreiben
 > ab Teil D den Zustand *vor* dem Eingriff, damit die Begründung nachvollziehbar bleibt.
 
 Zielbild der Kopie `wt_treiber_V3eL`: Jemand mit wenig Programmiererfahrung soll schnell ein
@@ -309,6 +309,22 @@ Eigene Senken sind damit möglich, ohne von einer Basisklasse zu erben (`Protoco
 
 Das Sidecar entsteht **nach** dem Lauf — erst dann stehen Prüfsummen, Abschnitte und Ergebnis fest.
 Ein misslungenes Sidecar macht eine gelungene Messreihe nicht nachträglich zum Fehlschlag.
+
+Im Abschnitt `parameters` stehen die Laufparameter, die die **Deutung** der Daten bestimmen —
+seit Schritt 8 vollständig, siehe Teil F:
+
+```json
+"parameters": {
+  "sample_interval_s": 1.0, "max_samples": 60, "max_duration_s": null,
+  "use_hold": true, "record_condition": true,
+  "check_update_rate": true, "mark_duplicates": true,
+  "error_policy": { "max_consecutive": 5, "reconnect_after": 2, "max_reconnects": 10 }
+}
+```
+
+`mark_duplicates` und `error_policy` sind dabei die wichtigsten: ohne sie ließe sich eine Datei
+ohne `DUPLICATE`- oder `MISSING`-Zeilen nicht von einer unterscheiden, in der beides nur nicht
+gekennzeichnet wurde.
 
 ### C.11 Integration (Wh / Ah)
 
@@ -898,7 +914,8 @@ Alle vier Punkte, siehe die Vorher/Nachher-Tabelle in D9. Zwei Abweichungen vom 
   müsste die Kennzeichnung von `ItemSpec` über `build_item_table()` bis in `ItemTable` und deren
   Serialisierung durchgereicht werden — eine Formatänderung mit `to_dict`/`from_dict`/`save`/`load`
   im Schlepptau, deutlich mehr als ein Lesbarkeitsschritt. `build_item_table()` meldet es
-  stattdessen einmal je Tabelle. **Das Sidecar-Feld bleibt offen.**
+  stattdessen einmal je Tabelle. **Dieses eine Sidecar-Feld bleibt offen** — nicht zu verwechseln
+  mit der Sidecar-Lücke bei den Laufparametern, die inzwischen geschlossen ist (Schritt 8).
 
 Die Warnungen sind so gebaut, dass sie schweigen, wenn kein Anlass besteht — eine Meldung, die
 immer kommt, liest nach der dritten Messung niemand mehr. Genau das prüfen die Gegenproben in
@@ -928,7 +945,8 @@ Verbessert die Anzeige in der Editor-Hilfe erheblich, ohne Verhaltensänderung.
 | 4 | E6 empfohlener Weg je Aufgabe, E9 Fallen | nein | ✅ **erledigt** |
 | 5 | E5 Kurzweg zu Messwerten | nein (additiv) | ✅ **erledigt** |
 | 5b | E11 Typaliasse | nein (additiv) | offen |
-| 6 | E7 Messparameter-Objekt | nein (additiv) | offen |
+| 6 | Sidecar-Lücke bei den Laufparametern | nein (mehr Inhalt im Sidecar) | ✅ **erledigt** |
+| 6b | E7 Messparameter-Objekt | nein (additiv) | offen |
 | 7 | E8 Benennung vereinheitlichen | nein — Übergangsfrist für `target=` | ✅ **erledigt** |
 
 Die Schritte 1–6 sind rein additiv: bestehende Skripte laufen unverändert weiter. Erst Schritt 7
@@ -1015,6 +1033,49 @@ zwei `DeprecationWarning` im Testlauf). **993 Tests grün**, `ruff` sauber.
 
 Kein Verhalten geändert, keine Signatur geändert, nichts entfernt. **861 Tests grün**,
 `ruff check` sauber.
+
+---
+
+### Was Schritt 8 konkret geändert hat — die Sidecar-Lücke
+
+Beim Erklären von E7 nachgemessen und dabei gefunden: `MeasureControl._run_parameters()` schrieb
+die Laufparameter von Hand ab und ließ dabei **drei von acht** aus. Zwei davon sind ein Datenfehler
+und keine Auslassung:
+
+| Parameter | Warum er in die Metadaten gehört |
+|---|---|
+| `mark_duplicates` | Ist es aus, trägt kein Datensatz die Marke `DUPLICATE` und `result.duplicates` steht auf 0. Ohne die Angabe lässt sich **„es gab keine Wiederholungen" nicht von „Wiederholungen wurden nicht gekennzeichnet" unterscheiden** — und beides sieht in der CSV gleich aus. |
+| `error_policy` | Entscheidet, ob ein ausgefallener Zyklus als `MISSING`-Zeile in der Datei steht oder den Lauf beendet. Ohne die Angabe ist eine Lücke in den Daten nicht einzuordnen. |
+| `check_update_rate` | Erklärt, ob `result.update_rate_s` überhaupt erhoben wurde. |
+
+`log_every` bleibt bewusst draußen: es steuert die Kadenz der Protokollzeilen und berührt weder die
+Daten noch ihre Deutung. Ein Sidecar, das jede Stellschraube mitschreibt, macht die Angaben, auf
+die es ankommt, schwerer auffindbar.
+
+`error_policy` steht als **Objekt** im JSON, nicht als `repr()` — eine Zeichenkette
+`ErrorPolicy(max_consecutive=5, …)` wäre lesbar, aber von keinem Auswerteskript zu gebrauchen:
+
+```json
+"error_policy": { "max_consecutive": 5, "max_total": null,
+                  "reconnect_after": 2, "max_reconnects": 10, "pause_s": 0.0 }
+```
+
+**Die Ursache war strukturell**, und dagegen hilft kein einmaliger Nachtrag: die Feldliste existiert
+an fünf Stellen (vier Signaturen plus `_run_parameters`) und wird von Hand synchron gehalten. Der
+saubere Fix ist E7 — ein Datenobjekt, aus dem sich die Liste *ableitet*. Bis dahin hält
+`tests/test_sidecar_vollstaendigkeit.py` (14 Prüfsätze) die Zuordnung: es vergleicht die **Signatur
+von `record()`** gegen zwei Listen — was ins Sidecar gehört und was mit Begründung nicht — und wird
+rot, sobald ein Parameter in keiner von beiden steht.
+
+Gegenprobe gemacht: `record()` versuchsweise um einen Parameter erweitert →
+
+```
+AssertionError: record() hat Parameter, die niemand eingeordnet hat: ['neue_stellschraube'].
+Gehoeren sie ins Sidecar? Dann in IN_DIE_METADATEN eintragen, sonst mit Begruendung
+in BEWUSST_DRAUSSEN.
+```
+
+Damit kann die Liste nicht mehr stillschweigend abdriften. **1007 Tests grün**, `ruff` sauber.
 
 ---
 

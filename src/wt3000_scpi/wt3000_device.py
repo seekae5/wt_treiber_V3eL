@@ -21,7 +21,7 @@ from __future__ import annotations
 import logging
 from collections.abc import Generator, Iterator, Sequence
 from contextlib import contextmanager
-from dataclasses import dataclass, field
+from dataclasses import asdict, dataclass, field
 from pathlib import Path
 from types import TracebackType
 
@@ -852,7 +852,15 @@ class MeasureControl:
         table = self._tabelle(table)
 
         lauf_parameter = self._run_parameters(
-            interval_s, max_samples, max_duration_s, use_hold, record_condition, parameters
+            interval_s,
+            max_samples,
+            max_duration_s,
+            use_hold,
+            record_condition,
+            parameters,
+            check_update_rate=check_update_rate,
+            mark_duplicates=mark_duplicates,
+            error_policy=error_policy,
         )
         # EINMAL erheben, dann an beide Stellen: die Senken bekommen sie ueber
         # 'metadata', das Sidecar aus demselben Gegenstand. Vorher entstanden
@@ -940,14 +948,51 @@ class MeasureControl:
         use_hold: bool,
         record_condition: bool,
         parameters: dict | None,
+        check_update_rate: bool = True,
+        mark_duplicates: bool = True,
+        error_policy: "ErrorPolicy | None" = None,
     ) -> dict[str, object]:
-        """Die Laufparameter, die in Senken und Sidecar gleichlautend stehen."""
+        """Die Laufparameter, die in Senken und Sidecar gleichlautend stehen.
+
+        WAS HIER FEHLT, FEHLT IN DEN METADATEN. Die drei letzten Angaben
+        standen bis hierher NICHT darin, und bei zweien war das ein
+        Datenfehler und keine Auslassung:
+
+          mark_duplicates   Ist es AUS, traegt kein Datensatz die Marke
+                            DUPLICATE - und 'result.duplicates' im Sidecar
+                            steht auf 0. Wer die Datei spaeter liest, kann
+                            "es gab keine Wiederholungen" nicht mehr von
+                            "Wiederholungen wurden nicht gekennzeichnet"
+                            unterscheiden. Genau das soll ein Sidecar
+                            verhindern.
+          error_policy      Sie entscheidet, ob ein ausgefallener Zyklus als
+                            MISSING-Zeile in der Datei steht oder den Lauf
+                            beendet. Ohne diese Angabe ist eine Luecke in den
+                            Daten nicht einzuordnen.
+          check_update_rate Erklaert, ob 'result.update_rate_s' ueberhaupt
+                            erhoben wurde.
+
+        NICHT aufgenommen ist 'log_every': es steuert die Kadenz der
+        Protokollzeilen und beruehrt weder die Daten noch ihre Deutung. Die
+        Grenze ist Absicht - ein Sidecar, das jede Stellschraube mitschreibt,
+        macht die Angaben, auf die es ankommt, schwerer auffindbar.
+
+        Die Zuordnung wird von 'tests/test_sidecar_vollstaendigkeit.py'
+        gehalten: ein neuer Parameter an 'record()' laesst die Suite rot
+        werden, bis jemand entschieden hat, ob er hierher gehoert.
+        """
         return {
             "sample_interval_s": interval_s,
             "max_samples": max_samples,
             "max_duration_s": max_duration_s,
             "use_hold": use_hold,
             "record_condition": record_condition,
+            "check_update_rate": check_update_rate,
+            "mark_duplicates": mark_duplicates,
+            # Als Dictionary und nicht als repr(): das Sidecar ist JSON, und
+            # eine Zeichenkette 'ErrorPolicy(max_consecutive=5, ...)' waere
+            # zwar lesbar, aber nicht auswertbar.
+            "error_policy": asdict(error_policy) if error_policy is not None else None,
             **(parameters or {}),
         }
 
@@ -1051,7 +1096,15 @@ class MeasureControl:
         table = self._tabelle(table)
 
         lauf_parameter = self._run_parameters(
-            interval_s, max_samples, max_duration_s, use_hold, record_condition, parameters
+            interval_s,
+            max_samples,
+            max_duration_s,
+            use_hold,
+            record_condition,
+            parameters,
+            check_update_rate=check_update_rate,
+            mark_duplicates=mark_duplicates,
+            error_policy=error_policy,
         )
 
         # VOR dem Start und damit im Haupt-Thread: danach gehoert die Sitzung
