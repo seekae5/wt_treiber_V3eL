@@ -30,6 +30,7 @@ from typing import Final
 from .wt3000_common import (
     ALL,
     DEFAULT_ELEMENTS,
+    Scope,
     SIGMA,
     SIGMB,
     canonical_scope,
@@ -234,7 +235,7 @@ class RangeAccess:
 
     # -- Scope-Aufloesung ---------------------------------------------------
 
-    def expand_scope(self, scope: str | int) -> tuple[int, ...]:
+    def expand_scope(self, scope: Scope) -> tuple[int, ...]:
         """Scope in die Liste der betroffenen Elementnummern aufloesen.
 
         Wird gebraucht, weil die Sammelknoten (:ALL, :SIGMA, :SIGMB) laut
@@ -258,7 +259,7 @@ class RangeAccess:
             )
         return members
 
-    def _geprueftes_suffix(self, scope: str | int) -> str:
+    def _geprueftes_suffix(self, scope: Scope) -> str:
         """Scope pruefen und in die SCPI-Pfadendung wandeln.
 
         Die Pruefung liegt absichtlich hier, damit auch direkte Zugriffe ohne
@@ -326,7 +327,7 @@ class RangeAccess:
     def set_range(
         self,
         quantity: Quantity,
-        scope: str | int,
+        scope: Scope,
         value: float | RangeValue,
         sensor: bool = False,
     ) -> str:
@@ -366,7 +367,7 @@ class RangeAccess:
         self._write(command)
         return command
 
-    def set_auto(self, quantity: Quantity, scope: str | int, state: bool) -> str:
+    def set_auto(self, quantity: Quantity, scope: Scope, state: bool) -> str:
         """Autorange ein- oder ausschalten. Rueckgabe: das gesendete Kommando.
 
         STATTDESSEN EMPFOHLEN: 'wt.applied_ranges(plan)' mit einem

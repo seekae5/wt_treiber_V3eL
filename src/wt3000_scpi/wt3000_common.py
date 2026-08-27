@@ -39,7 +39,18 @@ _SIGMA_TOKENS: Final[frozenset[str]] = frozenset({"SIGMA", "SIGM"})
 _SIGMB_TOKENS: Final[frozenset[str]] = frozenset({"SIGMB"})
 
 
-def canonical_scope(scope: str | int) -> str:
+#: Das Ziel eines elementbezogenen Kommandos.
+#
+# Eine Elementnummer (1..4), eine Wiring-Unit ('SIGMA', 'SIGMB') oder 'ALL'.
+# Der Name ist ab jetzt DER Begriff dieses Pakets fuer diese Sache: bis
+# Schritt E8 hiess dasselbe in 'wt3000_input' 'target' und in 'wt3000_rangeio'
+# 'scope', und die Typangabe stand einmal als 'int | str' und einmal als
+# 'str | int'. Fuer den Anwender waren das drei Schreibweisen fuer eine Frage -
+# "welches Element meine ich?".
+Scope = int | str
+
+
+def canonical_scope(scope: Scope) -> str:
     """Scope-Angabe auf ein eindeutiges Token normalisieren.
 
     Zulaessig sind Elementnummern (1..4, auch als 'ELEMent2' oder '2'),
@@ -90,12 +101,12 @@ def canonical_element(element: str | None) -> str:
     return token
 
 
-def is_element_scope(scope: str | int) -> bool:
+def is_element_scope(scope: Scope) -> bool:
     """True, wenn der Scope genau ein Element bezeichnet."""
     return canonical_scope(scope).isdigit()
 
 
-def element_number(scope: str | int) -> int:
+def element_number(scope: Scope) -> int:
     """Elementnummer eines Element-Scopes. Fehler bei SIGMA/SIGMB/ALL."""
     token = canonical_scope(scope)
     if not token.isdigit():
@@ -103,7 +114,7 @@ def element_number(scope: str | int) -> int:
     return int(token)
 
 
-def scope_suffix(scope: str | int) -> str:
+def scope_suffix(scope: Scope) -> str:
     """SCPI-Pfadendung fuer einen Scope.
 
     '2'     -> ':ELEMent2'

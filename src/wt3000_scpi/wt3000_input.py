@@ -19,7 +19,9 @@ from __future__ import annotations
 
 import json
 import logging
+import warnings
 from contextlib import contextmanager
+from functools import wraps
 from dataclasses import dataclass
 from enum import Enum
 from pathlib import Path
@@ -30,7 +32,7 @@ from .wt3000_core import ConfigLocked, WTError, WTSession
 # Bereichswerte werden ausschliesslich hierueber geformt - dieselbe Funktion,
 # die auch wt3000_rangeio.py benutzt. Am Geraet belegt ist die reine NRf-Form
 # ('1000'); die genaue Knotenschreibweise verhindert mehrdeutige Varianten.
-from .wt3000_common import DEFAULT_ELEMENTS
+from .wt3000_common import DEFAULT_ELEMENTS, Scope
 from .wt3000_common import canonical_enum_token as _canonical_enum_token
 from .wt3000_common import format_nrf
 
@@ -204,7 +206,50 @@ _BASE_SCAL_SFACTOR = ":INPut:SCALing:SFACtor"
 _BASE_SYNC = ":INPut:SYNChronize"
 
 
-def target_node(target: int | str) -> str:
+#: Wie lange der alte Parametername noch angenommen wird.
+#
+# Bis Schritt E8 hiess 'scope' in diesem Modul 'target' - als einzigem im
+# Paket. Ein harter Umbenenner haette jedes bestehende Messskript gebrochen,
+# und zwar mit einem TypeError mitten im Lauf. Deshalb die Uebergangsfrist:
+# 'target=' wirkt weiter, meldet sich aber deutlich. Nach einer Version darf
+# dieser Dekorator samt seiner 15 Anwendungen verschwinden.
+TARGET_ALIAS_VERSION: str = "0.3.0"
+
+
+def _accept_target_alias(funktion):
+    """'target=' als veralteten Zweitnamen fuer 'scope=' annehmen.
+
+    Bewusst ein Dekorator und keine 15 zusaetzlichen Parameter: der ganze
+    Zweck dieses Schrittes ist, die Signaturen zu vereinheitlichen - ein
+    'target=None' in jeder von ihnen waere das Gegenteil davon. Die
+    Uebergangsregel steht damit an EINER Stelle, mitsamt ihrer Begruendung.
+
+    'functools.wraps' erhaelt Signatur und Docstring, die Editor-Hilfe zeigt
+    also weiterhin 'scope' - den Namen, den man kuenftig schreiben soll.
+    """
+
+    @wraps(funktion)
+    def huelle(*args, **kwargs):
+        if "target" in kwargs:
+            if "scope" in kwargs:
+                raise WTError(
+                    f"{funktion.__name__}(): 'scope' und 'target' zugleich angegeben. "
+                    "'target' ist der alte Name derselben Angabe - nur eines von beiden."
+                )
+            meldung = (
+                f"{funktion.__name__}(target=...) ist veraltet und heisst jetzt "
+                "'scope=...' - derselbe Begriff wie in wt.ranges und im RangeSpec. "
+                "Der alte Name wirkt weiterhin, wird aber entfernt."
+            )
+            warnings.warn(meldung, DeprecationWarning, stacklevel=2)
+            _log.warning("%s", meldung)
+            kwargs["scope"] = kwargs.pop("target")
+        return funktion(*args, **kwargs)
+
+    return huelle
+
+
+def scope_node(scope: Scope) -> str:
     """Zieladressierung in den Knotennamen uebersetzen.
 
     Erlaubt sind 1..4, 'ALL', 'SIGMA' und 'SIGMB'. Bewusst OHNE Praefix-
@@ -212,24 +257,24 @@ def target_node(target: int | str) -> str:
     stillschweigend gleichsetzen (derselbe Fehler, der in Stufe 3 im
     Itemvergleich gefunden wurde).
     """
-    if isinstance(target, bool):  # bool ist Subtyp von int - hier sinnlos
-        raise WTError(f"Ungueltiges Ziel: {target!r}")
-    if isinstance(target, int):
-        if not 1 <= target <= 4:
-            raise WTError(f"Element {target} liegt ausserhalb 1..4")
-        return f":ELEMent{target}"
+    if isinstance(scope, bool):  # bool ist Subtyp von int - hier sinnlos
+        raise WTError(f"Ungueltiges Ziel: {scope!r}")
+    if isinstance(scope, int):
+        if not 1 <= scope <= 4:
+            raise WTError(f"Element {scope} liegt ausserhalb 1..4")
+        return f":ELEMent{scope}"
 
-    token = target.strip().upper()
+    token = scope.strip().upper()
     if token in {"ALL", "SIGMA", "SIGMB"}:
         return f":{token}"
     raise WTError(
-        f"Ungueltiges Ziel {target!r}. Erlaubt: 1..4, 'ALL', 'SIGMA', 'SIGMB'."
+        f"Ungueltiges Ziel {scope!r}. Erlaubt: 1..4, 'ALL', 'SIGMA', 'SIGMB'."
     )
 
 
-def _node(base: str, target: int | str) -> str:
+def _node(base: str, scope: Scope) -> str:
     """Vollstaendigen Kommandoknoten bauen."""
-    return f"{base}{target_node(target)}"
+    return f"{base}{scope_node(scope)}"
 
 
 # ---------------------------------------------------------------------------
@@ -564,7 +609,7 @@ class InputConfig:
         self,
         group: str,
         base: str,
-        target: int | str,
+        scope: Scope,
         parameter: str,
         matches: Callable[[str], bool],
         label: str,
@@ -576,17 +621,17 @@ class InputConfig:
         immer ueber die Einzelabfragen der betroffenen Elemente.
         """
         self._require_writable(group)
-        command = f"{_node(base, target)} {parameter}"
+        command = f"{_node(base, scope)} {parameter}"
         _log.info("SET %s", command)
         self._session.write(command)
 
         if self._verify:
-            self._verify_group(target, base, matches, label)
+            self._verify_group(scope, base, matches, label)
 
         if self._check_errors:
             self._session.assert_no_error(label)
 
-    def _elements_of(self, target: int | str) -> tuple[int, ...]:
+    def _elements_of(self, scope: Scope) -> tuple[int, ...]:
         """Elemente ermitteln, die von einem Ziel betroffen sind.
 
         'ALL' loest gegen die bestueckten Elemente auf; einzelne Nummern
@@ -598,14 +643,14 @@ class InputConfig:
         anschliessende Rueckleseprobe liest dann einen Knoten, den es nicht
         gibt.
         """
-        if isinstance(target, int):
-            if target not in self._elements:
+        if isinstance(scope, int):
+            if scope not in self._elements:
                 raise WTError(
-                    f"Element {target} ist nicht bestueckt "
+                    f"Element {scope} ist nicht bestueckt "
                     f"(vorhanden: {self._elements})"
                 )
-            return (target,)
-        token = target.strip().upper()
+            return (scope,)
+        token = scope.strip().upper()
         if token == "ALL":
             return self._elements
         for unit in resolve_wiring_units(self.get_wiring()):
@@ -807,7 +852,8 @@ class InputConfig:
 
     # -- Bereiche -----------------------------------------------------------
 
-    def set_voltage_range(self, volts: float, target: int | str = "ALL") -> None:
+    @_accept_target_alias
+    def set_voltage_range(self, volts: float, scope: Scope = "ALL") -> None:
         """Spannungsmessbereich fest setzen (schaltet Auto-Range ab).
 
         STATTDESSEN EMPFOHLEN: 'wt.applied_ranges(plan)' mit einem
@@ -820,18 +866,19 @@ class InputConfig:
         """
         crest = self.get_crest_factor()
         value = _check_allowed(volts, VOLTAGE_RANGES[crest], f"Spannungsbereich (CF{crest})")
-        self._warn_if_not_independent(target)
+        self._warn_if_not_independent(scope)
 
         self._write_element(
             GROUP_RANGE,
             _BASE_VOLT_RANGE,
-            target,
+            scope,
             format_nrf(value),  # am Geraet belegt: '1000', nicht '1000V'
             lambda actual: _float_close(value, parse_float(actual)),
             "Spannungsbereich setzen",
         )
 
-    def set_current_range(self, amps: float, target: int | str = "ALL") -> None:
+    @_accept_target_alias
+    def set_current_range(self, amps: float, scope: Scope = "ALL") -> None:
         """Strommessbereich fuer den DIREKTEN Stromeingang setzen.
 
         Fuer Elemente mit externem Stromsensor ist stattdessen
@@ -847,7 +894,7 @@ class InputConfig:
         Zustand beruehrt.
         """
         crest = self.get_crest_factor()
-        elements = self._elements_of(target)
+        elements = self._elements_of(scope)
         modules = {self.get_module(e) for e in elements}
         if len(modules) > 1:
             raise WTError(
@@ -856,12 +903,12 @@ class InputConfig:
             )
         module = modules.pop()
         if module == 0:
-            raise WTError(f"Ziel {target!r} enthaelt ein nicht bestuecktes Element")
+            raise WTError(f"Ziel {scope!r} enthaelt ein nicht bestuecktes Element")
 
         value = _check_allowed(
             amps, CURRENT_RANGES[(module, crest)], f"Strombereich ({module} A-Element, CF{crest})"
         )
-        self._warn_if_not_independent(target)
+        self._warn_if_not_independent(scope)
 
         def matches(actual: str) -> bool:
             direct, sensor = parse_current_range(actual)
@@ -870,7 +917,7 @@ class InputConfig:
         self._write_element(
             GROUP_RANGE,
             _BASE_CURR_RANGE,
-            target,
+            scope,
             # ZU VERIFIZIEREN: am Geraet belegt ist bisher nur
             # der Spannungsknoten. Fuer den Direktstrom steht die Gegenprobe
             # '5A' gegen '500MA' gegen '0.5' noch aus. Die Rueckleseprobe in
@@ -880,7 +927,8 @@ class InputConfig:
             "Strombereich setzen",
         )
 
-    def set_current_range_sensor(self, volts: float, target: int | str = "ALL") -> None:
+    @_accept_target_alias
+    def set_current_range_sensor(self, volts: float, scope: Scope = "ALL") -> None:
         """Bereich des externen Stromsensoreingangs setzen (EXTernal,<Volt>).
 
         STATTDESSEN EMPFOHLEN: 'wt.applied_ranges(plan)' mit einem
@@ -893,7 +941,7 @@ class InputConfig:
         """
         crest = self.get_crest_factor()
         value = _check_allowed(volts, SENSOR_RANGES[crest], f"Sensorbereich (CF{crest})")
-        self._warn_if_not_independent(target)
+        self._warn_if_not_independent(scope)
 
         def matches(actual: str) -> bool:
             direct, sensor = parse_current_range(actual)
@@ -902,7 +950,7 @@ class InputConfig:
         self._write_element(
             GROUP_RANGE,
             _BASE_CURR_RANGE,
-            target,
+            scope,
             # Identisch zu wt3000_rangeio.set_range(..., sensor=True).
             # ZU VERIFIZIEREN: 'EXTernal,10'
             # gegen 'EXTernal,10V' ist am Geraet noch nicht gegengeprueft.
@@ -913,7 +961,8 @@ class InputConfig:
 
     # -- Auto-Range ---------------------------------------------------------
 
-    def set_voltage_auto_range(self, enabled: bool, target: int | str = "ALL") -> None:
+    @_accept_target_alias
+    def set_voltage_auto_range(self, enabled: bool, scope: Scope = "ALL") -> None:
         """Auto-Range Spannung ein-/ausschalten.
 
         Auto-Range ist fuer Vergleichsmessungen mit Vorsicht zu geniessen: der
@@ -924,20 +973,22 @@ class InputConfig:
         'AutoRangeSpec' im Plan - dann wird der Zustand am Blockende
         zurueckgestellt. Dieser Aufruf hier wirkt bis auf Weiteres.
         """
-        self._set_boolean(GROUP_AUTO, _BASE_VOLT_AUTO, enabled, target, "Auto-Range Spannung")
+        self._set_boolean(GROUP_AUTO, _BASE_VOLT_AUTO, enabled, scope, "Auto-Range Spannung")
 
-    def set_current_auto_range(self, enabled: bool, target: int | str = "ALL") -> None:
+    @_accept_target_alias
+    def set_current_auto_range(self, enabled: bool, scope: Scope = "ALL") -> None:
         """Auto-Range Strom ein-/ausschalten.
 
         STATTDESSEN EMPFOHLEN: 'wt.applied_ranges(plan)' mit einem
         'AutoRangeSpec' im Plan - dann wird der Zustand am Blockende
         zurueckgestellt. Dieser Aufruf hier wirkt bis auf Weiteres.
         """
-        self._set_boolean(GROUP_AUTO, _BASE_CURR_AUTO, enabled, target, "Auto-Range Strom")
+        self._set_boolean(GROUP_AUTO, _BASE_CURR_AUTO, enabled, scope, "Auto-Range Strom")
 
     # -- Filter -------------------------------------------------------------
 
-    def set_line_filter(self, value: LineFilter | str | float, target: int | str = "ALL") -> None:
+    @_accept_target_alias
+    def set_line_filter(self, value: LineFilter | str | float, scope: Scope = "ALL") -> None:
         """Line-Filter setzen: 'OFF' oder Grenzfrequenz.
 
         Zulaessig sind LineFilter.OFF, .HZ500, .KHZ5P5, .KHZ50 - alternativ
@@ -954,45 +1005,52 @@ class InputConfig:
         self._write_element(
             GROUP_FILTER,
             _BASE_FILTER_LINE,
-            target,
+            scope,
             parameter,
             matches,
             "Line-Filter setzen",
         )
 
-    def set_frequency_filter(self, enabled: bool, target: int | str = "ALL") -> None:
+    @_accept_target_alias
+    def set_frequency_filter(self, enabled: bool, scope: Scope = "ALL") -> None:
         """Frequenzfilter ein-/ausschalten (stabilisiert die Synchronisation)."""
-        self._set_boolean(GROUP_FILTER, _BASE_FILTER_FREQ, enabled, target, "Frequenzfilter")
+        self._set_boolean(GROUP_FILTER, _BASE_FILTER_FREQ, enabled, scope, "Frequenzfilter")
 
     # -- Skalierung ---------------------------------------------------------
 
-    def set_scaling_state(self, enabled: bool, target: int | str = "ALL") -> None:
+    @_accept_target_alias
+    def set_scaling_state(self, enabled: bool, scope: Scope = "ALL") -> None:
         """Skalierung (VT/CT/SFACtor) ein-/ausschalten.
 
         Achtung: Das Abschalten aendert saemtliche Messwerte des Elements um
         den Skalierungsfaktor. In diesem Aufbau ist Skalierung ueberall aktiv.
         """
-        self._set_boolean(GROUP_SCALING, _BASE_SCAL_STATE, enabled, target, "Skalierung")
+        self._set_boolean(GROUP_SCALING, _BASE_SCAL_STATE, enabled, scope, "Skalierung")
 
-    def set_vt_ratio(self, ratio: float, target: int | str = "ALL") -> None:
+    @_accept_target_alias
+    def set_vt_ratio(self, ratio: float, scope: Scope = "ALL") -> None:
         """VT-Verhaeltnis setzen (Spannungswandler)."""
-        self._set_scaling_factor(_BASE_SCAL_VT, ratio, target, "VT-Verhaeltnis")
+        self._set_scaling_factor(_BASE_SCAL_VT, ratio, scope, "VT-Verhaeltnis")
 
-    def set_ct_ratio(self, ratio: float, target: int | str = "ALL") -> None:
+    @_accept_target_alias
+    def set_ct_ratio(self, ratio: float, scope: Scope = "ALL") -> None:
         """CT-Verhaeltnis setzen (Stromwandler)."""
-        self._set_scaling_factor(_BASE_SCAL_CT, ratio, target, "CT-Verhaeltnis")
+        self._set_scaling_factor(_BASE_SCAL_CT, ratio, scope, "CT-Verhaeltnis")
 
-    def set_power_factor(self, factor: float, target: int | str = "ALL") -> None:
+    @_accept_target_alias
+    def set_power_factor(self, factor: float, scope: Scope = "ALL") -> None:
         """Leistungsskalierungsfaktor SFACtor setzen."""
-        self._set_scaling_factor(_BASE_SCAL_SFACTOR, factor, target, "Leistungsfaktor")
+        self._set_scaling_factor(_BASE_SCAL_SFACTOR, factor, scope, "Leistungsfaktor")
 
-    def set_sensor_ratio(self, ratio: float, target: int | str = "ALL") -> None:
+    @_accept_target_alias
+    def set_sensor_ratio(self, ratio: float, scope: Scope = "ALL") -> None:
         """Sensorkonstante SRATio des externen Stromsensors setzen (mV/A)."""
-        self._set_scaling_factor(_BASE_SRATIO, ratio, target, "Sensorkonstante")
+        self._set_scaling_factor(_BASE_SRATIO, ratio, scope, "Sensorkonstante")
 
     # -- Sync-Quelle --------------------------------------------------------
 
-    def set_sync_source(self, source: SyncSource | str, target: int | str = "ALL") -> None:
+    @_accept_target_alias
+    def set_sync_source(self, source: SyncSource | str, scope: Scope = "ALL") -> None:
         """Synchronisationsquelle setzen.
 
         Erlaubt sind U1..U4, I1..I4, EXTernal und NONE. Die Sync-Quelle
@@ -1015,7 +1073,7 @@ class InputConfig:
         self._write_element(
             GROUP_SYNC,
             _BASE_SYNC,
-            target,
+            scope,
             # Gesendet wird die Langform - das Geraet akzeptiert sie ebenso wie
             # die Kurzform, und im Protokoll steht dann, was gemeint war.
             canonical,
@@ -1026,13 +1084,15 @@ class InputConfig:
 
     # -- Messmodus ----------------------------------------------------------
 
-    def set_voltage_mode(self, mode: MeasMode | str, target: int | str = "ALL") -> None:
+    @_accept_target_alias
+    def set_voltage_mode(self, mode: MeasMode | str, scope: Scope = "ALL") -> None:
         """Messmodus Spannung (RMS/MEAN/DC/RMEAN)."""
-        self._set_mode(_BASE_VOLT_MODE, mode, target, "Spannungsmodus")
+        self._set_mode(_BASE_VOLT_MODE, mode, scope, "Spannungsmodus")
 
-    def set_current_mode(self, mode: MeasMode | str, target: int | str = "ALL") -> None:
+    @_accept_target_alias
+    def set_current_mode(self, mode: MeasMode | str, scope: Scope = "ALL") -> None:
         """Messmodus Strom (RMS/MEAN/DC/RMEAN)."""
-        self._set_mode(_BASE_CURR_MODE, mode, target, "Strommodus")
+        self._set_mode(_BASE_CURR_MODE, mode, scope, "Strommodus")
 
     # -- Update-Rate --------------------------------------------------------
 
@@ -1055,20 +1115,20 @@ class InputConfig:
     # -- interne Helfer -----------------------------------------------------
 
     def _set_boolean(
-        self, group: str, base: str, enabled: bool, target: int | str, label: str
+        self, group: str, base: str, enabled: bool, scope: Scope, label: str
     ) -> None:
         """Gemeinsamer Pfad fuer alle <Boolean>-Einstellungen."""
         self._write_element(
             group,
             base,
-            target,
+            scope,
             "ON" if enabled else "OFF",
             lambda actual: parse_bool(actual) is enabled,
             f"{label} setzen",
         )
 
     def _set_scaling_factor(
-        self, base: str, value: float, target: int | str, label: str
+        self, base: str, value: float, scope: Scope, label: str
     ) -> None:
         """Gemeinsamer Pfad fuer VT, CT, SFACtor und SRATio."""
         if not SCALING_MIN <= value <= SCALING_MAX:
@@ -1078,14 +1138,14 @@ class InputConfig:
         self._write_element(
             GROUP_SCALING,
             base,
-            target,
+            scope,
             f"{value:.4f}",
             lambda actual: _float_close(value, parse_float(actual), rel=1e-4),
             f"{label} setzen",
         )
 
     def _set_mode(
-        self, base: str, mode: MeasMode | str, target: int | str, label: str
+        self, base: str, mode: MeasMode | str, scope: Scope, label: str
     ) -> None:
         """Gemeinsamer Pfad fuer VOLTage:MODE und CURRent:MODE."""
         # Erst normalisieren, dann pruefen - wie bei set_sync_source(). Das
@@ -1099,7 +1159,7 @@ class InputConfig:
         self._write_element(
             GROUP_MODE,
             base,
-            target,
+            scope,
             canonical,
             # Dieselbe Regel wie diff() und restore - siehe enum_match().
             lambda actual: enum_match(canonical, actual, MODE_TOKENS),
@@ -1107,29 +1167,29 @@ class InputConfig:
         )
 
     def _verify_group(
-        self, target: int | str, base: str, matches: Callable[[str], bool], label: str
+        self, scope: Scope, base: str, matches: Callable[[str], bool], label: str
     ) -> None:
         """Sammelkommandos elementweise zuruecklesen.
 
         ':...:ALL?' und ':...:SIGMA?' gibt es nicht - fuer die Rueckleseprobe
         muss jedes betroffene Element einzeln abgefragt werden.
         """
-        for element in self._elements_of(target):
+        for element in self._elements_of(scope):
             actual = self._query(_node(base, element))
             if not matches(actual):
                 errors = self._session.read_error_queue()
                 raise VerificationError(
                     f"{label}: Element {element} zeigt {actual!r}. Fehlerqueue: {errors}"
                 )
-        _log.info("  verifiziert fuer Elemente %s", list(self._elements_of(target)))
+        _log.info("  verifiziert fuer Elemente %s", list(self._elements_of(scope)))
 
-    def _warn_if_not_independent(self, target: int | str) -> None:
+    def _warn_if_not_independent(self, scope: Scope) -> None:
         """Warnen, wenn elementweise gesetzt wird, obwohl INDependent aus ist."""
-        if isinstance(target, int) and not self.get_independent():
+        if isinstance(scope, int) and not self.get_independent():
             _log.warning(
                 "':INPut:INDependent' ist AUS - die Bereichsaenderung an Element %d "
                 "wirkt auf die gesamte Wiring-Unit",
-                target,
+                scope,
             )
 
 

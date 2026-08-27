@@ -45,7 +45,7 @@ from .wt3000_transport import FakeTransport
 
 # Ablageort und Protokolldatei - beides braucht jedes Anwenderskript, und
 # beides loeste bisher einen Import aus dem Fachmodul aus.
-from .wt3000_common import output_dir, setup_logging
+from .wt3000_common import Scope, output_dir, setup_logging
 
 # ---------------------------------------------------------------------------
 # Layer 2 - Messwerte, Item-Tabelle, Bereiche, Eingangskonfiguration
@@ -196,6 +196,9 @@ __all__ = [
     "ChangesNotAllowed",
     "VerificationError",
     # -- Aufzaehlungen und Werttypen ----------------------------------------
+    # 'Scope' ist DER Begriff des Pakets fuer "welches Element meine ich":
+    # eine Nummer 1..4, 'SIGMA', 'SIGMB' oder 'ALL'.
+    "Scope",
     "Quantity",
     "Wiring",
     "WiringUnit",

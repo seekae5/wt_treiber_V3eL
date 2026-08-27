@@ -33,7 +33,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Iterator
 
-from .wt3000_common import canonical_scope
+from .wt3000_common import Scope, canonical_scope
 from .wt3000_core import WTError
 from .wt3000_rangeio import Quantity, RangeAccess, RangeValue, ranges_match
 
@@ -63,7 +63,7 @@ class RangeSpec:
     """
 
     quantity: Quantity
-    scope: str | int
+    scope: Scope
     value: float
     sensor: bool = False
 
@@ -90,7 +90,7 @@ class AutoRangeSpec:
     """
 
     quantity: Quantity
-    scope: str | int
+    scope: Scope
     state: bool
 
     def describe(self) -> str:

@@ -6,11 +6,11 @@
 > **Suchst du den Einstieg statt der Analyse? → [Schnellstart](Schnellstart.md)** — fünf
 > lauffähige Rezepte auf einer Seite.
 >
-> **Umsetzungsstand:** **E1**–**E6** und **E9** sind **erledigt** — offen bleiben nur noch
-> **E7** (Messparameter-Objekt), **E8** (Benennung vereinheitlichen), das Sidecar-Feld aus E9
-> und das README. Siehe Teil F. Testsuite danach: **943 Tests grün**, `ruff` sauber.
-> Die Befunde D1–D5, D8 und D9 sind entsprechend gekennzeichnet und beschreiben ab Teil D den
-> Zustand *vor* dem Eingriff, damit die Begründung nachvollziehbar bleibt.
+> **Umsetzungsstand:** **E1**–**E6**, **E8** und **E9** sind **erledigt**. Offen bleiben
+> **E7** (Messparameter-Objekt), die Sidecar-Lücke, **E11** (Typaliasse) und das README —
+> alle vier auf Wunsch zurückgestellt. Siehe Teil F. Testsuite danach: **993 Tests grün**,
+> `ruff` sauber. Die Befunde D1–D6 und D8–D10 sind entsprechend gekennzeichnet und beschreiben
+> ab Teil D den Zustand *vor* dem Eingriff, damit die Begründung nachvollziehbar bleibt.
 
 Zielbild der Kopie `wt_treiber_V3eL`: Jemand mit wenig Programmiererfahrung soll schnell ein
 Messautomationsskript für das WT3000 schreiben können. Diese Datei hält fest, **was die Bibliothek
@@ -112,7 +112,7 @@ Spalte **Sperre**: `–` = immer erlaubt (nur Lesen) · `AC` = braucht `allow_ch
 | Modultyp je Element | `wt.input.get_module(1)` / `get_modules()` | – | 30 = 30-A-Element, 2 = 2-A, 0 = nicht bestückt |
 | Unabhängige Elemente? | `wt.input.get_independent()` | – | entscheidet, ob Einzelelemente stellbar sind |
 | Verdrahtung setzen | `wt.input.set_wiring([Wiring.V3A3, Wiring.P1W2])` | **AC+G** `GROUP_WIRING` | löst `refresh_device()` aus |
-| Zielangabe je Setter | `target=1` / `"SIGMA"` / `"ALL"` (Vorgabe) | | `ALL` = die bestückten Elemente **dieses** Objekts |
+| Zielangabe je Setter | `scope=1` / `"SIGMA"` / `"ALL"` (Vorgabe) | | derselbe Begriff wie bei `wt.ranges` und im `RangeSpec`; `ALL` = die bestückten Elemente **dieses** Objekts |
 | Scope auflösen | `wt.ranges.expand_scope("SIGMA")` → `(1,2,3)` | – | |
 
 ### C.4 Messbereich (Range) — **drei Wege, siehe Befund D4**
@@ -123,9 +123,9 @@ Spalte **Sperre**: `–` = immer erlaubt (nur Lesen) · `AC` = braucht `allow_ch
 |---|---|---|
 | Spannungsbereich lesen | `wt.input.get_voltage_range(1)` → `float` V | – |
 | Strombereich lesen | `wt.input.get_current_range(1)` → `(A, V_sensor)` | – |
-| Spannungsbereich setzen | `wt.input.set_voltage_range(300.0, target="ALL")` | **AC+G** `GROUP_RANGE` |
-| Strombereich setzen (direkt) | `wt.input.set_current_range(5.0, target=1)` | **AC+G** `GROUP_RANGE` |
-| Strombereich setzen (Sensor) | `wt.input.set_current_range_sensor(10.0, target=1)` | **AC+G** `GROUP_RANGE` |
+| Spannungsbereich setzen | `wt.input.set_voltage_range(300.0, scope="ALL")` | **AC+G** `GROUP_RANGE` |
+| Strombereich setzen (direkt) | `wt.input.set_current_range(5.0, scope=1)` | **AC+G** `GROUP_RANGE` |
+| Strombereich setzen (Sensor) | `wt.input.set_current_range_sensor(10.0, scope=1)` | **AC+G** `GROUP_RANGE` |
 | Erlaubte Stufen nachschlagen | `VOLTAGE_RANGES`, `CURRENT_RANGES`, `SENSOR_RANGES` | – |
 
 **Weg 2 — `wt.ranges`** (roh, scope-basiert, keine Stufenprüfung, gibt das Kommando zurück):
@@ -169,8 +169,8 @@ wenn alles gepasst hat. `allow_snapping=True` erlaubt dem Gerät das Runden auf 
 |---|---|---|
 | Zustand lesen | `wt.input.get_voltage_auto(1)` / `get_current_auto(1)` | – |
 | Zustand lesen (scope) | `wt.ranges.get_auto(Quantity.VOLTAGE, 1)` / `get_autos(...)` | – |
-| Setzen (Weg 1) | `wt.input.set_voltage_auto_range(True, target="ALL")` | **AC** (`GROUP_AUTO` ist *nicht* geschützt) |
-| Setzen (Weg 1, Strom) | `wt.input.set_current_auto_range(True, target="ALL")` | **AC** |
+| Setzen (Weg 1) | `wt.input.set_voltage_auto_range(True, scope="ALL")` | **AC** (`GROUP_AUTO` ist *nicht* geschützt) |
+| Setzen (Weg 1, Strom) | `wt.input.set_current_auto_range(True, scope="ALL")` | **AC** |
 | Setzen (Weg 2) | `wt.ranges.set_auto(Quantity.VOLTAGE, "ALL", True)` | **AC** |
 | Setzen (Weg 3, im Plan) | `AutoRangeSpec(Quantity.VOLTAGE, "ALL", True)` | **AC** |
 
@@ -180,7 +180,7 @@ wenn alles gepasst hat. `allow_snapping=True` erlaubt dem Gerät das Runden auf 
 
 | Aufgabe | Lesen | Setzen | Sperre |
 |---|---|---|---|
-| Line-Filter | `get_line_filter(1)` | `set_line_filter(LineFilter.HZ500, target="ALL")` | AC+G `GROUP_FILTER` |
+| Line-Filter | `get_line_filter(1)` | `set_line_filter(LineFilter.HZ500, scope="ALL")` | AC+G `GROUP_FILTER` |
 | Frequenzfilter | `get_frequency_filter(1)` | `set_frequency_filter(True, ...)` | AC+G `GROUP_FILTER` |
 | Messmodus U / I | `get_voltage_mode(1)` / `get_current_mode(1)` | `set_voltage_mode(MeasMode.RMS, ...)` | AC+G `GROUP_MODE` |
 | Sync-Quelle | `get_sync_source(1)` | `set_sync_source(SyncSource.U1, ...)` | AC+G `GROUP_SYNC` |
@@ -553,7 +553,7 @@ kein Fachmodul die Klasse erneut definiert), `test_jede_sperre_erbt_von_der_geme
 **Rückwärtskompatibel:** `from wt3000_scpi.wt3000_deviceconfig import ConfigLocked` liefert jetzt
 die Basis und fängt `DeviceConfigLocked` — alle bestehenden Tests und Skripte laufen unverändert.
 
-### D6 — „Element“ heißt an vier Stellen anders und hat zwei Typen 🟠
+### D6 — „Element“ heißt an vier Stellen anders und hat zwei Typen 🟠 ✅ **erledigt (E8)**
 
 | Modul | Parametername | Typ | Beispiel |
 |---|---|---|---|
@@ -562,8 +562,33 @@ die Basis und fängt `DeviceConfigLocked` — alle bestehenden Tests und Skripte
 | `ItemSpec` | `element` | **`str \| None`** | `element="1"` — **Zeichenkette!** |
 | `DeviceInfo` / `RangeAccess` | `elements` | `tuple[int, ...]` | `(1, 2, 3, 4)` |
 
-Für dieselbe Sache — „welches Element meine ich“ — gibt es drei Parameternamen und zwei Typen.
-`ItemSpec("U", 1)` statt `ItemSpec("U", "1")` ist ein naheliegender Fehler.
+Für dieselbe Sache — „welches Element meine ich“ — gab es drei Parameternamen und zwei Typen.
+`ItemSpec("U", 1)` statt `ItemSpec("U", "1")` war ein naheliegender Fehler.
+
+**Jetzt** heißt es überall `scope` und trägt überall den Typ `Scope`:
+
+| Stelle | vorher | nachher |
+|---|---|---|
+| die 15 Setter in `wt3000_input` | `target: int \| str` | `scope: Scope` |
+| `RangeAccess.set_range` / `set_auto` / `expand_scope` | `scope: str \| int` | `scope: Scope` |
+| `RangeSpec`, `AutoRangeSpec` | `scope: str \| int` | `scope: Scope` |
+| die Helfer in `wt3000_common` | `scope: str \| int` | `scope: Scope` |
+| `wt3000_input.target_node()` | — | heißt `scope_node()` |
+| `ItemSpec("U", 1)` | stille Fehlkonfiguration | gleichwertig zu `ItemSpec("U", "1")` |
+
+`Scope = int | str` steht in `wt3000_common` — dem gemeinsamen Vokabularmodul, das den Begriff
+`scope` ohnehin schon führte — und ist aus dem Paket importierbar.
+
+**Übergangsfrist:** `target=` wirkt weiter. Ein harter Umbenenner hätte jedes bestehende Skript
+mit einem `TypeError` gebrochen, und zwar mitten im Lauf — also genau dann, wenn am Gerät schon
+etwas eingestellt ist. Stattdessen nimmt ein Dekorator den alten Namen an, meldet ihn als
+`DeprecationWarning` **und** im Protokoll (mit dem neuen Namen im Text) und weist `scope=` und
+`target=` zugleich als Fehler ab. `functools.wraps` erhält Signatur und Docstring, die
+Editor-Hilfe zeigt also `scope`.
+
+`ItemSpec` wandelt Zahlen beim Erzeugen in Text; Gleichheit und Hashwert stimmen dadurch überein
+(`{ItemSpec("P", 2), ItemSpec("P", "2")}` hat ein Element). `True`/`False` werden abgewiesen —
+`bool` ist ein Subtyp von `int`, und `ItemSpec("U", True)` ist ein Vertipper, kein Element 1.
 
 ### D7 — Vier Messmethoden mit je 14–18 identischen Parametern 🟠
 
@@ -618,14 +643,35 @@ Zwei Punkte bleiben bewusst, wie sie sind:
 zwischen zwei Aufrufen, lieferte ein Puffer stillschweigend falsche Namen zu richtigen Werten.
 Ein eigener Prüfsatz hält das fest, damit die nächste Optimierung ihn nicht doch einbaut.
 
-### D10 — Sprachmix 🟡
+### D10 — Sprachmix 🟡 ⏸ **teilweise — zwei Teile bewusst zurückgestellt**
 
 Doku und Kommentare deutsch, öffentliche Bezeichner englisch (`get_wiring`, `record_csv`,
 `max_samples`), interne Variablen teils deutsch (`senke`, `tabelle`, `messung`, `lauf_parameter`,
-`zu_aendern`). Für die Zielgruppe (deutschsprachige Messtechnik) ist der englische API-Name in
-Ordnung — die Uneinheitlichkeit im Inneren erschwert aber das Lesen fremden Codes.
-Auch die Umlautvermeidung („Geraet“, „Messbereiche zurueckstellen“) ist in Docstrings, die dem
-Anwender im Editor angezeigt werden, ein Lesehindernis.
+`zu_aendern`).
+
+**Entschieden und umgesetzt:** öffentliche Bezeichner bleiben englisch (Entscheidung vom
+2026-08-27); neue Namen folgen dem — `InputLocked`, `DeviceConfigLocked`, `from_keys`,
+`spec_from_key`, `Scope`, `scope_node`.
+
+**Zurückgestellt: die Umlautfrage.** Erst gemessen, dann entschieden:
+
+| | Anzahl |
+|---|---|
+| echte Umlaute im Paket (vor E8) | **5** — verteilt auf 3 Dateien, ohne Muster |
+| ASCII-Umschreibungen in String-Literalen (inkl. Docstrings) | **2864** |
+| Tests, die auf Meldungstext matchen (`match=`) | **74** |
+
+Eine Umstellung auf echte Umlaute wäre ein mechanischer Eingriff an rund 2900 Stellen mit 74
+Testtreffern als Minenfeld — und sie beträfe auch Fehlermeldungen, die jemand in seiner
+Logauswertung stehen haben kann. Der Nutzen ist kosmetisch. **Stattdessen wurde die vorhandene
+Konvention durchgesetzt:** die fünf Ausreißer sind auf ASCII gezogen, das Paket ist jetzt
+durchgehend einheitlich, und ein Prüfsatz hält das fest. Ein Nebeneinander beider Schreibweisen
+ist die einzige Variante, die niemandem nutzt — das ist jetzt ausgeschlossen. Wer umstellen will,
+stellt alles um, in einem eigenen Schritt und unter Aussparung der Meldungsliterale.
+
+**Zurückgestellt: die internen Variablennamen.** `senke`, `tabelle`, `messung` sind für den
+Anwender der Bibliothek unsichtbar — sie stehen in Rümpfen, nicht in Signaturen. Der Umbau wäre
+großflächig und trüge nichts zum Ziel dieser Kopie bei. Er bleibt offen, mit niedriger Priorität.
 
 ### D11 — Stärken, die erhalten bleiben müssen ✅
 
@@ -820,15 +866,25 @@ Form bestehen. Vorteil: der Anwender sieht drei Argumente statt achtzehn, kann e
 benennen, wiederverwenden und protokollieren — und die Vorgaben stehen an **einer** Stelle statt
 viermal.
 
-### E8 🟠 Benennung vereinheitlichen — *mittel, teils brechend*
+### E8 🟠 Benennung vereinheitlichen — ✅ **umgesetzt (2 von 4 Punkten, 2 begründet zurückgestellt)**
 
-- Ein Begriff für „welches Element“: `scope` überall (oder `target` überall), mit einem Typalias
-  `Scope = int | str`. `target=` als veralteter Zweitname eine Version lang mitführen.
-- `ItemSpec.element` soll `int | str` annehmen und intern in die Zeichenkette wandeln —
-  `ItemSpec("U", 1)` muss funktionieren.
-- Interne Variablen einheitlich benennen (durchgängig deutsch **oder** englisch, nicht gemischt).
-- Umlaute in Docstrings zulassen (die Dateien sind UTF-8) — „Gerät“ liest sich für die Zielgruppe
-  deutlich besser als „Geraet“.
+**Umgesetzt:**
+
+- **`scope` überall**, mit dem Alias `Scope = int | str` in `wt3000_common`. Die Richtung war nicht
+  frei wählbar: `wt3000_common` — das gemeinsame Vokabularmodul — nannte es bereits `scope`
+  (`canonical_scope`, `is_element_scope`, `scope_suffix`), `wt3000_input` war der einzige
+  Ausreißer. 67 Vorkommen umbenannt, `target_node()` → `scope_node()`. `target=` wirkt eine
+  Version lang weiter, siehe D6.
+- **`ItemSpec("U", 1)` funktioniert**, ebenso `ItemSpec("U", 1, 5)` für die 5. Ordnung.
+
+**Zurückgestellt, mit Messung statt Bauchgefühl:** interne Variablennamen und die Umlautfrage —
+Begründung und Zahlen in D10.
+
+**Abgesichert:** `tests/test_benennung.py` (50 Prüfsätze) hält die 18 öffentlichen Stellen
+namentlich fest — Parametername *und* Typ —, prüft die Übergangsfrist in beide Richtungen
+(alter Name wirkt und meldet sich, neuer Name schweigt, beide zugleich sind ein Fehler), belegt
+dass `functools.wraps` die Editor-Hilfe intakt lässt, und stellt sicher, dass die Quelldateien
+bei **einer** Schreibweise bleiben.
 
 ### E9 🟡 Die Fallen aus D9 sichtbar machen — ✅ **umgesetzt**
 
@@ -873,7 +929,7 @@ Verbessert die Anzeige in der Editor-Hilfe erheblich, ohne Verhaltensänderung.
 | 5 | E5 Kurzweg zu Messwerten | nein (additiv) | ✅ **erledigt** |
 | 5b | E11 Typaliasse | nein (additiv) | offen |
 | 6 | E7 Messparameter-Objekt | nein (additiv) | offen |
-| 7 | E8 Benennung vereinheitlichen | **teilweise** — eigener Schritt, mit Übergangsnamen | offen |
+| 7 | E8 Benennung vereinheitlichen | nein — Übergangsfrist für `target=` | ✅ **erledigt** |
 
 Die Schritte 1–6 sind rein additiv: bestehende Skripte laufen unverändert weiter. Erst Schritt 7
 berührt Signaturen und gehört deshalb ans Ende, mit einer Version Übergangsfrist.
@@ -938,6 +994,24 @@ Rückgabewert, kein Kommando an das Gerät hat sich geändert. **919 Tests grün
 
 Additiv: die alte Aufrufform bleibt gültig, `table` steht unverändert an zweiter Stelle (ein
 Prüfsatz hält die Parameterposition fest). **943 Tests grün**, `ruff` sauber.
+
+### Was Schritt 7 konkret geändert hat
+
+| Datei | Änderung |
+|---|---|
+| `wt3000_common.py` | neuer Alias `Scope = int \| str`, vier Signaturen darauf umgestellt |
+| `wt3000_input.py` | 67× `target` → `scope`, `target_node()` → `scope_node()`, neuer Übergangs-Dekorator `_accept_target_alias` auf 15 Settern |
+| `wt3000_rangeio.py`, `wt3000_ranging.py` | 6 Typangaben auf `Scope` vereinheitlicht |
+| `wt3000_itemspec.py` | `ItemSpec` nimmt Zahlen für `element`/`order`, weist `bool` ab |
+| `__init__.py` | `Scope` exportiert |
+| 3 Paketdateien | die 5 versehentlichen echten Umlaute auf die ASCII-Hauskonvention gezogen |
+| `tests/test_scope_and_items.py` | folgt der Umbenennung von `scope_node` |
+| `tests/test_benennung.py` | neu — 50 Prüfsätze |
+
+Der einzige Schritt bisher, der Signaturen berührt — aber **nicht brechend**: `target=` wirkt
+weiter. Die zwei bestehenden Aufrufer in `tests/test_geraetebezug.py` sind bewusst **nicht**
+umgestellt worden; sie sind der laufende Beleg dafür, dass die Übergangsfrist trägt (sichtbar als
+zwei `DeprecationWarning` im Testlauf). **993 Tests grün**, `ruff` sauber.
 
 Kein Verhalten geändert, keine Signatur geändert, nichts entfernt. **861 Tests grün**,
 `ruff check` sauber.

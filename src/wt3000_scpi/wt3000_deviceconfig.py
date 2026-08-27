@@ -800,7 +800,7 @@ class IntegrationConfig:
 #
 # Averaging beeinflusst jede Messreihe und muss daher zusammen mit
 # Wirkungsgradformeln, Frequenzquellen, SQFormula und Synchronrolle erfassbar
-# sein. Benutzerdefinierte Rechenkanäle und weitere MEASure-Untergruppen sind
+# sein. Benutzerdefinierte Rechenkanaele und weitere MEASure-Untergruppen sind
 # nicht Teil dieser API.
 
 

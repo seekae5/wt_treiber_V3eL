@@ -55,7 +55,7 @@ DEFAULT_TAIL_LIMIT: int = 64
 
 @dataclass
 class SessionBackup:
-    """Gerätesteckbrief, Konfiguration und Item-Tabelle in einem Datensatz.
+    """Geraetesteckbrief, Konfiguration und Item-Tabelle in einem Datensatz.
 
     Jedes Feld darf None sein: was nicht erfasst wurde, wird auch nicht
     wiederhergestellt. Das ist kein Schoenheitsfehler, sondern der Normalfall -

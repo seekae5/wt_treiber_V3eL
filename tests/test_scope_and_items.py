@@ -24,7 +24,7 @@ from wt3000_scpi.wt3000_common import (
     scope_suffix,
 )
 from wt3000_scpi.wt3000_core import WTError
-from wt3000_scpi.wt3000_input import target_node
+from wt3000_scpi.wt3000_input import scope_node
 from wt3000_scpi.wt3000_itemspec import _canonical_element, items_match
 from wt3000_scpi.wt3000_numeric import NumericItem
 
@@ -92,12 +92,12 @@ def test_beide_kopien_der_regel_sind_deckungsgleich(eingabe):
 
 def test_target_node_lehnt_mehrdeutiges_sigm_ab():
     """INPUT-2: die dritte Kopie der Regel - hier ohne Kurzform-Toleranz."""
-    assert target_node(3) == ":ELEMent3"
-    assert target_node("SIGMB") == ":SIGMB"
+    assert scope_node(3) == ":ELEMent3"
+    assert scope_node("SIGMB") == ":SIGMB"
     with pytest.raises(WTError):
-        target_node("SIGM")
+        scope_node("SIGM")
     with pytest.raises(WTError):
-        target_node(5)
+        scope_node(5)
 
 
 # ---------------------------------------------------------------------------

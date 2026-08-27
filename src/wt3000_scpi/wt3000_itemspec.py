@@ -31,13 +31,38 @@ class ItemSpec:
 
     <Element> weggelassen -> Geraet setzt Element 1.
     <Order> weggelassen   -> Geraet setzt TOTal.
+
+    ELEMENT UND ORDNUNG DUERFEN ZAHLEN SEIN. Beide sind SCPI-Parameter und
+    damit letztlich Text, aber Element 1 und die 5. Oberschwingung sind der
+    Sache nach Zahlen - und 'ItemSpec("U", 1)' ist die Schreibweise, die
+    jeder zuerst versucht. Bis Schritt E8 fuehrte sie stillschweigend zu
+    einer Spec, die keiner gelesenen Tabelle glich; jetzt sind
+
+        ItemSpec("U", 1)        und  ItemSpec("U", "1")
+        ItemSpec("U", 1, 5)     und  ItemSpec("U", "1", "5")
+
+    dasselbe - einschliesslich Gleichheit und Hashwert. Umgewandelt wird beim
+    Erzeugen, gespeichert wird immer Text.
     """
 
     function: str
-    element: str | None = None
-    order: str | None = None
+    element: str | int | None = None
+    order: str | int | None = None
     # True, wenn die Funktion auf dem Original-WT3000 nicht gesichert ist.
     verify: bool = False
+
+    def __post_init__(self) -> None:
+        # 'bool' ist ein Subtyp von 'int' - 'ItemSpec("U", True)' waere ein
+        # Vertipper und soll nicht als Element '1' durchgehen.
+        for feld in ("element", "order"):
+            wert = getattr(self, feld)
+            if isinstance(wert, bool):
+                raise WTError(
+                    f"ItemSpec: {feld}={wert!r} ist ein Wahrheitswert - "
+                    "erwartet wird eine Elementnummer, ein Name oder None."
+                )
+            if isinstance(wert, int):
+                object.__setattr__(self, feld, str(wert))
 
     @property
     def argument(self) -> str:

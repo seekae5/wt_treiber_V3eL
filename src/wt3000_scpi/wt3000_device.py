@@ -1560,7 +1560,7 @@ class WT3000:
 
         Erfasst wird alles, was diese Fassade erreichen kann: Steckbrief,
         Eingangskonfiguration, Messbereiche, Item-Tabelle samt Tail und die
-        drei schreibbaren Gerätegruppen. Reine Queries - der Aufruf veraendert
+        drei schreibbaren Geraetegruppen. Reine Queries - der Aufruf veraendert
         nichts und funktioniert auch in einer Nur-Lesen-Sitzung.
 
         ':HARMonics' wird nur mitgesichert, wenn die Option verbaut ist; ohne
@@ -1650,7 +1650,7 @@ class WT3000:
             harmonics=harmonics,
         )
 
-    # -- Gerätesteckbrief auffrischen ---------------------------------------
+    # -- Geraetesteckbrief auffrischen ---------------------------------------
 
     def refresh_device(self) -> DeviceInfo:
         """Verdrahtung, Module und Elementliste neu lesen und weitergeben.
@@ -1715,7 +1715,7 @@ class WT3000:
         except WTError as error:
             raise WTError(
                 "Die Verdrahtung wurde am Geraet gesetzt und zurueckgelesen, der "
-                f"Gerätesteckbrief liess sich danach aber nicht neu lesen: {error}. "
+                f"Geraetesteckbrief liess sich danach aber nicht neu lesen: {error}. "
                 "'wt.device' und 'wt.ranges' tragen jetzt den alten Stand - "
                 "'wt.refresh_device()' wiederholen, bevor Bereiche ueber SIGMA/SIGMB "
                 "oder 'ALL' gesetzt werden."
