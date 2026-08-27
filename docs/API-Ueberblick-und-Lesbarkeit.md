@@ -3,10 +3,13 @@
 **Stand:** 2026-08-27 · **Paket:** `wt3000_scpi` 0.3.0 · **Basis:** Kopie von `wt_treiber_V3e`
 **Zweck dieser Datei:** Bestandsaufnahme und Umbauplan.
 
-> **Umsetzungsstand:** **E1** (Paket-Export vervollständigt) und **E2** (Namenskollision
-> `ConfigLocked` aufgelöst) sind **erledigt** — siehe Teil F. Testsuite danach: **861 Tests grün**,
-> `ruff` sauber. Die Befunde D2 und D5 sind entsprechend als erledigt gekennzeichnet und
-> beschreiben ab Teil D den Zustand *vor* dem Eingriff, damit die Begründung nachvollziehbar bleibt.
+> **Suchst du den Einstieg statt der Analyse? → [Schnellstart](Schnellstart.md)** — fünf
+> lauffähige Rezepte auf einer Seite.
+>
+> **Umsetzungsstand:** **E1** (Paket-Export), **E2** (Namenskollision `ConfigLocked`) und **E3**
+> (Schnellstart) sind **erledigt** — siehe Teil F. Testsuite danach: **874 Tests grün**,
+> `ruff` sauber. Die Befunde D1, D2 und D5 sind entsprechend gekennzeichnet und beschreiben
+> ab Teil D den Zustand *vor* dem Eingriff, damit die Begründung nachvollziehbar bleibt.
 
 Zielbild der Kopie `wt_treiber_V3eL`: Jemand mit wenig Programmiererfahrung soll schnell ein
 Messautomationsskript für das WT3000 schreiben können. Diese Datei hält fest, **was die Bibliothek
@@ -396,12 +399,18 @@ Die Bibliothek ist inhaltlich stark: Sperren, Rückwege im `finally`, Verifikati
 Schreiben, sehr gute Fehlermeldungen, ausführliche Docstrings mit Begründungen. **Die Schwäche
 liegt nicht in der Funktion, sondern im Zugang.** Die Befunde sind nach Wirkung sortiert.
 
-### D1 — Es gibt keine Dokumentation außerhalb des Quelltextes 🔴
+### D1 — Es gibt keine Dokumentation außerhalb des Quelltextes 🔴 ✅ **erledigt (E3)**
 
-Kein `README`, kein `docs/`, kein Schnellstart. Das gesamte Wissen steckt in Docstrings — für
+Kein `README`, kein `docs/`, kein Schnellstart. Das gesamte Wissen steckte in Docstrings — für
 jemanden mit wenig Programmiererfahrung praktisch unsichtbar, solange er nicht weiß, in welcher
-Datei er nachschlagen muss. Das ist die **größte Einzelhürde**, und sie liegt vollständig außerhalb
+Datei er nachschlagen muss. Das war die **größte Einzelhürde**, und sie lag vollständig außerhalb
 des Codes.
+
+**Jetzt:** [`docs/Schnellstart.md`](Schnellstart.md) — fünf vollständige Rezepte, dazu IP-Auflösung,
+die zwei Schlösser, Fehlerbehandlung, eine Stolpersteintabelle und ein Wegweiser hierher.
+Jeder Python-Block wird von `tests/test_schnellstart_doku.py` gegen ein simuliertes Gerät
+**ausgeführt** — die Seite kann also nicht unbemerkt veralten. Ein `README.md` in der Wurzel,
+das auf beide Dokumente zeigt, fehlt noch.
 
 ### D2 — Zentrale Bausteine sind nicht aus dem Paket importierbar 🔴 ✅ **erledigt (E1)**
 
@@ -599,19 +608,31 @@ ist. `ALL_GROUPS` / `DEFAULT_PROTECTED` bleiben unexportiert. Details und Vererb
 > **`DeviceConfigLocked`**: `wt3000_deviceconfig` beherbergt drei Fachobjekte — Integration,
 > Rechenfunktionen und Oberschwingungen — und `IntegrationLocked` hätte für zwei davon gelogen.
 
-### E3 🔴 Ein Schnellstart, der auf eine Seite passt — *klein*
+### E3 🔴 Ein Schnellstart, der auf eine Seite passt — ✅ **umgesetzt**
 
-`docs/Schnellstart.md` (oder `README.md`) mit genau fünf lauffähigen Rezepten, in dieser
-Reihenfolge:
+[`docs/Schnellstart.md`](Schnellstart.md) mit genau den fünf vorgesehenen Rezepten:
 
 1. Verbinden und Gerät ansehen (nur lesend)
 2. Messen, was am Gerät eingestellt ist → CSV *(der Einstieg — `wt.items.read()`)*
-3. Eigene Größen messen *(Profil oder `ItemSpec`-Liste)*
+3. Eigene Größen messen *(`ItemSpec`-Liste oder fertiges Profil)*
 4. Bereiche für die Messung setzen und danach zurückstellen *(`applied_ranges`)*
 5. Messung im Hintergrund starten, Prüfstand fahren, beenden *(`start()`/`stop()`)*
 
-Jedes Rezept vollständig, kopierfähig, mit einem Satz „wann nimmt man das“. Kein Fließtext über
-Architektur — die Schichten interessieren den Anwender nicht.
+Jedes Rezept vollständig und kopierfähig, mit einem Satz „wann nimmt man das“. Kein Fließtext über
+Architektur — die Schichten interessieren den Anwender nicht; die Schichtung steht hier in Teil A
+für den, der sie sucht.
+
+**Über den Plan hinaus:** die Rezepte werden ausgeführt statt nur geschrieben.
+`tests/test_schnellstart_doku.py` (13 Prüfsätze, ~2 s) extrahiert jeden Python-Block aus der
+Markdown-Datei und führt ihn gegen ein simuliertes Gerät aus. Geändert wird dabei nur der Takt
+(`interval_s`, `max_samples`), damit die Suite nicht zwei Minuten misst — alles Übrige läuft
+wortwörtlich. Zwei Prüfsätze gehen weiter und weisen die Zusagen der Seite nach: dass Rezept 2
+CSV **und** Sidecar mit dem versprochenen Spaltenkopf ablegt, und dass Rezept 4 die Bereiche
+hinterher tatsächlich zurückstellt.
+
+Gegenprobe gemacht: `wt.items.read()` im Rezept versuchsweise in `wt.items.lies_tabelle()`
+geändert → zwei Prüfsätze rot, mit Zeilennummer im Block. Der Beispielcode kann also nicht
+stillschweigend veralten.
 
 ### E4 🔴 Die Stufenskripte umbauen oder verschieben — *mittel*
 
@@ -711,7 +732,8 @@ Verbessert die Anzeige in der Editor-Hilfe erheblich, ohne Verhaltensänderung.
 | Schritt | Inhalt | Bricht bestehenden Code? | Stand |
 |---|---|---|---|
 | 1 | E1 Paket-Export, E2 Namenskollision | nein | ✅ **erledigt** |
-| 2 | E3 Schnellstart, E10 Meldungsregel | nein (nur Doku) | offen |
+| 2 | E3 Schnellstart | nein (nur Doku) | ✅ **erledigt** |
+| 2b | E10 Meldungsregel | nein (nur Doku) | offen |
 | 3 | E4 Beispiele mit der Fassade | nein (neue Dateien) | offen |
 | 4 | E6 empfohlener Weg je Aufgabe, E9 Fallen | nein | offen |
 | 5 | E5 Kurzweg zu Messwerten, E11 Typaliasse | nein (additiv) | offen |
@@ -731,6 +753,15 @@ berührt Signaturen und gehört deshalb ans Ende, mit einer Version Übergangsfr
 | `src/wt3000_scpi/wt3000_rangeio.py` | `ChangesNotAllowed` erbt jetzt aus `ConfigLocked` statt `WTError` |
 | `src/wt3000_scpi/__init__.py` | Export von 60 auf 114 Namen, nach Aufgabe gegliedert, Regel im Kopf |
 | `tests/test_package_layout.py` | 15 neue Prüfsätze für beide Regeln |
+
+### Was Schritt 2 konkret geändert hat
+
+| Datei | Änderung |
+|---|---|
+| `docs/Schnellstart.md` | neu — fünf lauffähige Rezepte, IP, Schlösser, Fehler, Stolpersteine |
+| `tests/test_schnellstart_doku.py` | neu — führt jeden Codeblock der Seite gegen ein simuliertes Gerät aus |
+
+Kein Produktivcode berührt. **874 Tests grün**, `ruff check` sauber.
 
 Kein Verhalten geändert, keine Signatur geändert, nichts entfernt. **861 Tests grün**,
 `ruff check` sauber.
