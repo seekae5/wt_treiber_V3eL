@@ -64,9 +64,9 @@ def main() -> int:
             ) as bericht:
                 print(f"{bericht.commands_written} Kommandos geschrieben")
 
-                tabelle = wt.items.read()
+                # Ohne 'table' wird die Item-Tabelle des Geraets uebernommen.
                 stats = wt.measure.record_csv(
-                    csv_datei, tabelle, max_samples=ANZAHL, sidecar=True
+                    csv_datei, max_samples=ANZAHL, sidecar=True
                 )
             # hier stehen die Bereiche wieder wie vorgefunden
 

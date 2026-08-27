@@ -44,6 +44,10 @@ def main() -> int:
         with WT3000.connect(ip=IP) as wt:
             # Die Tabelle des Geraets uebernehmen. Das ist der Unterschied zu
             # Beispiel 03: hier bestimmt das Bedienfeld die Spalten.
+            #
+            # 'record_csv()' holt sie sich auch von selbst, wenn man 'table'
+            # weglaesst - hier steht sie ausdruecklich da, damit vor dem Start
+            # sichtbar ist, WAS gemessen wird.
             tabelle = wt.items.read()
             print(f"{len(tabelle.items)} Items: "
                   f"{', '.join(item.key for item in tabelle.items)}")

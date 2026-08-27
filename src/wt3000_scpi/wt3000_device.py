@@ -40,6 +40,7 @@ from .wt3000_input import InputConfig, WiringUnit
 from .wt3000_itemspec import (
     ItemSpec,
     apply_item_table,
+    specs_from_keys,
     build_item_table,
     probe_extra_items,
     probe_item_write_capability,
@@ -549,6 +550,27 @@ class ItemAccess:
         """Aus einer Spec-Liste die Zieltabelle erzeugen."""
         return build_item_table(list(specs))
 
+    @staticmethod
+    def from_keys(keys: Sequence[str]) -> ItemTable:
+        """Zieltabelle aus SPALTENNAMEN bauen - ohne ItemSpec-Vokabular.
+
+            tabelle = wt.items.from_keys(["U1", "I1", "P1", "PSIGMA"])
+
+        Dieselben Namen, die in der Kopfzeile jeder CSV dieses Pakets stehen
+        und die 'read_mapped()' als Schluessel liefert. Damit schliesst sich
+        der Kreis zwischen Ausgabe und Konfiguration: was in einer alten
+        Messdatei steht, laesst sich ohne Uebersetzung wieder anfordern.
+
+        Gleichwertig zu 'build([ItemSpec("U", "1"), ...])' und fuer den
+        Einstieg der kuerzere Weg; wer Ordnungen oder Sonderfaelle braucht,
+        nimmt weiterhin 'ItemSpec' unmittelbar.
+
+        ZUR SCHREIBWEISE: der Summenwert heisst 'PSIGMA', nicht 'P_SIGMA' -
+        der Unterstrich trennt ausschliesslich die Ordnung ab ('PHI1_1').
+        Die genaue Regel steht bei 'spec_from_key()'.
+        """
+        return build_item_table(list(specs_from_keys(keys)))
+
     def verify(self, target: ItemTable) -> list[str]:
         """Ist-Tabelle mit der Anforderung vergleichen. Leer = in Ordnung."""
         return verify_item_table(self._session, target)
@@ -776,7 +798,7 @@ class MeasureControl:
     def record(
         self,
         sink: SampleSink,
-        table: ItemTable,
+        table: ItemTable | None = None,
         interval_s: float = 1.0,
         max_samples: int | None = None,
         max_duration_s: float | None = None,
@@ -805,6 +827,9 @@ class MeasureControl:
         Fuer den haeufigsten Fall gibt es 'record_csv()' - ein Aufruf, der die
         Senke selbst baut.
 
+        OHNE 'table' wird die Item-Tabelle des Geraets uebernommen; gemessen
+        wird dann, was am Bedienfeld eingestellt ist.
+
         Die Senke wird von der Messschleife geoeffnet und geschlossen; hier
         wird sie nur weitergereicht. Blockiert bis zum Erreichen eines Limits
         oder bis Strg+C. Ohne Limit laeuft sie unbegrenzt weiter - das ist
@@ -824,6 +849,7 @@ class MeasureControl:
             use_hold = False
 
         self._warn_ohne_limit(max_samples, max_duration_s, "record()", "durch Strg+C")
+        table = self._tabelle(table)
 
         lauf_parameter = self._run_parameters(
             interval_s, max_samples, max_duration_s, use_hold, record_condition, parameters
@@ -864,6 +890,26 @@ class MeasureControl:
         # vorher geschrieben wurde und den Ausgang nicht kennen konnte.
         self._write_sidecar(run, sink, stats, metadata_path, sidecar)
         return stats
+
+    def _tabelle(self, table: ItemTable | None) -> ItemTable:
+        """Die Item-Tabelle aufloesen: uebergebene oder die des Geraets.
+
+        'None' heisst "miss, was am Bedienfeld eingestellt ist" - der
+        Normalfall und der Einstieg fuer jeden, der noch keine eigene Tabelle
+        schreiben will. Die Abfrage kostet einen Query und findet EINMAL je
+        Lauf statt, nicht je Datensatz; das ist der Unterschied zu
+        'read_mapped()' ohne Tabelle, das deshalb dort gewarnt wird.
+        """
+        if table is not None:
+            return table
+        gelesen = self._items.read()
+        _log.info(
+            "Keine Item-Tabelle angegeben - die des Geraets wird uebernommen "
+            "(%d Items: %s)",
+            len(gelesen.items),
+            ", ".join(item.key for item in gelesen.items),
+        )
+        return gelesen
 
     @staticmethod
     def _warn_ohne_limit(
@@ -948,7 +994,7 @@ class MeasureControl:
     def start(
         self,
         sink: SampleSink,
-        table: ItemTable,
+        table: ItemTable | None = None,
         interval_s: float = 1.0,
         max_samples: int | None = None,
         max_duration_s: float | None = None,
@@ -971,9 +1017,13 @@ class MeasureControl:
         Das Gegenstueck zu 'record()': dieselben Angaben, aber der Aufrufer
         behaelt die Kontrolle.
 
-            messung = wt.measure.start(CsvSink(pfad), tabelle, interval_s=1.0)
+            messung = wt.measure.start(CsvSink(pfad), interval_s=1.0)
             pruefstand_fahren()
             stats = messung.stop()
+
+        OHNE 'table' wird die Item-Tabelle des Geraets uebernommen. Die
+        Abfrage dafuer laeuft VOR dem Start und damit noch im Haupt-Thread -
+        danach waere sie eine ConcurrentAccessError.
 
         WAEHREND DES LAUFS gehoert die Sitzung dem Mess-Thread: 'wt.input',
         'wt.ranges' und jeder andere Geraetezugriff aus dem Haupt-Thread endet
@@ -995,6 +1045,10 @@ class MeasureControl:
             use_hold = False
 
         self._warn_ohne_limit(max_samples, max_duration_s, "start()", "durch stop()")
+        # VOR dem Start und damit im Haupt-Thread - danach gehoerte die
+        # Sitzung dem Mess-Thread und die Abfrage liefe in eine
+        # ConcurrentAccessError.
+        table = self._tabelle(table)
 
         lauf_parameter = self._run_parameters(
             interval_s, max_samples, max_duration_s, use_hold, record_condition, parameters
@@ -1040,7 +1094,7 @@ class MeasureControl:
 
     def stream(
         self,
-        table: ItemTable,
+        table: ItemTable | None = None,
         interval_s: float = 1.0,
         max_samples: int | None = None,
         max_duration_s: float | None = None,
@@ -1057,10 +1111,12 @@ class MeasureControl:
     ) -> Generator[Sample, None, None]:
         """Messwerte als Generator - der einfache Weg ohne Hintergrundthread.
 
-            for sample in wt.measure.stream(tabelle, max_samples=10):
+            for sample in wt.measure.stream(max_samples=10):
                 print(sample.values[0])
                 if abbruchbedingung():
                     break
+
+        OHNE 'table' wird die Item-Tabelle des Geraets uebernommen.
 
         Der Unterschied zu 'start()' ist nicht der Komfort, sondern der
         Thread: hier laeuft der Takt im Thread des AUFRUFERS. Daraus folgt
@@ -1087,6 +1143,7 @@ class MeasureControl:
         self._warn_ohne_limit(
             max_samples, max_duration_s, "stream()", "durch 'break' oder Strg+C"
         )
+        table = self._tabelle(table)
 
         gefuehrte_stats = stats if stats is not None else LoopStatistics()
         prepare_update_rate(self._session, interval_s, gefuehrte_stats, check_update_rate)
@@ -1108,7 +1165,7 @@ class MeasureControl:
     def record_csv(
         self,
         csv_path: Path,
-        table: ItemTable,
+        table: ItemTable | None = None,
         interval_s: float = 1.0,
         max_samples: int | None = None,
         max_duration_s: float | None = None,
@@ -1135,12 +1192,17 @@ class MeasureControl:
     ) -> LoopStatistics:
         """Messschleife in eine CSV schreiben - der haeufigste Fall.
 
-        EMPFOHLENER WEG, um eine Messreihe aufzuzeichnen. Die drei Angaben,
-        auf die es ankommt, sind 'table', 'interval_s' und ein Limit; alles
-        Weitere hat brauchbare Voreinstellungen. Zusammen mit
-        'wt.items.read()' ist das die kuerzeste vollstaendige Messung:
+        EMPFOHLENER WEG, um eine Messreihe aufzuzeichnen. Die Angaben, auf die
+        es ankommt, sind der Pfad und ein Limit; alles Weitere hat brauchbare
+        Voreinstellungen. Die kuerzeste vollstaendige Messung ist deshalb:
 
-            wt.measure.record_csv(pfad, wt.items.read(), max_samples=60)
+            wt.measure.record_csv(pfad, max_samples=60)
+
+        OHNE 'table' wird die Item-Tabelle des Geraets uebernommen - gemessen
+        wird dann, was am Bedienfeld eingestellt ist, und das Skript schreibt
+        nichts. Wer eigene Spalten will, baut sie vorher:
+
+            tabelle = wt.items.from_keys(["U1", "I1", "P1", "PSIGMA"])
 
         Die Geschwister: 'record()' nimmt eine beliebige Senke statt einer
         CSV, 'start()' misst im Hintergrund, 'stream()' gibt die Datensaetze

@@ -6,12 +6,11 @@
 > **Suchst du den Einstieg statt der Analyse? → [Schnellstart](Schnellstart.md)** — fünf
 > lauffähige Rezepte auf einer Seite.
 >
-> **Umsetzungsstand:** **E1** (Paket-Export), **E2** (Namenskollision `ConfigLocked`), **E3**
-> (Schnellstart), **E4** (Beispiele mit der Fassade), **E6** (empfohlener Weg je Aufgabe) und
-> **E9** (Fallen sichtbar machen) sind **erledigt** — siehe Teil F. Testsuite danach:
-> **919 Tests grün**, `ruff` sauber. Die Befunde D1–D5 und D9 sind entsprechend gekennzeichnet
-> und beschreiben ab Teil D den Zustand *vor* dem Eingriff, damit die Begründung
-> nachvollziehbar bleibt.
+> **Umsetzungsstand:** **E1**–**E6** und **E9** sind **erledigt** — offen bleiben nur noch
+> **E7** (Messparameter-Objekt), **E8** (Benennung vereinheitlichen), das Sidecar-Feld aus E9
+> und das README. Siehe Teil F. Testsuite danach: **943 Tests grün**, `ruff` sauber.
+> Die Befunde D1–D5, D8 und D9 sind entsprechend gekennzeichnet und beschreiben ab Teil D den
+> Zustand *vor* dem Eingriff, damit die Begründung nachvollziehbar bleibt.
 
 Zielbild der Kopie `wt_treiber_V3eL`: Jemand mit wenig Programmiererfahrung soll schnell ein
 Messautomationsskript für das WT3000 schreiben können. Diese Datei hält fest, **was die Bibliothek
@@ -573,15 +572,29 @@ füllen im Editor mehr als einen Bildschirm; der Einsteiger sieht keine kurze Fo
 welche drei Parameter er tatsächlich braucht (`tabelle`, `interval_s`, ein Limit). Wirkungsvolle
 Vorgaben wie `use_hold=True` oder `check_update_rate=True` verschwinden im Rauschen.
 
-### D8 — Der Weg von „ich will U, I, P“ zu Messwerten ist lang 🟠
+### D8 — Der Weg von „ich will U, I, P“ zu Messwerten ist lang 🟠 ✅ **erledigt (E5)**
 
 Die Item-Tabelle ist der schwerste Begriff der Bibliothek und steht dem Anfänger als erstes im Weg.
 Um eigene Größen zu messen, muss er `ItemSpec` → `build()` → `apply()` → `verify()` → `restore()`
 verstehen (oder `wt.items.applied()` finden). Es gibt keinen Aufruf der Art
 `wt.measure.messen(["U1", "I1", "P1"])`.
 
-Der einfache Ausweg **existiert** — `wt.items.read()`, „miss, was am Gerät eingestellt ist“ — steht
-aber nur in einem Kommentar in `live_messwerte.py` und in keinem Docstring als *der* Einstieg.
+Der einfache Ausweg **existierte** — `wt.items.read()`, „miss, was am Gerät eingestellt ist“ —
+stand aber nur in einem Kommentar in `live_messwerte.py` und in keinem Docstring als *der* Einstieg.
+
+**Jetzt** sind es zwei Zeilen bis zur ersten Messreihe, und die Item-Tabelle steht keinem mehr im
+Weg, der sie noch nicht braucht:
+
+```python
+wt.measure.record_csv(pfad, max_samples=60)                    # was eingestellt ist
+tabelle = wt.items.from_keys(["U1", "I1", "P1", "PSIGMA"])     # eigene Spalten
+```
+
+`table` ist an `record()`, `record_csv()`, `start()` und `stream()` optional geworden; ohne Angabe
+wird die Tabelle des Geräts übernommen und **einmal je Lauf** gelesen (nicht je Datensatz — ein
+eigener Prüfsatz hält das fest). `from_keys()` nimmt genau die Namen, die in der CSV-Kopfzeile
+stehen. Beides ist additiv: die alte Aufrufform bleibt gültig, `table` steht unverändert an
+zweiter Stelle.
 
 ### D9 — Nicht offensichtliche Fallen 🟡 ✅ **erledigt (E9)**
 
@@ -727,22 +740,45 @@ einen Import an der Fassade vorbei enthält — sonst wäre es wieder ein Stufen
 Gegenprobe gemacht: `wt.applied_ranges(` in Beispiel 04 versuchsweise umbenannt → zwei Prüfsätze
 rot.
 
-### E5 🟠 Einen kurzen Weg zu Messwerten anbieten — *mittel*
-
-Der Einstiegssatz sollte ein Einzeiler sein. Zwei Ergänzungen, additiv, ohne Bruch:
+### E5 🟠 Einen kurzen Weg zu Messwerten anbieten — ✅ **umgesetzt**
 
 ```python
 # a) messen, was eingestellt ist - ohne Item-Tabelle im Skript
-stats = wt.measure.record_csv(Path("m.csv"), max_samples=60)      # table optional
-                                                                   # → wt.items.read()
+stats = wt.measure.record_csv(pfad, max_samples=60)
 
-# b) eigene Größen ohne ItemSpec-Vokabular
-tabelle = wt.items.von_namen(["U1", "I1", "P1", "P_SIGMA"])
+# b) eigene Groessen ohne ItemSpec-Vokabular
+tabelle = wt.items.from_keys(["U1", "I1", "P1", "PSIGMA"])
 ```
 
-`von_namen()` (bzw. `from_keys()`) ist reine Übersetzung: Spaltenname → `ItemSpec`. Die
-`key`-Schreibweise kennt der Anwender bereits aus jeder CSV-Kopfzeile, die die Bibliothek erzeugt —
-damit schließt sich der Kreis zwischen Ausgabe und Konfiguration.
+**(a)** `table` ist an `record()`, `record_csv()`, `start()` und `stream()` optional. Ohne Angabe
+wird die Tabelle des Geräts übernommen, **einmal je Lauf** und mit einer Protokollzeile, die die
+Spalten nennt — sonst wüsste hinterher niemand, was gemessen wurde. Bei `start()` läuft die
+Abfrage ausdrücklich **vor** dem Thread-Start, sonst wäre sie eine `ConcurrentAccessError`.
+
+**(b)** `from_keys()` heißt so und nicht `von_namen()` — englische Bezeichner, wie am 2026-08-27
+entschieden. Der Begriff `key` ist bereits der der Bibliothek (`NumericItem.key`, die Schlüssel von
+`read_mapped()`, die CSV-Kopfzeile).
+
+**Zwei Dinge, die beim Bauen herauskamen:**
+
+1. **Der Planentwurf schrieb `"P_SIGMA"` — das ist falsch.** Der echte Schlüssel lautet `PSIGMA`;
+   der Unterstrich trennt ausschließlich die Ordnung ab (`PHI1_1`). Wäre das ungeprüft in die Doku
+   gewandert, hätte der erste Anwender eine Spalte `P` mit der *Ordnung* `SIGMA` angefordert. Die
+   Schreibweise steht jetzt als Warnung in `spec_from_key()`, in `from_keys()`, im Schnellstart und
+   in Beispiel 03; ein Prüfsatz hält fest, dass die beiden Formen wirklich Verschiedenes bedeuten.
+
+2. **Die Umkehrung rät nicht.** Der naheliegende Weg wäre, den Namen gegen eine Tabelle bekannter
+   Funktionen zu zerlegen — die wäre unvollständig, denn das Gerät kennt weit mehr Funktionen als
+   dieses Paket aufführt. Zerlegt wird stattdessen **von rechts** und nur an den beiden Stellen,
+   die das Format vorsieht: alles nach dem ersten `_` ist die Ordnung, davor endet der Name auf
+   einem Elementbezeichner aus einer **geschlossenen** Liste (`SIGMA`, `SIGMB`, `1`–`4`) oder auf
+   keinem. Der Rest ist die Funktion und wird weder geprüft noch übersetzt — welche Funktionen das
+   Gerät kennt, weiß das Gerät, und eine falsche fällt beim Verifizieren nach dem Schreiben auf.
+
+**Abgesichert:** `tests/test_kurzweg.py` (24 Prüfsätze). Der Kern ist die **Rundreise**: für alle
+**186 Items** der drei mitgelieferten Profile — Standard, Integration, Oberschwingungen mit
+Ordnungen — führt der Spaltenname exakt auf die Spec zurück, aus der er entstanden ist. Eine
+Abkürzung, die stillschweigend etwas anderes misst, wäre schlimmer als gar keine.
 
 ### E6 🟠 Einen empfohlenen Weg je Aufgabe benennen — ✅ **umgesetzt**
 
@@ -834,7 +870,8 @@ Verbessert die Anzeige in der Editor-Hilfe erheblich, ohne Verhaltensänderung.
 | 2b | E10 Meldungsregel | nein (nur Doku) | offen |
 | 3 | E4 Beispiele mit der Fassade | nein (neue Dateien) | ✅ **erledigt** |
 | 4 | E6 empfohlener Weg je Aufgabe, E9 Fallen | nein | ✅ **erledigt** |
-| 5 | E5 Kurzweg zu Messwerten, E11 Typaliasse | nein (additiv) | offen |
+| 5 | E5 Kurzweg zu Messwerten | nein (additiv) | ✅ **erledigt** |
+| 5b | E11 Typaliasse | nein (additiv) | offen |
 | 6 | E7 Messparameter-Objekt | nein (additiv) | offen |
 | 7 | E8 Benennung vereinheitlichen | **teilweise** — eigener Schritt, mit Übergangsnamen | offen |
 
@@ -888,6 +925,19 @@ An den `stage*`-Skripten wurde **nur der Kommentarkopf** angefasst, keine Zeile 
 
 Verhaltensänderung: **ausschließlich zusätzliche Protokollzeilen.** Keine Signatur, kein
 Rückgabewert, kein Kommando an das Gerät hat sich geändert. **919 Tests grün**, `ruff` sauber.
+
+### Was Schritt 5 konkret geändert hat
+
+| Datei | Änderung |
+|---|---|
+| `wt3000_itemspec.py` | neu: `spec_from_key()`, `specs_from_keys()` — die Umkehrung von `NumericItem.key` |
+| `wt3000_device.py` | `ItemAccess.from_keys()`; `table` optional in `record`/`record_csv`/`start`/`stream` über den neuen Helfer `_tabelle()` |
+| `__init__.py` | `spec_from_key`, `specs_from_keys` exportiert |
+| `docs/Schnellstart.md`, `examples/02…04` | auf den kurzen Weg umgestellt |
+| `tests/test_kurzweg.py` | neu — 24 Prüfsätze, darunter die Rundreise über 186 Items |
+
+Additiv: die alte Aufrufform bleibt gültig, `table` steht unverändert an zweiter Stelle (ein
+Prüfsatz hält die Parameterposition fest). **943 Tests grün**, `ruff` sauber.
 
 Kein Verhalten geändert, keine Signatur geändert, nichts entfernt. **861 Tests grün**,
 `ruff check` sauber.

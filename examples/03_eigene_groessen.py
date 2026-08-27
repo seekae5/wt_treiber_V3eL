@@ -16,7 +16,7 @@ from __future__ import annotations
 
 import _pfad  # noqa: F401  - macht wt3000_scpi ohne Installation importierbar
 
-from wt3000_scpi import WT3000, ItemSpec, WTError, output_dir
+from wt3000_scpi import WT3000, WTError, output_dir
 
 # --- hier anpassen -----------------------------------------------------------
 
@@ -25,18 +25,21 @@ INTERVALL_S: float = 1.0
 ANZAHL: int | None = 30
 AUSGABE = output_dir("messungen")
 
-#: Die gewuenschten Spalten. ItemSpec(Funktion, Element) - das Element ist
-#: eine ZEICHENKETTE, auch bei einer Zahl.
+#: Die gewuenschten Spalten, als NAMEN - dieselben, die spaeter in der
+#: CSV-Kopfzeile stehen und die 'read_mapped()' als Schluessel liefert.
+#: 'wt.items.from_keys(...)' baut daraus die Zieltabelle.
 #:
-#: Statt einer eigenen Liste tun es oft die fertigen Profile:
+#: ACHTUNG bei der Schreibweise: der Summenwert heisst 'PSIGMA' und nicht
+#: 'P_SIGMA' - der Unterstrich trennt ausschliesslich die Ordnung ab, wie in
+#: 'PHI1_1' (Phasenwinkel Element 1, 1. Ordnung).
+#:
+#: Wer Ordnungen oder Sonderfaelle braucht, nimmt statt der Namen weiterhin
+#: 'ItemSpec' unmittelbar - siehe 'wt.items.build([...])'. Und statt einer
+#: eigenen Liste tun es oft die fertigen Profile:
 #:     wt.items.standard_profile()      U, I, P, S, Q, LAMBDA, PHI + SIGMA
 #:     wt.items.integration_profile()   siehe Beispiel 06
 #:     wt.items.harmonics_profile()     Oberschwingungen
-PROFIL = [
-    ItemSpec("U", "1"), ItemSpec("I", "1"), ItemSpec("P", "1"),
-    ItemSpec("U", "2"), ItemSpec("I", "2"), ItemSpec("P", "2"),
-    ItemSpec("P", "SIGMA"), ItemSpec("LAMBDA", "SIGMA"),
-]
+SPALTEN = ["U1", "I1", "P1", "U2", "I2", "P2", "PSIGMA", "LAMBDASIGMA"]
 
 
 def main() -> int:
@@ -58,7 +61,8 @@ def main() -> int:
                 # ist die Rueckfallebene, falls die Verbindung mittendrin
                 # abreisst und der Rueckweg gar nicht mehr laeuft.
                 with wt.items.applied(
-                    PROFIL, backup_file=AUSGABE / "itemtabelle_backup.json"
+                    wt.items.from_keys(SPALTEN),
+                    backup_file=AUSGABE / "itemtabelle_backup.json",
                 ) as tabelle:
                     print(f"Spalten: {', '.join(i.key for i in tabelle.items)}")
 

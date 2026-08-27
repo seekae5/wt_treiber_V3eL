@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import json
 import logging
+from collections.abc import Sequence
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -52,6 +53,69 @@ class ItemSpec:
 # ---------------------------------------------------------------------------
 # Tabelle bauen
 # ---------------------------------------------------------------------------
+
+
+#: Elementbezeichner, die am ENDE eines Spaltennamens stehen koennen.
+#
+# Eine geschlossene Liste, und das ist der Kern von 'spec_from_key()': die
+# Zerlegung eines Namens laeuft NICHT ueber eine Tabelle bekannter Funktionen
+# (die waere unvollstaendig - das Geraet kennt weit mehr Funktionen, als
+# dieses Paket auffuehrt), sondern ueber die Elemente, und die sind
+# abschliessend bekannt. Damit ist die Zerlegung strukturell und nicht
+# geraten. Laengster Treffer zuerst: 'SIGMB' vor 'SIGMA' spielt keine Rolle,
+# aber die Reihenfolge haelt die Absicht fest.
+_ELEMENT_SUFFIXE: tuple[str, ...] = ("SIGMA", "SIGMB", "1", "2", "3", "4")
+
+
+def spec_from_key(key: str) -> ItemSpec:
+    """Einen Spaltennamen in die zugehoerige 'ItemSpec' zurueckwandeln.
+
+    Die Umkehrung von 'NumericItem.key' - also genau der Namen, die in der
+    Kopfzeile jeder CSV stehen, die dieses Paket schreibt. Damit schliesst
+    sich der Kreis zwischen Ausgabe und Konfiguration: was man in einer alten
+    Messdatei liest, kann man ohne Uebersetzung wieder anfordern.
+
+        spec_from_key("U1")      -> ItemSpec("U", "1")
+        spec_from_key("PSIGMA")  -> ItemSpec("P", "SIGMA")
+        spec_from_key("PHI1_1")  -> ItemSpec("PHI", "1", "1")
+        spec_from_key("U")       -> ItemSpec("U")        (Geraet nimmt Element 1)
+
+    ZUR SCHREIBWEISE: der Summenwert heisst 'PSIGMA' und NICHT 'P_SIGMA' -
+    der Unterstrich trennt ausschliesslich die Ordnung ab. Wer sich vertut,
+    bekommt hier eine Meldung und keine stillschweigend falsche Tabelle.
+
+    KEIN RATEN. Zerlegt wird von RECHTS und nur an den beiden Stellen, die das
+    Format vorsieht: alles nach dem ersten '_' ist die Ordnung, davor endet
+    der Name auf einem Elementbezeichner aus '_ELEMENT_SUFFIXE' oder auf
+    keinem. Der Rest ist die Funktion - sie wird weder geprueft noch
+    uebersetzt, denn welche Funktionen dieses Geraet kennt, weiss das Geraet.
+    Eine falsche Funktion faellt beim Verifizieren nach dem Schreiben auf
+    ('wt.items.applied()' tut das von selbst).
+    """
+    text = key.strip().upper()
+    if not text:
+        raise WTError("Leerer Spaltenname")
+
+    name, trenner, order = text.partition("_")
+    if trenner and not order:
+        raise WTError(
+            f"Spaltenname {key!r} endet auf '_' - nach dem Unterstrich gehoert "
+            "die Ordnung, z.B. 'PHI1_1' oder 'U1_TOTAL'."
+        )
+
+    for suffix in _ELEMENT_SUFFIXE:
+        if name.endswith(suffix) and len(name) > len(suffix):
+            return ItemSpec(name[: -len(suffix)], suffix, order or None)
+
+    # Kein Elementbezeichner am Ende: das Geraet setzt dann Element 1.
+    return ItemSpec(name, None, order or None)
+
+
+def specs_from_keys(keys: Sequence[str]) -> tuple[ItemSpec, ...]:
+    """Eine Liste von Spaltennamen in Specs wandeln. Siehe 'spec_from_key()'."""
+    if not keys:
+        raise WTError("Leere Namensliste - ohne Spalten keine Messung")
+    return tuple(spec_from_key(k) for k in keys)
 
 
 def build_item_table(specs: tuple[ItemSpec, ...] | list[ItemSpec]) -> ItemTable:

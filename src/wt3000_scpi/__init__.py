@@ -51,7 +51,7 @@ from .wt3000_common import output_dir, setup_logging
 # Layer 2 - Messwerte, Item-Tabelle, Bereiche, Eingangskonfiguration
 # ---------------------------------------------------------------------------
 from .wt3000_numeric import ItemTable, NumericItem, NumericValue, ValueStatus
-from .wt3000_itemspec import ItemSpec
+from .wt3000_itemspec import ItemSpec, spec_from_key, specs_from_keys
 from .wt3000_rangeio import ChangesNotAllowed, Quantity, RangeAccess, RangeValue
 from .wt3000_input import (
     CURRENT_RANGES,
@@ -243,6 +243,9 @@ __all__ = [
     "ItemSpec",
     "ItemTable",
     "NumericItem",
+    # Spaltenname -> ItemSpec, die Umkehrung von 'NumericItem.key'.
+    "spec_from_key",
+    "specs_from_keys",
     "build_standard_profile",
     "build_integration_profile",
     "build_harmonics_profile",

@@ -108,13 +108,11 @@ ziel = Path("messungen")
 ziel.mkdir(parents=True, exist_ok=True)          # der Treiber legt kein Verzeichnis an
 
 with WT3000.connect(ip="192.168.10.20") as wt:
-    # Die Item-Tabelle des Geraets uebernehmen, statt eine eigene zu schreiben.
-    tabelle = wt.items.read()
-    print("Spalten:", [item.key for item in tabelle.items])
-
+    # OHNE 'table' wird die Item-Tabelle des Geraets uebernommen - gemessen
+    # wird also, was am Bedienfeld eingestellt ist. Wer die Spalten vorher
+    # sehen will, holt sie sich mit 'tabelle = wt.items.read()'.
     stats = wt.measure.record_csv(
         ziel / "messreihe.csv",
-        tabelle,
         interval_s=1.0,        # Takt DIESER Schleife, nicht die Geraeterate
         max_samples=60,        # ohne Limit laeuft sie bis Strg+C
         use_hold=False,        # HOLD ist ein Set-Kommando - hier nicht erlaubt
@@ -146,23 +144,23 @@ Dafür wird die Item-Tabelle geschrieben — und deshalb **beide Schlösser geö
 
 ```python
 from pathlib import Path
-from wt3000_scpi import WT3000, ItemSpec
+from wt3000_scpi import WT3000
 
 ziel = Path("messungen")
 ziel.mkdir(parents=True, exist_ok=True)
 
-# ItemSpec(Funktion, Element) - das Element ist eine ZEICHENKETTE.
-profil = [
-    ItemSpec("U", "1"), ItemSpec("I", "1"), ItemSpec("P", "1"),
-    ItemSpec("U", "2"), ItemSpec("I", "2"), ItemSpec("P", "2"),
-    ItemSpec("P", "SIGMA"), ItemSpec("LAMBDA", "SIGMA"),
-]
+# Die Spalten als Namen - dieselben, die spaeter in der CSV-Kopfzeile stehen.
+# Achtung: der Summenwert heisst 'PSIGMA', nicht 'P_SIGMA'; der Unterstrich
+# trennt ausschliesslich die Ordnung ab ('PHI1_1').
+SPALTEN = ["U1", "I1", "P1", "U2", "I2", "P2", "PSIGMA", "LAMBDASIGMA"]
 
 with WT3000.connect(ip="192.168.10.20", read_only=False, allow_changes=True) as wt:
     with wt.ensured_protocol_state():
         # Setzt die Tabelle, prueft sie zurueck und stellt am Blockende in
         # JEDEM Fall den Ausgangszustand wieder her - auch bei Strg+C.
-        with wt.items.applied(profil, backup_file=ziel / "itemtabelle_backup.json") as tabelle:
+        with wt.items.applied(
+            wt.items.from_keys(SPALTEN), backup_file=ziel / "itemtabelle_backup.json"
+        ) as tabelle:
             stats = wt.measure.record_csv(
                 ziel / "eigene_groessen.csv",
                 tabelle,
@@ -173,6 +171,9 @@ with WT3000.connect(ip="192.168.10.20", read_only=False, allow_changes=True) as 
 
 stats.log_summary(1.0)
 ```
+
+Wer Ordnungen oder Sonderfaelle braucht, nimmt statt der Namen weiterhin
+`ItemSpec` unmittelbar — `wt.items.applied([ItemSpec("PHI", "1", "1"), ...])`.
 
 Statt einer eigenen Liste tun es oft die fertigen Profile:
 
@@ -211,9 +212,8 @@ print("\n".join(plan.describe()))
 
 with WT3000.connect(ip="192.168.10.20", read_only=False, allow_changes=True) as wt:
     with wt.applied_ranges(plan, backup_file=ziel / "bereiche_backup.json") as bericht:
-        tabelle = wt.items.read()
         stats = wt.measure.record_csv(
-            ziel / "mit_bereichen.csv", tabelle, max_samples=30, sidecar=True
+            ziel / "mit_bereichen.csv", max_samples=30, sidecar=True
         )
     # hier stehen die Bereiche wieder wie vorgefunden
     print("Abweichungen nach dem Ruecksetzen:", bericht.restore_problems or "keine")
