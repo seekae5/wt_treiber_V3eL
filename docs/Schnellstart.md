@@ -372,3 +372,4 @@ logging.basicConfig(level=logging.INFO, format="%(levelname)-7s %(name)s: %(mess
 | ein eigenes Ausgabeformat | Teil C.9 — der Vertrag `SampleSink` ist drei Methoden lang |
 | lauffähige Skripte statt Ausschnitte | [`examples/`](../examples/README.md) — sechs nummerierte Beispiele |
 | ein Anwenderskript mit Kommandozeile | [`live_messwerte.py`](../live_messwerte.py) in der Projektwurzel |
+| wissen, was das Projekt überhaupt ist | [`README.md`](../README.md) in der Projektwurzel |

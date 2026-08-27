@@ -1217,7 +1217,7 @@ class MeasureControl:
 
     def record_csv(
         self,
-        csv_path: Path,
+        csv_path: Path | str,
         table: ItemTable | None = None,
         interval_s: float = 1.0,
         max_samples: int | None = None,
@@ -1269,6 +1269,8 @@ class MeasureControl:
         'overwrite' (Voreinstellung, protokolliert den Verlust), 'error',
         'append' (prueft vorher den Spaltenkopf) oder 'unique'.
 
+        'csv_path' darf ein 'Path' oder eine Zeichenkette sein.
+
         'rotation' verteilt die Reihe auf 'messung_0001.csv',
         'messung_0002.csv', ... Dann ist 'csv_path' der Basisname und bleibt
         selbst leer.
@@ -1278,6 +1280,12 @@ class MeasureControl:
         Pruefsummen an die Datendatei. Erst damit ist eine CSV ohne
         Zusatzwissen interpretierbar - siehe 'verify_sidecar()'.
         """
+        # Ein blosser Dateiname ist die Schreibweise, die jeder zuerst
+        # versucht - und sie scheiterte bis hierher mit einem AttributeError
+        # tief in der Senke ('str' hat kein '.name'), also weit weg von der
+        # Stelle, an der der Fehler steht. Eine Zeile Umwandlung erspart das.
+        csv_path = Path(csv_path)
+
         senke: SampleSink
         if rotation is None:
             senke = CsvSink(

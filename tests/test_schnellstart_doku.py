@@ -19,99 +19,12 @@ import re
 from pathlib import Path
 
 import pytest
-from conftest import ItemTableTransport
+from conftest import Geraetemodell
 
 import wt3000_scpi
 from wt3000_scpi import WT3000, WTConfig
 
 SCHNELLSTART = Path(__file__).resolve().parents[1] / "docs" / "Schnellstart.md"
-
-
-# ---------------------------------------------------------------------------
-# Geraetemodell
-# ---------------------------------------------------------------------------
-
-
-class Geraetemodell(ItemTableTransport):
-    """Item-Tabelle (vom Elternteil) plus Bereiche, HOLD und Protokollknoten.
-
-    Schreibvorgaenge wirken auf die Antworttabelle zurueck. Ohne diese
-    Rueckkopplung liesse sich zwar das Senden pruefen, aber weder das
-    Verifizieren noch die Wiederherstellung - und genau die beiden sind es,
-    die 'applied_ranges()' und 'items.applied()' im Schnellstart zusagen.
-    """
-
-    SCOPES = {":ALL": (1, 2, 3, 4), ":SIGMA": (1, 2, 3), ":SIGMB": (4,)}
-
-    #: Knoten, deren geschriebener Wert schlicht uebernommen wird.
-    EINFACHE_KNOTEN = (
-        ":NUMERIC:HOLD",
-        ":COMMUNICATE:HEADER",
-        ":COMMUNICATE:VERBOSE",
-        ":NUMERIC:FORMAT",
-    )
-
-    def __init__(self) -> None:
-        items = {1: "U,1", 2: "I,1", 3: "P,1", 4: "U,2", 5: "I,2", 6: "P,2"}
-        super().__init__(items, number=6)
-        # base_responses() kennt den Knoten nicht; ensured_protocol_state() fragt ihn.
-        self.responses.setdefault(":COMMUNICATE:VERBOSE", "0")
-
-    def _ziele(self, suffix: str) -> tuple[int, ...]:
-        if suffix in self.SCOPES:
-            return self.SCOPES[suffix]
-        if suffix.startswith(":ELEMENT"):
-            return (int(suffix.removeprefix(":ELEMENT")),)
-        return ()
-
-    def write(self, command: str) -> None:
-        # 'FakeTransport.query()' ruft write() mit dem Query auf. Ein '...?'
-        # traegt keinen Parameter und darf hier nicht als Stellbefehl
-        # missverstanden werden - sonst schlaegt das Modell beim blossen Lesen
-        # eines Bereichs fehl.
-        if command.strip().endswith("?"):
-            super().write(command)
-            return
-
-        knoten, _, parameter = command.strip().partition(" ")
-        gross = knoten.upper()
-
-        for basis, wandeln in (
-            (":INPUT:VOLTAGE:RANGE", self._spannungswert),
-            (":INPUT:CURRENT:RANGE", self._stromwert),
-            (":INPUT:VOLTAGE:AUTO", self._schalterwert),
-            (":INPUT:CURRENT:AUTO", self._schalterwert),
-        ):
-            if gross.startswith(basis):
-                wert = wandeln(parameter)
-                for element in self._ziele(gross.removeprefix(basis)):
-                    self.responses[f"{basis}:ELEMENT{element}"] = wert
-                self.written.append(command)
-                return
-
-        if gross in self.EINFACHE_KNOTEN:
-            self.responses[gross] = parameter
-            self.written.append(command)
-            return
-
-        super().write(command)
-
-    # -- Antwortformate des Geraets -----------------------------------------
-
-    @staticmethod
-    def _spannungswert(parameter: str) -> str:
-        return f"{float(parameter):.3E}"
-
-    @staticmethod
-    def _stromwert(parameter: str) -> str:
-        """Direkteingang in Ampere oder Sensoreingang in Volt."""
-        sensor = parameter.upper().startswith("EXTERNAL")
-        zahl = float(parameter.split(",")[-1])
-        return f"EXTERNAL,{zahl:.2E}" if sensor else f"{zahl:.3E}"
-
-    @staticmethod
-    def _schalterwert(parameter: str) -> str:
-        return "1" if parameter.upper() == "ON" else "0"
 
 
 # ---------------------------------------------------------------------------

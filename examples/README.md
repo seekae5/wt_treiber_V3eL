@@ -39,6 +39,7 @@ Nicht in dieser Reihe, aber verwandt:
   Überfliegen, dazu Fehlerbehandlung und eine Stolpersteintabelle.
 - [`../docs/API-Ueberblick-und-Lesbarkeit.md`](../docs/API-Ueberblick-und-Lesbarkeit.md) — die
   vollständige Funktionsübersicht nach Aufgabe.
+- [`../README.md`](../README.md) — Installation, Verbindungsdaten und der Überblick.
 
 ## Zur Zeile `import _pfad`
 

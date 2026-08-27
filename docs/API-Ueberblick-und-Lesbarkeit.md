@@ -6,10 +6,10 @@
 > **Suchst du den Einstieg statt der Analyse? → [Schnellstart](Schnellstart.md)** — fünf
 > lauffähige Rezepte auf einer Seite.
 >
-> **Umsetzungsstand:** **E1**–**E6**, **E8**, **E9** und die **Sidecar-Lücke** sind
-> **erledigt**. Offen bleiben **E7** (Messparameter-Objekt), **E11** (Typaliasse), die
-> internen Variablennamen und das README. Siehe Teil F. Testsuite danach:
-> **1007 Tests grün**, `ruff` sauber. Die Befunde D1–D6 und D8–D10 sind entsprechend gekennzeichnet und beschreiben
+> **Umsetzungsstand:** **E1**–**E6**, **E8**, **E9**, die **Sidecar-Lücke** und das
+> **README** sind **erledigt**. Offen bleiben **E7** (Messparameter-Objekt), **E11**
+> (Typaliasse), die internen Variablennamen und das `verify`-Feld im Sidecar. Siehe
+> Teil F. Testsuite danach: **1020 Tests grün**, `ruff` sauber. Die Befunde D1–D6 und D8–D10 sind entsprechend gekennzeichnet und beschreiben
 > ab Teil D den Zustand *vor* dem Eingriff, damit die Begründung nachvollziehbar bleibt.
 
 Zielbild der Kopie `wt_treiber_V3eL`: Jemand mit wenig Programmiererfahrung soll schnell ein
@@ -945,6 +945,7 @@ Verbessert die Anzeige in der Editor-Hilfe erheblich, ohne Verhaltensänderung.
 | 4 | E6 empfohlener Weg je Aufgabe, E9 Fallen | nein | ✅ **erledigt** |
 | 5 | E5 Kurzweg zu Messwerten | nein (additiv) | ✅ **erledigt** |
 | 5b | E11 Typaliasse | nein (additiv) | offen |
+| 9 | README als Einstiegsseite | nein (neue Datei) | ✅ **erledigt** |
 | 6 | Sidecar-Lücke bei den Laufparametern | nein (mehr Inhalt im Sidecar) | ✅ **erledigt** |
 | 6b | E7 Messparameter-Objekt | nein (additiv) | offen |
 | 7 | E8 Benennung vereinheitlichen | nein — Übergangsfrist für `target=` | ✅ **erledigt** |
@@ -1076,6 +1077,47 @@ in BEWUSST_DRAUSSEN.
 ```
 
 Damit kann die Liste nicht mehr stillschweigend abdriften. **1007 Tests grün**, `ruff` sauber.
+
+---
+
+### Was Schritt 9 konkret geändert hat — das README
+
+`README.md` in der Projektwurzel: der Einstieg für jemanden, der das Repository zum ersten Mal
+öffnet. Inhalt in dieser Reihenfolge — was es ist, ein Beispiel, was die Bibliothek anders macht
+(die zwei Schlösser, der Rückweg, das Sidecar, `FakeTransport`), Installation, die
+IP-Auflösungskette, ein Wegweiser in die drei Dokumente, der Aufbau, Entwicklung, Stand.
+
+**Beim Schreiben gefunden und behoben:** das erste Beispiel des READMEs schrieb
+`record_csv("messreihe.csv", …)` — mit einem blossen Dateinamen, also der Schreibweise, die jeder
+zuerst versucht. Das scheiterte mit einem `AttributeError: 'str' object has no attribute 'name'`
+tief in der Senke, weit weg von der Stelle, an der der Fehler steht. Statt das Beispiel um ein
+`Path(...)` zu verbiegen, nimmt `record_csv()` jetzt `Path | str` — eine Zeile Umwandlung.
+Ein `AttributeError` im allerersten Beispiel wäre der schlechteste denkbare Einstieg gewesen.
+
+**Abgesichert:** `tests/test_readme.py` (13 Prüfsätze) führt den Codeblock aus, weist nach dass er
+CSV **und** Sidecar anlegt und **am Draht kein einziges Set-Kommando sendet** (das README sagt es
+im Kommentar zu), übersetzt die übrigen Ausschnitte, prüft die JSON-Beispiele, und hält die
+Behauptungen gegen die Wirklichkeit: jeder Verweis zeigt auf eine vorhandene Datei, die genannten
+Verzeichnisse existieren, Mindest- und Paketversion stimmen mit `pyproject.toml` und
+`__version__` überein, und die vier namentlich genannten gesperrten Gruppen stimmen mit
+`DEFAULT_PROTECTED` überein.
+
+Gegenprobe gemacht: ein Verweisziel versuchsweise auf eine nicht vorhandene Datei gezeigt →
+`AssertionError: das README zeigt ins Leere: ['examples/GIBTSNICHT.md']`.
+
+**Nebenbei aufgeräumt:** das Geräte­modell für Ablauftests stand doppelt in
+`test_schnellstart_doku.py` und `test_beispiele.py` — eine Doppelung, die in Schritt 3 entstanden
+war. Es liegt jetzt in `conftest.py` neben seinem Elternteil `ItemTableTransport`; drei Testmodule
+teilen es.
+
+Damit ist die Dokumentationskette geschlossen und **jede Stufe davon wird ausgeführt**:
+
+| Ebene | Datei | wird geprüft von |
+|---|---|---|
+| Einstieg | `README.md` | `tests/test_readme.py` |
+| Rezepte | `docs/Schnellstart.md` | `tests/test_schnellstart_doku.py` |
+| Skripte | `examples/*.py` | `tests/test_beispiele.py` |
+| Referenz | `docs/API-Ueberblick-und-Lesbarkeit.md` | — (Fließtext) |
 
 ---
 
