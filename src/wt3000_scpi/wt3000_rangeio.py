@@ -40,13 +40,20 @@ from .wt3000_common import (
     strip_response_header,
     values_match,
 )
-from .wt3000_core import WTError, WTSession
+from .wt3000_core import ConfigLocked, WTError, WTSession
 
 _log = logging.getLogger("wt3000.rangeio")
 
 
-class ChangesNotAllowed(WTError):
-    """Am RangeAccess wurde geschrieben, ohne allow_changes=True zu setzen."""
+class ChangesNotAllowed(ConfigLocked):
+    """Am RangeAccess wurde geschrieben, ohne allow_changes=True zu setzen.
+
+    Der Name bleibt, die Herkunft ist neu: die Klasse gehoert zu derselben
+    Familie wie 'InputLocked' und 'DeviceConfigLocked'. Es ist dieselbe Sache -
+    ein Fachobjekt weist einen Schreibaufruf an seiner eigenen Sperre ab - und
+    ein 'except ConfigLocked' faengt ab jetzt auch diese. 'except
+    ChangesNotAllowed' bleibt unveraendert gueltig.
+    """
 
 
 class Quantity(Enum):

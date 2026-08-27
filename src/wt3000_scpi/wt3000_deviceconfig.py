@@ -26,7 +26,7 @@ from .wt3000_common import (
     parse_nr1,
     strip_response_header,
 )
-from .wt3000_core import WTError, WTSession
+from .wt3000_core import ConfigLocked, WTError, WTSession
 
 _log = logging.getLogger("wt3000.deviceconfig")
 
@@ -36,13 +36,20 @@ _log = logging.getLogger("wt3000.deviceconfig")
 # ---------------------------------------------------------------------------
 
 
-class ConfigLocked(WTError):
+class DeviceConfigLocked(ConfigLocked):
     """Ein Schreibzugriff wurde von der Sicherung dieses Moduls abgewiesen.
 
-    Traegt denselben Namen wie die Klasse in wt3000_input und ist bewusst
-    NICHT dieselbe: ein Geschwisterimport ist auf dieser Schicht nicht
-    erlaubt. Beide erben von WTError, ein Aufrufer faengt also mit
-    'except WTError' oder mit dem Namen aus dem Modul, das er benutzt.
+    Betrifft alle drei Fachobjekte dieses Moduls: 'IntegrationConfig',
+    'ComputationConfig' und 'HarmonicsConfig'.
+
+    Diese Klasse hiess frueher ebenfalls 'ConfigLocked' und war damit
+    namensgleich, aber nicht identisch mit der Klasse in 'wt3000_input' - mit
+    der Begruendung, ein Geschwisterimport sei auf dieser Schicht nicht
+    erlaubt. Das stimmt weiterhin; die gemeinsame Basis liegt deshalb jetzt
+    eine Schicht TIEFER in 'wt3000_core', und der Import zeigt wie gewohnt
+    nach unten. Der Preis der alten Loesung war ein stiller Fehler: ein
+    'except ConfigLocked' aus dem Paketimport fing genau diese Sperre nicht
+    ab. Jetzt tut es das.
     """
 
 
@@ -394,12 +401,12 @@ class IntegrationConfig:
     def _require_writable(self, group: str) -> None:
         """Vor jedem Set-Kommando pruefen, ob geschrieben werden darf."""
         if not self._allow_changes:
-            raise ConfigLocked(
+            raise DeviceConfigLocked(
                 f"Schreibzugriff auf '{group}' abgelehnt: IntegrationConfig wurde "
                 "mit allow_changes=False erzeugt. Freigabe ueber unlocked()."
             )
         if group in self._protected:
-            raise ConfigLocked(
+            raise DeviceConfigLocked(
                 f"Gruppe '{group}' ist geschuetzt. Freigabe ausdruecklich ueber: "
                 f"with integ.unlocked('{group}'): ..."
             )
@@ -1059,7 +1066,7 @@ class ComputationConfig:
 
     def _require_writable(self) -> None:
         if not self._allow_changes:
-            raise ConfigLocked(
+            raise DeviceConfigLocked(
                 "Schreibzugriff auf die Rechenfunktionen abgelehnt: "
                 "ComputationConfig wurde mit allow_changes=False erzeugt."
             )
@@ -1624,7 +1631,7 @@ class HarmonicsConfig:
 
     def _require_writable(self) -> None:
         if not self._allow_changes:
-            raise ConfigLocked(
+            raise DeviceConfigLocked(
                 "Schreibzugriff auf die Oberschwingungsanalyse abgelehnt: "
                 "HarmonicsConfig wurde mit allow_changes=False erzeugt."
             )

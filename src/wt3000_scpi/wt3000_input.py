@@ -25,7 +25,7 @@ from enum import Enum
 from pathlib import Path
 from typing import Callable, Iterable, Iterator
 
-from .wt3000_core import WTError, WTSession
+from .wt3000_core import ConfigLocked, WTError, WTSession
 
 # Bereichswerte werden ausschliesslich hierueber geformt - dieselbe Funktion,
 # die auch wt3000_rangeio.py benutzt. Am Geraet belegt ist die reine NRf-Form
@@ -42,8 +42,14 @@ _log = logging.getLogger("wt3000.input")
 # ---------------------------------------------------------------------------
 
 
-class ConfigLocked(WTError):
-    """Ein Schreibzugriff wurde von der Sicherung dieses Moduls abgewiesen."""
+class InputLocked(ConfigLocked):
+    """Ein Schreibzugriff wurde von der Sicherung dieses Moduls abgewiesen.
+
+    Der Name sagt, WER abgewiesen hat: die Eingangskonfiguration. Die Basis
+    'ConfigLocked' liegt in 'wt3000_core' und faengt daneben die Sperren der
+    Messbereiche und der Geraetefunktionen - wer nicht unterscheiden muss,
+    faengt sie und nicht diese Klasse.
+    """
 
 
 class VerificationError(WTError):
@@ -506,12 +512,12 @@ class InputConfig:
     def _require_writable(self, group: str) -> None:
         """Vor jedem Set-Kommando pruefen, ob geschrieben werden darf."""
         if not self._allow_changes:
-            raise ConfigLocked(
+            raise InputLocked(
                 f"Schreibzugriff auf '{group}' abgelehnt: InputConfig wurde mit "
                 "allow_changes=False erzeugt. Freigabe ueber unlocked()."
             )
         if group in self._protected:
-            raise ConfigLocked(
+            raise InputLocked(
                 f"Gruppe '{group}' ist geschuetzt (eingemessener Zustand). "
                 f"Freigabe ausdruecklich ueber: with cfg.unlocked('{group}'): ..."
             )

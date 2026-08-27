@@ -54,6 +54,7 @@ __all__ = [
     # hier beheimatet (Layer 1)
     "MAX_BLOCK_READS",
     "ConcurrentAccessError",
+    "ConfigLocked",
     "DeviceError",
     "ReadOnlyViolation",
     "WTSession",
@@ -80,6 +81,31 @@ class DeviceError(WTError):
 
 class ReadOnlyViolation(WTError):
     """In einer Nur-Lesen-Session wurde ein schreibendes Kommando versucht."""
+
+
+class ConfigLocked(WTError):
+    """Ein Fachobjekt hat einen Schreibaufruf an seiner eigenen Sperre abgewiesen.
+
+    GEMEINSAME BASIS, und genau darum steht sie hier. Vorher trugen
+    'wt3000_input' und 'wt3000_deviceconfig' je eine eigene Klasse dieses
+    Namens - zwei verschiedene Klassenobjekte, von denen das Paket nur eines
+    exportierte. Ein 'except ConfigLocked' aus dem Paketimport fing deshalb
+    die Sperre der Integrationsgruppe NICHT ab: still, plausibel und falsch.
+    Ab jetzt gilt der eine Satz, den ein Aufrufer erwartet -
+
+        except ConfigLocked:   faengt jede Sperre der Fachobjekte
+
+    Die Unterklassen sagen, WELCHES Objekt abgewiesen hat, und stehen bei
+    ihrem Modul: 'InputLocked' (Eingangskonfiguration), 'DeviceConfigLocked'
+    (Integration, Rechenfunktionen, Oberschwingungen), 'ChangesNotAllowed'
+    (Messbereiche). Wer nicht unterscheiden muss, faengt die Basis.
+
+    ABZUGRENZEN von 'ReadOnlyViolation': das ist die Sperre der SITZUNG, eine
+    Schicht tiefer und unabhaengig von den Fachobjekten. Sie bleibt bewusst
+    ausserhalb dieser Familie - 'read_only' und 'allow_changes' sind zwei
+    Schloesser, und wer nur eines geoeffnet hat, soll auch nur eines der
+    beiden Ergebnisse sehen.
+    """
 
 
 class ConcurrentAccessError(WTError):

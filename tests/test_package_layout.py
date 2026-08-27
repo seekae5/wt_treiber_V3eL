@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import ast
 import importlib
+import re
 import sys
 from pathlib import Path
 
@@ -253,3 +254,141 @@ def test_die_sperre_laesst_den_protokollvertrag_unberuehrt():
     from wt3000_scpi.wt3000_transport import TmctlTransport, Transport
 
     assert issubclass(TmctlTransport, Transport)
+
+
+# ---------------------------------------------------------------------------
+# Die Paketoberflaeche ist vollstaendig
+#
+# Zugesagt im Kopf von __init__.py: wer nur 'from wt3000_scpi import ...'
+# schreibt, kommt an jede Anwenderfunktion. Diese Zusage war bisher nicht
+# geprueft und stimmte auch nicht - 'wt.applied_ranges(plan)' verlangte einen
+# 'RangePlan', den das Paket nicht herausgab. Ab hier faellt so etwas auf.
+# ---------------------------------------------------------------------------
+
+#: Die Objekte, die ein Anwender ueber 'wt.<name>' in der Hand haelt.
+FASSADENKLASSEN = (
+    "WT3000",
+    "DeviceInfo",
+    "ItemAccess",
+    "MeasureControl",
+    "InputConfig",
+    "RangeAccess",
+    "IntegrationConfig",
+    "ComputationConfig",
+    "HarmonicsConfig",
+)
+
+_BEZEICHNER = re.compile(r"[A-Za-z_][A-Za-z0-9_]*")
+
+
+def paketeigene_namen() -> dict[str, str]:
+    """Jeder oeffentliche Name, der in einem Fachmodul beheimatet ist.
+
+    Abbildung Name -> Modul. 'Path' oder 'Sequence' stehen nicht darin: sie
+    kommen aus der Standardbibliothek, und ob die importierbar ist, hat dieses
+    Paket nicht zu verantworten.
+    """
+    eigene: dict[str, str] = {}
+    for modulname in wt3000_scpi.MODULES:
+        modul = importlib.import_module(f"wt3000_scpi.{modulname}")
+        for name, objekt in vars(modul).items():
+            if name.startswith("_"):
+                continue
+            if getattr(objekt, "__module__", "").startswith("wt3000_scpi"):
+                eigene.setdefault(name, modulname)
+    return eigene
+
+
+def test_jeder_name_in_all_ist_auch_vorhanden():
+    """Ein Tippfehler in __all__ faellt sonst erst beim 'import *' auf."""
+    fehlend = [name for name in wt3000_scpi.__all__ if not hasattr(wt3000_scpi, name)]
+    assert not fehlend, f"__all__ nennt Namen, die das Paket nicht hat: {fehlend}"
+
+
+@pytest.mark.parametrize("klassenname", FASSADENKLASSEN)
+def test_argumente_der_fassade_sind_aus_dem_paket_importierbar(klassenname):
+    """Kein Anwenderskript muss aus 'wt3000_scpi.wt3000_*' importieren.
+
+    Geprueft wird ueber die Annotationen: jeder paketeigene Typ, den eine
+    oeffentliche Methode dieser Klassen ENTGEGENNIMMT oder HERAUSGIBT, muss in
+    'wt3000_scpi.__all__' stehen. Wer kuenftig einen neuen Typ in eine Signatur
+    schreibt und ihn nicht exportiert, sieht es hier - und nicht der Anwender,
+    der ihn zu benutzen versucht.
+
+    'from __future__ import annotations' laesst die Annotationen als
+    Zeichenketten stehen; deshalb werden die Bezeichner herausgeloest und
+    einzeln nachgeschlagen, statt die Typen aufzuloesen. Das ist hier der
+    robustere Weg: er kommt ohne Vorwaertsreferenzen und ohne Importe zur
+    Laufzeit aus.
+    """
+    eigene = paketeigene_namen()
+    exportiert = set(wt3000_scpi.__all__)
+    klasse = getattr(wt3000_scpi, klassenname)
+
+    fehlend: dict[str, set[str]] = {}
+    for name, objekt in vars(klasse).items():
+        if name.startswith("_"):
+            continue
+        # Bei einer Property traegt der Getter die Annotationen.
+        funktion = objekt.fget if isinstance(objekt, property) else objekt
+        if not callable(funktion):
+            continue
+        for annotation in getattr(funktion, "__annotations__", {}).values():
+            for bezeichner in _BEZEICHNER.findall(str(annotation)):
+                if bezeichner in eigene and bezeichner not in exportiert:
+                    fehlend.setdefault(bezeichner, set()).add(name)
+
+    assert not fehlend, "\n".join(
+        f"{klassenname}.{sorted(stellen)} braucht {typ!r} "
+        f"(aus wt3000_scpi.{eigene[typ]}), das Paket exportiert es aber nicht"
+        for typ, stellen in sorted(fehlend.items())
+    )
+
+
+# ---------------------------------------------------------------------------
+# Die Sperren der Fachobjekte sind EINE Familie
+#
+# Vorher trugen wt3000_input und wt3000_deviceconfig je eine eigene Klasse
+# namens 'ConfigLocked'; exportiert wurde nur eine davon. 'except ConfigLocked'
+# aus dem Paketimport fing die Sperre der Integrationsgruppe deshalb NICHT ab.
+# Der Fehler war still - der Aufrufer sah eine durchgereichte WTError und
+# konnte nicht erkennen, dass sein except-Zweig danebengegriffen hatte.
+# ---------------------------------------------------------------------------
+
+
+def test_kein_modul_definiert_configlocked_ein_zweites_mal():
+    """Die Basis liegt in wt3000_core - und nur dort."""
+    from wt3000_scpi import wt3000_core
+
+    assert wt3000_scpi.ConfigLocked is wt3000_core.ConfigLocked
+
+    doppelt = []
+    for modulname in wt3000_scpi.MODULES:
+        if modulname == "wt3000_core":
+            continue
+        quelle = (PACKAGE_DIR / f"{modulname}.py").read_text(encoding="utf-8")
+        for knoten in ast.walk(ast.parse(quelle)):
+            if isinstance(knoten, ast.ClassDef) and knoten.name == "ConfigLocked":
+                doppelt.append(modulname)
+    assert not doppelt, (
+        f"{doppelt} definiert 'ConfigLocked' erneut. Der Name gehoert nach "
+        "wt3000_core; eine eigene Sperre erbt davon unter eigenem Namen."
+    )
+
+
+@pytest.mark.parametrize(
+    "name", ["InputLocked", "DeviceConfigLocked", "ChangesNotAllowed"]
+)
+def test_jede_sperre_erbt_von_der_gemeinsamen_basis(name):
+    """'except ConfigLocked' muss jede Sperre der Fachobjekte fangen."""
+    assert issubclass(getattr(wt3000_scpi, name), wt3000_scpi.ConfigLocked)
+
+
+def test_die_sitzungssperre_bleibt_ausserhalb_der_familie():
+    """read_only und allow_changes sind zwei Schloesser - und zwei Meldungen.
+
+    'ReadOnlyViolation' kommt aus der SITZUNG, eine Schicht unter den
+    Fachobjekten. Sie unter 'ConfigLocked' zu haengen hiesse, dem Aufrufer die
+    Unterscheidung zu nehmen, welches der beiden Schloesser noch zu ist.
+    """
+    assert not issubclass(wt3000_scpi.ReadOnlyViolation, wt3000_scpi.ConfigLocked)
