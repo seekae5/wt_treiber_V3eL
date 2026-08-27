@@ -332,6 +332,13 @@ class RangeAccess:
     ) -> str:
         """Messbereich setzen. Rueckgabe: das gesendete Kommando.
 
+        STATTDESSEN EMPFOHLEN: 'wt.applied_ranges(plan)' mit einem
+        'RangeSpec' im Plan. Dort wird gesichert, geprueft und am Blockende
+        zurueckgestellt; hier geht ein einzelnes Kommando hinaus, dessen
+        Wirkung niemand mehr zuruecknimmt. Der Rueckgabewert ist das gesendete
+        Kommando und keine Bestaetigung - die Kontrolle findet in
+        wt3000_ranging.py statt.
+
         Der Scope darf ein Element, eine Wiring-Unit oder ALL sein. Ob das
         Geraet einen Zwischenwert auf die naechste gueltige Stufe rundet oder
         ihn ablehnt, ist NICHT vorausgesetzt - deshalb liefert dieses Modul
@@ -360,7 +367,12 @@ class RangeAccess:
         return command
 
     def set_auto(self, quantity: Quantity, scope: str | int, state: bool) -> str:
-        """Autorange ein- oder ausschalten. Rueckgabe: das gesendete Kommando."""
+        """Autorange ein- oder ausschalten. Rueckgabe: das gesendete Kommando.
+
+        STATTDESSEN EMPFOHLEN: 'wt.applied_ranges(plan)' mit einem
+        'AutoRangeSpec' im Plan - dann wird der Zustand am Blockende
+        zurueckgestellt.
+        """
         command = (
             f"{quantity.value}:AUTO{self._geprueftes_suffix(scope)} "
             f"{'ON' if state else 'OFF'}"

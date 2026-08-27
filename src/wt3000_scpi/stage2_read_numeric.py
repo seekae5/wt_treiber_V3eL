@@ -5,6 +5,17 @@
 # Diese Stufe veraendert die Item-Tabelle NICHT. Sie sichert sie, liest
 # mehrfach Werte und stellt beim Beenden sicher, dass die Tabelle unveraendert
 # ist. Ranges, Wiring und Filter werden nicht angefasst.
+#
+# KEINE VORLAGE FUER EIGENEN CODE. Dieses Skript stammt aus der Entstehungszeit
+# der Bibliothek und baut Transport, Sitzung und Fachobjekte von Hand zusammen -
+# die Fassade 'WT3000' gab es damals noch nicht. Wer ein eigenes Messskript
+# schreibt, faengt stattdessen hier an:
+#
+#     examples/02_messreihe_csv.py
+#     docs/Schnellstart.md
+#
+# Der Wert dieser Datei liegt in den Begruendungen in ihren Kommentaren, nicht
+# in ihrem Aufbau.
 # =============================================================================
 
 from __future__ import annotations

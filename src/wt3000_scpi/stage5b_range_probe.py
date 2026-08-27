@@ -30,6 +30,17 @@
 #   (2) Was bedeutet 'Bereich' an den externen Stromsensoren 1-3?
 #   (3) Braucht ':INPut' ein ':COMMunicate:REMote ON'?
 #   (4) Gibt es an Element 4 (DC) ueberhaupt einen Autorange?
+#
+# KEINE VORLAGE FUER EIGENEN CODE. Dieses Skript stammt aus der Entstehungszeit
+# der Bibliothek und baut Transport, Sitzung und Fachobjekte von Hand zusammen -
+# die Fassade 'WT3000' gab es damals noch nicht. Wer ein eigenes Messskript
+# schreibt, faengt stattdessen hier an:
+#
+#     examples/04_bereiche_setzen.py
+#     docs/Schnellstart.md
+#
+# Der Wert dieser Datei liegt in den Begruendungen in ihren Kommentaren, nicht
+# in ihrem Aufbau.
 # =============================================================================
 
 from __future__ import annotations

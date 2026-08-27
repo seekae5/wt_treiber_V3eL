@@ -626,6 +626,11 @@ class IntegrationConfig:
     def start(self) -> None:
         """Integration starten (':INTEGrate:STARt').
 
+        STATTDESSEN EMPFOHLEN: 'with wt.integration.running():' - der Stopp
+        steht dort im 'finally' und laeuft auch bei Strg+C. Wer hier startet,
+        muss selbst dafuer sorgen, dass gestoppt wird; sonst zaehlt das Geraet
+        nach einem Abbruch weiter, ganz ohne PC.
+
         Zulaessig aus RESET (neuer Lauf), READY (Echtzeitmodus wartet) und
         STOP (angehaltenen Lauf fortsetzen - der Zaehlerstand bleibt erhalten
         und zaehlt weiter).
@@ -693,6 +698,8 @@ class IntegrationConfig:
     @contextmanager
     def running(self) -> Iterator["IntegrationConfig"]:
         """Starten, Block ausfuehren, in jedem Fall stoppen.
+
+        EMPFOHLENER WEG, um einen Zaehlvorgang zu fahren.
 
         Dasselbe Muster wie 'NumericHold' und 'applied_ranges()': der
         Rueckweg steht im 'finally' und laeuft auch bei Strg+C oder einem

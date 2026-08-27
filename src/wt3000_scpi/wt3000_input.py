@@ -808,7 +808,16 @@ class InputConfig:
     # -- Bereiche -----------------------------------------------------------
 
     def set_voltage_range(self, volts: float, target: int | str = "ALL") -> None:
-        """Spannungsmessbereich fest setzen (schaltet Auto-Range ab)."""
+        """Spannungsmessbereich fest setzen (schaltet Auto-Range ab).
+
+        STATTDESSEN EMPFOHLEN: 'wt.applied_ranges(plan)' mit einem
+        'RangeSpec' im Plan. Der Weg dort setzt, verifiziert UND stellt den
+        Ausgangszustand am Blockende zurueck - auch bei Strg+C. Dieser Aufruf
+        hier ist der Einzelzugriff ohne Rueckweg: was er verstellt, bleibt
+        verstellt, bis der Aufrufer es selbst zuruecknimmt. Er verlangt
+        ausserdem die Freigabe von GROUP_RANGE, weil er den eingemessenen
+        Zustand beruehrt.
+        """
         crest = self.get_crest_factor()
         value = _check_allowed(volts, VOLTAGE_RANGES[crest], f"Spannungsbereich (CF{crest})")
         self._warn_if_not_independent(target)
@@ -828,6 +837,14 @@ class InputConfig:
         Fuer Elemente mit externem Stromsensor ist stattdessen
         set_current_range_sensor() zu verwenden - ein Direktbereich wuerde die
         Sensorbeschaltung aus der Konfiguration werfen.
+
+        STATTDESSEN EMPFOHLEN: 'wt.applied_ranges(plan)' mit einem
+        'RangeSpec' im Plan. Der Weg dort setzt, verifiziert UND stellt den
+        Ausgangszustand am Blockende zurueck - auch bei Strg+C. Dieser Aufruf
+        hier ist der Einzelzugriff ohne Rueckweg: was er verstellt, bleibt
+        verstellt, bis der Aufrufer es selbst zuruecknimmt. Er verlangt
+        ausserdem die Freigabe von GROUP_RANGE, weil er den eingemessenen
+        Zustand beruehrt.
         """
         crest = self.get_crest_factor()
         elements = self._elements_of(target)
@@ -864,7 +881,16 @@ class InputConfig:
         )
 
     def set_current_range_sensor(self, volts: float, target: int | str = "ALL") -> None:
-        """Bereich des externen Stromsensoreingangs setzen (EXTernal,<Volt>)."""
+        """Bereich des externen Stromsensoreingangs setzen (EXTernal,<Volt>).
+
+        STATTDESSEN EMPFOHLEN: 'wt.applied_ranges(plan)' mit einem
+        'RangeSpec' im Plan. Der Weg dort setzt, verifiziert UND stellt den
+        Ausgangszustand am Blockende zurueck - auch bei Strg+C. Dieser Aufruf
+        hier ist der Einzelzugriff ohne Rueckweg: was er verstellt, bleibt
+        verstellt, bis der Aufrufer es selbst zuruecknimmt. Er verlangt
+        ausserdem die Freigabe von GROUP_RANGE, weil er den eingemessenen
+        Zustand beruehrt.
+        """
         crest = self.get_crest_factor()
         value = _check_allowed(volts, SENSOR_RANGES[crest], f"Sensorbereich (CF{crest})")
         self._warn_if_not_independent(target)
@@ -893,11 +919,20 @@ class InputConfig:
         Auto-Range ist fuer Vergleichsmessungen mit Vorsicht zu geniessen: der
         Bereichswechsel faellt mitten in ein Messintervall und macht einzelne
         Datensaetze unbrauchbar.
+
+        STATTDESSEN EMPFOHLEN: 'wt.applied_ranges(plan)' mit einem
+        'AutoRangeSpec' im Plan - dann wird der Zustand am Blockende
+        zurueckgestellt. Dieser Aufruf hier wirkt bis auf Weiteres.
         """
         self._set_boolean(GROUP_AUTO, _BASE_VOLT_AUTO, enabled, target, "Auto-Range Spannung")
 
     def set_current_auto_range(self, enabled: bool, target: int | str = "ALL") -> None:
-        """Auto-Range Strom ein-/ausschalten."""
+        """Auto-Range Strom ein-/ausschalten.
+
+        STATTDESSEN EMPFOHLEN: 'wt.applied_ranges(plan)' mit einem
+        'AutoRangeSpec' im Plan - dann wird der Zustand am Blockende
+        zurueckgestellt. Dieser Aufruf hier wirkt bis auf Weiteres.
+        """
         self._set_boolean(GROUP_AUTO, _BASE_CURR_AUTO, enabled, target, "Auto-Range Strom")
 
     # -- Filter -------------------------------------------------------------

@@ -61,11 +61,42 @@ def build_item_table(specs: tuple[ItemSpec, ...] | list[ItemSpec]) -> ItemTable:
     if len(specs) > 255:
         raise WTError(f"{len(specs)} Items - das Geraet unterstuetzt maximal 255")
 
+    _melde_ungepruefte_funktionen(specs)
+
     items = [
         NumericItem(index=i, function=s.function, element=s.element, order=s.order)
         for i, s in enumerate(specs, start=1)
     ]
     return ItemTable(number=len(items), items=items)
+
+
+def _melde_ungepruefte_funktionen(specs: tuple[ItemSpec, ...] | list[ItemSpec]) -> None:
+    """Einmal je Tabelle nennen, welche Funktionen unbestaetigt sind.
+
+    'ItemSpec.verify=True' kennzeichnet eine Funktion, die am ORIGINAL-WT3000
+    nicht nachgemessen ist - das trifft auf das gesamte Integrations- und
+    Oberschwingungsprofil zu. Die Kennzeichnung stand bisher nur im Quelltext:
+    sie wurde gesetzt und von niemandem gelesen. Wer eines dieser Profile
+    benutzte, erfuhr also nirgends, dass ein Teil der Spalten auf einer
+    Annahme beruht - und ein NAN in der CSV sieht aus wie ein Messproblem,
+    nicht wie eine offene Frage des Treibers.
+
+    Deshalb eine Zeile ins Protokoll, und zwar EINE je Tabelle statt einer je
+    Item: bei 48 Items waeren 40 gleichlautende Warnungen selbst wieder ein
+    Grund, das Protokoll nicht zu lesen.
+    """
+    ungeprueft = sorted({s.function.upper() for s in specs if s.verify})
+    if not ungeprueft:
+        return
+    betroffen = sum(1 for s in specs if s.verify)
+    _log.warning(
+        "%d von %d Items benutzen Funktionen, die am Original-WT3000 nicht "
+        "bestaetigt sind: %s. Sie koennen NAN liefern, ohne dass ein Messfehler "
+        "vorliegt.",
+        betroffen,
+        len(specs),
+        ", ".join(ungeprueft),
+    )
 
 
 # ---------------------------------------------------------------------------

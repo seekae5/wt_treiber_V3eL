@@ -6,10 +6,12 @@
 > **Suchst du den Einstieg statt der Analyse? → [Schnellstart](Schnellstart.md)** — fünf
 > lauffähige Rezepte auf einer Seite.
 >
-> **Umsetzungsstand:** **E1** (Paket-Export), **E2** (Namenskollision `ConfigLocked`) und **E3**
-> (Schnellstart) sind **erledigt** — siehe Teil F. Testsuite danach: **874 Tests grün**,
-> `ruff` sauber. Die Befunde D1, D2 und D5 sind entsprechend gekennzeichnet und beschreiben
-> ab Teil D den Zustand *vor* dem Eingriff, damit die Begründung nachvollziehbar bleibt.
+> **Umsetzungsstand:** **E1** (Paket-Export), **E2** (Namenskollision `ConfigLocked`), **E3**
+> (Schnellstart), **E4** (Beispiele mit der Fassade), **E6** (empfohlener Weg je Aufgabe) und
+> **E9** (Fallen sichtbar machen) sind **erledigt** — siehe Teil F. Testsuite danach:
+> **919 Tests grün**, `ruff` sauber. Die Befunde D1–D5 und D9 sind entsprechend gekennzeichnet
+> und beschreiben ab Teil D den Zustand *vor* dem Eingriff, damit die Begründung
+> nachvollziehbar bleibt.
 
 Zielbild der Kopie `wt_treiber_V3eL`: Jemand mit wenig Programmiererfahrung soll schnell ein
 Messautomationsskript für das WT3000 schreiben können. Diese Datei hält fest, **was die Bibliothek
@@ -242,6 +244,34 @@ Die Item-Tabelle bestimmt, welche Größen `:NUMeric` liefert und damit die **Sp
 > `wt.input.set_update_rate()`). Beide werden gegeneinander geprüft; Zyklen ohne
 > Geräteaktualisierung erscheinen als `SampleMark.DUPLICATE`.
 
+> ⚠️ **Was während `start()` nicht geht.** Solange die Hintergrundmessung läuft, gehört die
+> Sitzung dem Mess-Thread. Jeder Gerätezugriff aus dem Haupt-Thread — `wt.input`, `wt.ranges`,
+> `wt.items`, `wt.integration` — endet in einer `ConcurrentAccessError`. Das ist der häufigste
+> Fehler in Prüfstandsabläufen.
+>
+> Zwei Auswege, je nachdem was gebraucht wird:
+>
+> * **nur lesen, vor dem Start:** alles Nötige (`wt.items.read()`, Steckbrief, Bereiche) vor
+>   `start()` holen und in Variablen halten;
+> * **während der Messung stellen:** `stream()` statt `start()` — dort läuft der Takt im Thread
+>   des Aufrufers, und zwischen zwei Datensätzen ist die Sitzung frei.
+>
+> Ebenso wichtig ist die Reihenfolge der Klammern: die Messung muss **innerhalb** der
+> Konfigurationsklammer enden, sonst stellt `applied_ranges()` die Bereiche zurück, während noch
+> gemessen wird.
+>
+> ```python
+> with wt.applied_ranges(plan):
+>     with wt.measure.start(sink, tabelle) as messung:
+>         ...
+>     # hier ist die Messung nachweislich beendet
+> # und erst hier werden die Bereiche zurückgestellt
+> ```
+
+> **Ohne Limit läuft die Messung unbegrenzt.** `record()`, `start()` und `stream()` melden das
+> seit E9 einmal als Warnung ins Protokoll und nennen, wodurch der Lauf dann endet (Strg+C,
+> `stop()`, `break`). Absicht ist es trotzdem — eine Dauerüberwachung soll genau das tun.
+
 ### C.9 Messdaten ausgeben und abspeichern
 
 | Ziel | Senke | Bemerkung |
@@ -444,7 +474,7 @@ Annotationen aller öffentlichen Methoden von `WT3000`, `DeviceInfo`, `ItemAcces
 Wer künftig einen neuen Typ in eine Signatur schreibt und ihn nicht exportiert, sieht es dort —
 und nicht der Anwender, der ihn zu benutzen versucht.
 
-### D3 — Die Beispiele im Paket zeigen den umständlichen Weg 🔴
+### D3 — Die Beispiele im Paket zeigen den umständlichen Weg 🔴 ✅ **erledigt (E4)**
 
 `stage2…stage5b` liegen **im Paket** (`src/wt3000_scpi/`) und benutzen durchweg die tiefe API:
 `TmctlTransport` + `WTSession` + `InputConfig(...)` von Hand, verschachtelte `try/finally`,
@@ -460,10 +490,17 @@ with WT3000.connect(read_only=False, allow_changes=True) as wt:
     stats.log_summary(1.0)
 ```
 
-Wer im Paket nach einer Vorlage sucht, findet die alte Form zuerst — und kopiert sie. Nur
-`live_messwerte.py` (Projektwurzel) benutzt die Fassade und ist damit das eigentliche Vorbild.
+Wer im Paket nach einer Vorlage sucht, fand die alte Form zuerst — und kopierte sie. Nur
+`live_messwerte.py` (Projektwurzel) benutzte die Fassade und war damit das eigentliche Vorbild.
 
-### D4 — Drei Wege zum selben Ziel, ohne erkennbare Empfehlung 🟠
+**Jetzt:** [`examples/`](../examples/README.md) mit sechs nummerierten, lauffähigen Skripten, alle
+über die Fassade. Jedes trägt im Kopf, **was es am Gerät schreibt**; die ersten beiden schreiben
+nichts und sind am eingemessenen Gerät der richtige erste Versuch. Die fünf `stage*`-Skripte
+bleiben, wo sie sind — sie werden von der Testsuite geprüft und tragen wertvolle Begründungen —,
+haben aber jetzt einen Kopfblock „**KEINE VORLAGE FÜR EIGENEN CODE**“ mit Verweis auf das passende
+Beispiel.
+
+### D4 — Drei Wege zum selben Ziel, ohne erkennbare Empfehlung 🟠 ✅ **erledigt (E6)**
 
 **Messbereich setzen** geht über `wt.input.set_voltage_range()`, `wt.ranges.set_range()` oder
 `RangeSpec` im Plan. Die drei unterscheiden sich in Dingen, die der Einsteiger nicht ahnt:
@@ -477,6 +514,13 @@ Wer im Paket nach einer Vorlage sucht, findet die alte Form zuerst — und kopie
 **Autorange** hat ebenso drei Schreibweisen. Dass `GROUP_AUTO` nicht in `DEFAULT_PROTECTED` steht,
 `GROUP_RANGE` aber schon, ist sachlich richtig, aber ohne Doku nicht erschließbar: derselbe
 Aufrufstil führt einmal durch und einmal zu `ConfigLocked`.
+
+**Jetzt:** jeder Docstring sagt, wo man hingehört. Der empfohlene Einstieg trägt
+`EMPFOHLENER WEG`, jede Alternative `STATTDESSEN EMPFOHLEN` mit einem Satz, was sie *nicht*
+leistet (meist: keinen Rückweg). Betroffen sind vier Aufgaben — Messbereich, Autorange,
+Item-Tabelle, Integration —, insgesamt elf Methoden. Abgesichert durch
+`tests/test_wegweiser_und_fallen.py`, damit die Hinweise beim nächsten Umformulieren nicht
+stillschweigend verschwinden.
 
 ### D5 — Zwei verschiedene Klassen heißen `ConfigLocked` 🟠 ✅ **erledigt (E2)**
 
@@ -539,21 +583,27 @@ verstehen (oder `wt.items.applied()` finden). Es gibt keinen Aufruf der Art
 Der einfache Ausweg **existiert** — `wt.items.read()`, „miss, was am Gerät eingestellt ist“ — steht
 aber nur in einem Kommentar in `live_messwerte.py` und in keinem Docstring als *der* Einstieg.
 
-### D9 — Nicht offensichtliche Fallen 🟡
+### D9 — Nicht offensichtliche Fallen 🟡 ✅ **erledigt (E9)**
 
-- `wt.measure.read_mapped()` **ohne** Argument liest die Item-Tabelle bei **jedem Aufruf** neu vom
-  Gerät. In einer Schleife ist das eine unnötige Abfrage je Durchlauf.
-- Während `wt.measure.start()` läuft, gehört die Sitzung dem Mess-Thread: jeder Zugriff auf
-  `wt.input` / `wt.ranges` endet in `ConcurrentAccessError`. Steht im Docstring, ist aber der
-  häufigste Anfängerfehler bei Prüfstandsabläufen.
+| Falle | vorher | jetzt |
+|---|---|---|
+| `read_mapped()` **ohne** Argument liest die Item-Tabelle bei **jedem Aufruf** neu vom Gerät — in einer Schleife eine unnötige Abfrage je Durchlauf | nur im Quelltext sichtbar | Docstring nennt es; der **zweite** Aufruf ohne Tabelle meldet sich einmalig im Protokoll und nennt den Ausweg |
+| Während `start()` läuft, gehört die Sitzung dem Mess-Thread; `wt.input`/`wt.ranges` enden in `ConcurrentAccessError` | im Docstring | zusätzlich ein Warnkasten in C.8 **mit beiden Auswegen** und der Klammer-Reihenfolge, dazu im Schnellstart und in Beispiel 05 |
+| `record()`/`start()`/`stream()` ohne Limit laufen **unbegrenzt** | nur `stage4` meldete es | alle drei melden es einmal und nennen, wodurch der Lauf endet (Strg+C / `stop()` / `break`) |
+| `ItemSpec(..., verify=True)` markiert Funktionen, die **am Originalgerät nicht bestätigt** sind (das ganze Integrations- und Oberschwingungsprofil) | **gesetzt und von niemandem gelesen** — toter Schalter | `build_item_table()` meldet einmal je Tabelle, wie viele Items betroffen sind, welche Funktionen es sind und dass sie NAN liefern können, ohne dass ein Messfehler vorliegt |
+
+Zwei Punkte bleiben bewusst, wie sie sind:
+
 - `wt.device.supports()` liefert **`True`**, wenn `*OPT?` fehlgeschlagen ist („unbekannt ≠ fehlt“).
-  Sachlich richtig, für „darf ich?“ aber überraschend.
-- `record()` ohne Limit läuft **unbegrenzt**. Absicht, aber im fremden Skript selten gewollt.
+  Sachlich richtig und im Docstring ausführlich begründet; für „darf ich?“ trotzdem überraschend.
 - `if_exists="overwrite"` ist die Vorgabe von `CsvSink` — eine vorhandene Messdatei wird
-  überschrieben (immerhin protokolliert).
-- `ItemSpec(..., verify=True)` markiert Funktionen, die **am Originalgerät noch nicht bestätigt**
-  sind (das ganze Integrations- und Oberschwingungsprofil). Der Anwender sieht diese Kennzeichnung
-  nirgends im Ergebnis.
+  überschrieben (immerhin protokolliert). Die Vorgabe zu ändern wäre eine Verhaltensänderung und
+  gehört nicht in einen Lesbarkeitsschritt; sie steht in der Stolpersteintabelle des Schnellstarts.
+
+**Nicht gepuffert, mit Absicht.** Der naheliegende „Fix“ für die erste Zeile wäre, die Tabelle in
+`read_mapped()` zu merken. Das wäre schlimmer als das Problem: ändert sich die Item-Tabelle
+zwischen zwei Aufrufen, lieferte ein Puffer stillschweigend falsche Namen zu richtigen Werten.
+Ein eigener Prüfsatz hält das fest, damit die nächste Optimierung ihn nicht doch einbaut.
 
 ### D10 — Sprachmix 🟡
 
@@ -634,20 +684,48 @@ Gegenprobe gemacht: `wt.items.read()` im Rezept versuchsweise in `wt.items.lies_
 geändert → zwei Prüfsätze rot, mit Zeilennummer im Block. Der Beispielcode kann also nicht
 stillschweigend veralten.
 
-### E4 🔴 Die Stufenskripte umbauen oder verschieben — *mittel*
+### E4 🔴 Die Stufenskripte umbauen oder verschieben — ✅ **umgesetzt (Weg 1 + Weg 3)**
 
-Drei Möglichkeiten, in dieser Vorzugsreihenfolge:
+Umgesetzt wurden Möglichkeit 1 und 3; **Möglichkeit 2 bewusst nicht.**
 
-1. **`examples/` in der Projektwurzel**, geschrieben **mit der Fassade**, sprechend benannt
-   (`01_geraet_ansehen.py`, `02_messreihe_csv.py`, `03_bereiche_setzen.py`,
-   `04_hintergrundmessung.py`, `05_integration_wh.py`) — `live_messwerte.py` wird `00_…` und ist
-   das Muster.
-2. Die alten `stage*`-Skripte nach `tools/legacy/` verschieben und im Kopf vermerken, dass sie den
-   Weg **vor** der Fassade zeigen.
-3. Mindestens: in jedem `stage*`-Kopf drei Zeilen ergänzen, wie dasselbe mit `WT3000` aussieht.
+**Weg 1 — [`examples/`](../examples/README.md)**, sechs Skripte über die Fassade:
 
-Solange die umständliche Form im Paket der auffälligste Beispielcode ist, arbeitet die Dokumentation
-gegen sich selbst.
+| Datei | Schreibt am Gerät |
+|---|---|
+| `01_geraet_ansehen.py` | nichts |
+| `02_messreihe_csv.py` | nichts |
+| `03_eigene_groessen.py` | Item-Tabelle, HOLD |
+| `04_bereiche_setzen.py` | Bereiche, Autorange |
+| `05_hintergrundmessung.py` | Item-Tabelle, HOLD |
+| `06_integration_wh.py` | Integration, Item-Tabelle |
+
+Jedes trägt im Kopf, was es schreibt, hat einen Block „hier anpassen“ und stellt den
+Ausgangszustand zurück. `examples/README.md` ist der Index. Statt der geplanten fünf sind es
+sechs — die Integration hat ein eigenes Beispiel bekommen, weil die Trennung *steuern*
+(`wt.integration`) und *lesen* (`integration_profile()`) sonst nirgends vorgeführt wird.
+
+**Weg 3 —** jedes `stage*`-Skript trägt jetzt im Kopf:
+
+> KEINE VORLAGE FUER EIGENEN CODE. […] Wer ein eigenes Messskript schreibt, faengt stattdessen
+> hier an: `examples/…`, `docs/Schnellstart.md`. Der Wert dieser Datei liegt in den Begruendungen
+> in ihren Kommentaren, nicht in ihrem Aufbau.
+
+**Weg 2 (Verschieben nach `tools/legacy/`) wurde verworfen.** Die `stage*`-Skripte hängen an
+`tests/test_stage_durchlauf.py`, `test_stage_startup.py`, `test_stage_remote_release.py`, an den
+`LAYERS`-Einträgen in `test_package_layout.py` und an der `stufenlauf`-Vorrichtung in
+`conftest.py`. Ein Umzug wäre ein Eingriff in die Testabsicherung, und zwar für einen Gewinn, den
+der Kopfblock schon liefert. Er bleibt als Option offen, gehört aber in einen eigenen Schritt.
+
+**Abgesichert:** `tests/test_beispiele.py` (19 Prüfsätze, ~2 s) fährt **jedes** Beispiel
+vollständig gegen ein simuliertes Gerät. Ersetzt wird nur der Draht (`TmctlTransport` im
+Namensraum der Fassade), das Ausgabeverzeichnis und die Wartezeiten. Dazu Prüfsätze auf die
+Zusagen der Kopfzeilen: dass 01 und 02 **am Draht nachweislich kein Set-Kommando senden**, dass 03
+die Item-Tabelle zurückstellt, dass 04 die Bereiche zurückstellt und dass 06 die Integration in
+jedem Fall stoppt. Ein weiterer hält fest, dass kein Beispiel `WTSession(`, `TmctlTransport(` oder
+einen Import an der Fassade vorbei enthält — sonst wäre es wieder ein Stufenskript.
+
+Gegenprobe gemacht: `wt.applied_ranges(` in Beispiel 04 versuchsweise umbenannt → zwei Prüfsätze
+rot.
 
 ### E5 🟠 Einen kurzen Weg zu Messwerten anbieten — *mittel*
 
@@ -666,16 +744,26 @@ tabelle = wt.items.von_namen(["U1", "I1", "P1", "P_SIGMA"])
 `key`-Schreibweise kennt der Anwender bereits aus jeder CSV-Kopfzeile, die die Bibliothek erzeugt —
 damit schließt sich der Kreis zwischen Ausgabe und Konfiguration.
 
-### E6 🟠 Einen empfohlenen Weg je Aufgabe benennen — *klein bis mittel*
+### E6 🟠 Einen empfohlenen Weg je Aufgabe benennen — ✅ **umgesetzt**
 
-Für jede Aufgabe mit mehreren Wegen (Bereich, Autorange, Messen) im Docstring **eine** Zeile
-voranstellen:
+Zwei greppbare Marker, konsequent durchgezogen:
 
-> **Empfohlen:** `wt.applied_ranges(plan)` — setzt, prüft und stellt zurück.
-> `wt.ranges.set_range()` ist der rohe Einzelzugriff ohne Rückweg.
+| Marker | steht auf | Beispiel |
+|---|---|---|
+| `EMPFOHLENER WEG` | dem Einstieg, den man nehmen soll | `WT3000.applied_ranges`, `ItemAccess.applied`, `IntegrationConfig.running`, `MeasureControl.record_csv`, `wt3000_ranging.applied_ranges` |
+| `EMPFOHLENER EINSTIEG` | dem Anfang für Anfänger | `ItemAccess.read` |
+| `STATTDESSEN EMPFOHLEN` | jeder Alternative, mit einem Satz zu dem, was sie *nicht* leistet | `RangeAccess.set_range`/`set_auto`, `InputConfig.set_voltage_range`/`set_current_range`/`set_current_range_sensor`/`set_voltage_auto_range`/`set_current_auto_range`, `ItemAccess.apply`, `IntegrationConfig.start` |
 
-Zusätzlich eine Übersichtstabelle wie C.4/C.5 dieser Datei in die Doku. Kein Code muss entfernt
-werden — nur die Rangfolge muss sichtbar sein.
+Vier Aufgaben, elf Methoden, kein Code entfernt. Der Satz auf den Alternativen ist immer derselbe
+in der Sache: *dieser Aufruf hat keinen Rückweg — was er verstellt, bleibt verstellt.*
+
+Die Übersichtstabellen stehen bereits in C.4 und C.5 dieser Datei.
+
+**Abgesichert:** `tests/test_wegweiser_und_fallen.py` führt die vier Aufgaben mit ihrem empfohlenen
+Weg und ihren Alternativen als Datenstruktur und prüft jeden Docstring dagegen. Ein Hinweis, der
+beim nächsten Umformulieren verschwindet, lässt die Suite rot werden — und die Liste im Test ist
+zugleich die Antwort auf die Frage, die ein Anwender beim Überfliegen der API stellt: *es gibt
+drei Methoden dafür, welche nehme ich?*
 
 ### E7 🟠 Messparameter bündeln — *mittel, API-Erweiterung*
 
@@ -706,13 +794,23 @@ viermal.
 - Umlaute in Docstrings zulassen (die Dateien sind UTF-8) — „Gerät“ liest sich für die Zielgruppe
   deutlich besser als „Geraet“.
 
-### E9 🟡 Die Fallen aus D9 sichtbar machen — *klein*
+### E9 🟡 Die Fallen aus D9 sichtbar machen — ✅ **umgesetzt**
 
-- `read_mapped()` die Tabelle einmal merken lassen (oder im Docstring ausdrücklich warnen).
-- `record()`/`start()` ohne jedes Limit einmal per `_log.warning` melden: „kein Limit gesetzt —
-  Ende nur mit Strg+C“ (macht `stage4` bereits; gehört in die Fassade).
-- In der Doku ein Kasten „Was während `start()` nicht geht“ mit dem Verweis auf `stream()`.
-- `verify=True`-Items in der Ausgabe kennzeichnen (Sidecar-Feld „ungeprüfte Funktionen“).
+Alle vier Punkte, siehe die Vorher/Nachher-Tabelle in D9. Zwei Abweichungen vom Plan:
+
+- **`read_mapped()` puffert bewusst nicht.** Der Plan bot „merken *oder* warnen“ an; gemerkt wird
+  nicht, weil ein Puffer nach einer Tabellenänderung falsche Namen zu richtigen Werten lieferte.
+  Gewarnt wird stattdessen beim **zweiten** Aufruf ohne Tabelle — einer ist ein Blick, zwei sind
+  eine Schleife.
+- **`verify=True` landet im Protokoll, nicht im Sidecar.** Der Plan sah ein Sidecar-Feld vor. Dafür
+  müsste die Kennzeichnung von `ItemSpec` über `build_item_table()` bis in `ItemTable` und deren
+  Serialisierung durchgereicht werden — eine Formatänderung mit `to_dict`/`from_dict`/`save`/`load`
+  im Schlepptau, deutlich mehr als ein Lesbarkeitsschritt. `build_item_table()` meldet es
+  stattdessen einmal je Tabelle. **Das Sidecar-Feld bleibt offen.**
+
+Die Warnungen sind so gebaut, dass sie schweigen, wenn kein Anlass besteht — eine Meldung, die
+immer kommt, liest nach der dritten Messung niemand mehr. Genau das prüfen die Gegenproben in
+`tests/test_wegweiser_und_fallen.py` mit.
 
 ### E10 🟡 Fehlermeldungen als Muster festhalten — *klein*
 
@@ -734,8 +832,8 @@ Verbessert die Anzeige in der Editor-Hilfe erheblich, ohne Verhaltensänderung.
 | 1 | E1 Paket-Export, E2 Namenskollision | nein | ✅ **erledigt** |
 | 2 | E3 Schnellstart | nein (nur Doku) | ✅ **erledigt** |
 | 2b | E10 Meldungsregel | nein (nur Doku) | offen |
-| 3 | E4 Beispiele mit der Fassade | nein (neue Dateien) | offen |
-| 4 | E6 empfohlener Weg je Aufgabe, E9 Fallen | nein | offen |
+| 3 | E4 Beispiele mit der Fassade | nein (neue Dateien) | ✅ **erledigt** |
+| 4 | E6 empfohlener Weg je Aufgabe, E9 Fallen | nein | ✅ **erledigt** |
 | 5 | E5 Kurzweg zu Messwerten, E11 Typaliasse | nein (additiv) | offen |
 | 6 | E7 Messparameter-Objekt | nein (additiv) | offen |
 | 7 | E8 Benennung vereinheitlichen | **teilweise** — eigener Schritt, mit Übergangsnamen | offen |
@@ -762,6 +860,34 @@ berührt Signaturen und gehört deshalb ans Ende, mit einer Version Übergangsfr
 | `tests/test_schnellstart_doku.py` | neu — führt jeden Codeblock der Seite gegen ein simuliertes Gerät aus |
 
 Kein Produktivcode berührt. **874 Tests grün**, `ruff check` sauber.
+
+### Was Schritt 3 konkret geändert hat
+
+| Datei | Änderung |
+|---|---|
+| `examples/01…06_*.py` | neu — sechs lauffähige Beispiele über die Fassade |
+| `examples/README.md` | neu — Index mit Spalte „schreibt am Gerät“ |
+| `examples/_pfad.py` | neu — macht `wt3000_scpi` ohne Installation importierbar |
+| `src/wt3000_scpi/stage2…stage5b.py` | Kopfblock „KEINE VORLAGE FÜR EIGENEN CODE“ + Verweis |
+| `tests/test_beispiele.py` | neu — fährt jedes Beispiel gegen ein simuliertes Gerät |
+
+An den `stage*`-Skripten wurde **nur der Kommentarkopf** angefasst, keine Zeile Code.
+**893 Tests grün**, `ruff check` über `src`, `tests` und `examples` sauber.
+
+### Was Schritt 4 konkret geändert hat
+
+| Datei | Änderung |
+|---|---|
+| `wt3000_input.py` | 5 Docstrings: `STATTDESSEN EMPFOHLEN` auf Bereichs- und Autorange-Settern |
+| `wt3000_rangeio.py` | 2 Docstrings: dieselbe Kennzeichnung auf `set_range` / `set_auto` |
+| `wt3000_ranging.py` | `applied_ranges()` als `EMPFOHLENER WEG` gekennzeichnet |
+| `wt3000_deviceconfig.py` | `running()` empfohlen, `start()` verweist darauf |
+| `wt3000_device.py` | 5 Docstrings; `read_mapped()` warnt beim 2. tabellenlosen Aufruf; neue `_warn_ohne_limit()` in `record()`, `start()`, `stream()` |
+| `wt3000_itemspec.py` | `build_item_table()` meldet ungeprüfte Funktionen (`verify=True`) |
+| `tests/test_wegweiser_und_fallen.py` | neu — 26 Prüfsätze für beide Regeln |
+
+Verhaltensänderung: **ausschließlich zusätzliche Protokollzeilen.** Keine Signatur, kein
+Rückgabewert, kein Kommando an das Gerät hat sich geändert. **919 Tests grün**, `ruff` sauber.
 
 Kein Verhalten geändert, keine Signatur geändert, nichts entfernt. **861 Tests grün**,
 `ruff check` sauber.

@@ -577,6 +577,11 @@ def applied_ranges(
 ) -> Iterator[RangeReport]:
     """Bereiche setzen, Block ausfuehren, Ausgangszustand garantiert zurueck.
 
+    EMPFOHLENER WEG, um Messbereiche zu stellen. Ueber die Fassade als
+    'wt.applied_ranges(plan)' erreichbar; die Einzelaufrufe
+    'wt.ranges.set_range()' und 'wt.input.set_voltage_range()' sind der rohe
+    Zugriff ohne Rueckweg.
+
     Kapselt den try/finally-Ablauf, der in den Stufen 3 und 4 jedes Mal von
     Hand nachgebaut wurde: sichern, Schreibprobe, anwenden, verifizieren,
     Nutzblock, wiederherstellen, Gegenprobe.

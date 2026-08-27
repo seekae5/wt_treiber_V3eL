@@ -6,6 +6,17 @@
 # das Konfigurationsobjekt mit allow_changes=False - zwei unabhaengige Sperren.
 # Zweck: den eingemessenen Ist-Zustand als JSON sichern, bevor jemals ein
 # Schreibversuch am realen Geraet stattfindet.
+#
+# KEINE VORLAGE FUER EIGENEN CODE. Dieses Skript stammt aus der Entstehungszeit
+# der Bibliothek und baut Transport, Sitzung und Fachobjekte von Hand zusammen -
+# die Fassade 'WT3000' gab es damals noch nicht. Wer ein eigenes Messskript
+# schreibt, faengt stattdessen hier an:
+#
+#     examples/01_geraet_ansehen.py
+#     docs/Schnellstart.md
+#
+# Der Wert dieser Datei liegt in den Begruendungen in ihren Kommentaren, nicht
+# in ihrem Aufbau.
 # =============================================================================
 
 from __future__ import annotations

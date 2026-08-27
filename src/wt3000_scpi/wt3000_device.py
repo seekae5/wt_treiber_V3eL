@@ -507,7 +507,15 @@ class ItemAccess:
     # -- Lesen --------------------------------------------------------------
 
     def read(self) -> ItemTable:
-        """Aktuelle Item-Tabelle vom Geraet lesen."""
+        """Aktuelle Item-Tabelle vom Geraet lesen.
+
+        EMPFOHLENER EINSTIEG, um ueberhaupt zu messen: das Ergebnis geht
+        unveraendert an 'wt.measure.record_csv()'. Dann misst das Skript
+        genau die Groessen, die am Bedienfeld eingestellt sind - es schreibt
+        nichts und ist am eingemessenen Geraet ungefaehrlich. Eigene Spalten
+        braucht erst, wer sie unabhaengig vom Bedienfeld festlegen will;
+        dafuer dann 'applied()'.
+        """
         return ItemTable.read_from_device(self._session)
 
     @staticmethod
@@ -558,6 +566,11 @@ class ItemAccess:
     def apply(self, target: ItemTable, backup: ItemTable | None = None) -> None:
         """Zieltabelle schreiben und verifizieren.
 
+        STATTDESSEN EMPFOHLEN: 'applied()' - dieselbe Arbeit, aber mit
+        garantiertem Rueckweg. Dieser Aufruf hier laesst die geschriebene
+        Tabelle stehen; wer ihn benutzt, ist selbst dafuer zustaendig, den
+        Ausgangszustand zu sichern und zurueckzuschreiben.
+
         Vor dem Schreiben der ganzen Tabelle geht genau EIN Item als Probe
         hinaus. Faellt die durch, ist ein einziges Item veraendert statt
         aller - das ist der Grund fuer den Umweg.
@@ -586,6 +599,8 @@ class ItemAccess:
         force_restore: bool = False,
     ) -> Iterator[ItemTable]:
         """Tabelle setzen, Block ausfuehren, Ausgangszustand garantiert zurueck.
+
+        EMPFOHLENER WEG, um eigene Messgroessen einzustellen.
 
         Analog zu 'applied_ranges()': sichern, Tail sichern, Schreibprobe,
         anwenden, verifizieren, Nutzblock und im 'finally' wiederherstellen.
@@ -670,6 +685,8 @@ class MeasureControl:
         self._read_only = read_only
         # close() muss eine Hintergrundmessung vor eigenen Geraetezugriffen beenden.
         self._active: Measurement | None = None
+        # Siehe read_mapped(): zaehlt die Aufrufe OHNE eigene Tabelle.
+        self._lesungen_ohne_tabelle = 0
 
     # -- Laufende Hintergrundmessung ----------------------------------------
 
@@ -711,7 +728,33 @@ class MeasureControl:
         return read_numeric_values(self._session, expected_count=expected)
 
     def read_mapped(self, table: ItemTable | None = None) -> dict[str, NumericValue]:
-        """Einen Datensatz auf sprechende Namen abgebildet lesen."""
+        """Einen Datensatz auf sprechende Namen abgebildet lesen.
+
+        OHNE 'table' wird die Item-Tabelle bei JEDEM Aufruf neu vom Geraet
+        gelesen - das ist eine zusaetzliche Abfrage je Aufruf. Fuer einen
+        einzelnen Blick ist das genau richtig und erspart eine Zeile; in einer
+        Schleife gehoert die Tabelle einmal geholt und uebergeben:
+
+            tabelle = wt.items.read()
+            while True:
+                werte = wt.measure.read_mapped(tabelle)
+
+        Der zweite Aufruf ohne Tabelle sagt das auch im Protokoll. Absichtlich
+        wird hier NICHT gepuffert: die Tabelle kann sich zwischen zwei
+        Aufrufen aendern, und ein Puffer lieferte dann stillschweigend falsche
+        Namen zu richtigen Werten - ein schlimmerer Fehler als eine Abfrage zu
+        viel.
+        """
+        if table is None:
+            self._lesungen_ohne_tabelle += 1
+            # Beim ZWEITEN Mal: einer ist ein Blick, zwei sind eine Schleife.
+            if self._lesungen_ohne_tabelle == 2:
+                _log.warning(
+                    "read_mapped() wird wiederholt ohne 'table' gerufen und liest "
+                    "die Item-Tabelle jedes Mal neu vom Geraet. Einmal "
+                    "'tabelle = wt.items.read()' und dann "
+                    "'wt.measure.read_mapped(tabelle)' spart je Durchlauf eine Abfrage."
+                )
         used = table if table is not None else self._items.read()
         return used.map_values(self.read_values(used))
 
@@ -780,6 +823,8 @@ class MeasureControl:
             _log.warning("Nur-Lesen-Sitzung: Messschleife laeuft ohne HOLD")
             use_hold = False
 
+        self._warn_ohne_limit(max_samples, max_duration_s, "record()", "durch Strg+C")
+
         lauf_parameter = self._run_parameters(
             interval_s, max_samples, max_duration_s, use_hold, record_condition, parameters
         )
@@ -819,6 +864,27 @@ class MeasureControl:
         # vorher geschrieben wurde und den Ausgang nicht kennen konnte.
         self._write_sidecar(run, sink, stats, metadata_path, sidecar)
         return stats
+
+    @staticmethod
+    def _warn_ohne_limit(
+        max_samples: int | None, max_duration_s: float | None, methode: str, ende: str
+    ) -> None:
+        """Eine Messung ohne Limit laeuft unbegrenzt - das gehoert gesagt.
+
+        Es ist Absicht und kein Fehler: eine Dauerueberwachung soll genau das
+        tun. Beim Einbau in einen fremden Ablauf ist es aber selten gewollt,
+        und ohne diesen Hinweis merkt der Aufrufer es erst daran, dass sein
+        Skript nicht zurueckkehrt. 'stage4_measure' meldet dasselbe seit jeher
+        - hier steht es fuer alle Wege der Fassade an einer Stelle.
+        """
+        if max_samples is None and max_duration_s is None:
+            _log.warning(
+                "%s ohne Limit: die Messung laeuft unbegrenzt weiter und endet "
+                "nur %s. Mit 'max_samples=' oder 'max_duration_s=' steht das "
+                "Ende vorab fest.",
+                methode,
+                ende,
+            )
 
     @staticmethod
     def _run_parameters(
@@ -928,6 +994,8 @@ class MeasureControl:
             _log.warning("Nur-Lesen-Sitzung: Messung laeuft ohne HOLD")
             use_hold = False
 
+        self._warn_ohne_limit(max_samples, max_duration_s, "start()", "durch stop()")
+
         lauf_parameter = self._run_parameters(
             interval_s, max_samples, max_duration_s, use_hold, record_condition, parameters
         )
@@ -1016,6 +1084,10 @@ class MeasureControl:
             _log.warning("Nur-Lesen-Sitzung: stream() laeuft ohne HOLD")
             use_hold = False
 
+        self._warn_ohne_limit(
+            max_samples, max_duration_s, "stream()", "durch 'break' oder Strg+C"
+        )
+
         gefuehrte_stats = stats if stats is not None else LoopStatistics()
         prepare_update_rate(self._session, interval_s, gefuehrte_stats, check_update_rate)
 
@@ -1062,6 +1134,18 @@ class MeasureControl:
         include_device: bool | None = None,
     ) -> LoopStatistics:
         """Messschleife in eine CSV schreiben - der haeufigste Fall.
+
+        EMPFOHLENER WEG, um eine Messreihe aufzuzeichnen. Die drei Angaben,
+        auf die es ankommt, sind 'table', 'interval_s' und ein Limit; alles
+        Weitere hat brauchbare Voreinstellungen. Zusammen mit
+        'wt.items.read()' ist das die kuerzeste vollstaendige Messung:
+
+            wt.measure.record_csv(pfad, wt.items.read(), max_samples=60)
+
+        Die Geschwister: 'record()' nimmt eine beliebige Senke statt einer
+        CSV, 'start()' misst im Hintergrund, 'stream()' gibt die Datensaetze
+        einzeln heraus. Siehe den Klassenkopf - der Unterschied ist nicht der
+        Komfort, sondern wer den Takt treibt.
 
         Duenne Weiterleitung an 'record()' mit einer fertigen 'CsvSink', damit
         der CSV-Normalfall keinen Umgang mit dem Sink-Vertrag verlangt.
@@ -1776,6 +1860,10 @@ class WT3000:
         force_restore: bool = False,
     ) -> Iterator[RangeReport]:
         """Bereiche nach Plan setzen, Block ausfuehren, Ausgangszustand zurueck.
+
+        EMPFOHLENER WEG, um Messbereiche zu stellen. Die Einzelaufrufe
+        'wt.ranges.set_range()' und 'wt.input.set_voltage_range()' sind der
+        rohe Zugriff ohne Rueckweg.
 
         Duenne Weiterleitung an 'wt3000_ranging.applied_ranges()' mit dem
         bereits verdrahteten RangeAccess - der Ablauf selbst bleibt dort, wo

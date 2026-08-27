@@ -14,6 +14,9 @@ from wt3000_scpi import WT3000
 > Jeder Python-Block dieser Seite wird von `tests/test_schnellstart_doku.py` gegen ein simuliertes
 > Gerät **ausgeführt** — mit heruntergedrehtem Takt, sonst wortwörtlich. Ein Rezept, das nicht mehr
 > läuft, lässt die Testsuite rot werden.
+>
+> **Lieber ein fertiges Skript zum Starten?** Dieselben Rezepte liegen als lauffähige Dateien in
+> [`examples/`](../examples/README.md) — `python examples/01_geraet_ansehen.py`.
 
 ---
 
@@ -367,4 +370,5 @@ logging.basicConfig(level=logging.INFO, format="%(levelname)-7s %(name)s: %(mess
 | den ganzen Gerätezustand sichern | Teil C.13 — `wt.backup(pfad)` / `wt.restore_backup(pfad)` |
 | in mehrere Dateien schreiben | Teil C.9 — `RotatingSink` + `RotationPolicy` |
 | ein eigenes Ausgabeformat | Teil C.9 — der Vertrag `SampleSink` ist drei Methoden lang |
-| ein vollständiges Anwenderskript | [`live_messwerte.py`](../live_messwerte.py) in der Projektwurzel |
+| lauffähige Skripte statt Ausschnitte | [`examples/`](../examples/README.md) — sechs nummerierte Beispiele |
+| ein Anwenderskript mit Kommandozeile | [`live_messwerte.py`](../live_messwerte.py) in der Projektwurzel |

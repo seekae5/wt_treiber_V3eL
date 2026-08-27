@@ -6,6 +6,17 @@
 # Geschrieben werden AUSSCHLIESSLICH: Item-Tabelle, NUMber, :NUMeric:HOLD.
 # Ranges, Wiring, Filter, Skalierung, Update-Rate und Frequenzmessquelle
 # bleiben unangetastet. Der Ausgangszustand wird am Ende wiederhergestellt.
+#
+# KEINE VORLAGE FUER EIGENEN CODE. Dieses Skript stammt aus der Entstehungszeit
+# der Bibliothek und baut Transport, Sitzung und Fachobjekte von Hand zusammen -
+# die Fassade 'WT3000' gab es damals noch nicht. Wer ein eigenes Messskript
+# schreibt, faengt stattdessen hier an:
+#
+#     examples/02_messreihe_csv.py und examples/03_eigene_groessen.py
+#     docs/Schnellstart.md
+#
+# Der Wert dieser Datei liegt in den Begruendungen in ihren Kommentaren, nicht
+# in ihrem Aufbau.
 # =============================================================================
 
 from __future__ import annotations
