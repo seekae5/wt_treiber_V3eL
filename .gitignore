@@ -1,0 +1,85 @@
+# ---------------------------------------------------------------------------
+# .gitignore fuer wt3000-scpi (Python / uv / hatchling / PyCharm)
+# ---------------------------------------------------------------------------
+
+# --- Betriebssystem -------------------------------------------------------
+# macOS legt in jedem geoeffneten Ordner eine .DS_Store an (Finder-Metadaten).
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+# Windows
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+# Linux
+*~
+.directory
+.Trash-*
+
+# --- Python Bytecode / Caches ------------------------------------------------
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# --- Build / Packaging (hatchling, setuptools, wheels) ---------------------
+build/
+dist/
+*.egg-info/
+.eggs/
+wheels/
+*.egg
+MANIFEST
+
+# --- Virtuelle Umgebungen -------------------------------------------------
+# uv.lock wird bewusst eingecheckt, die Umgebung selbst nicht.
+.venv/
+venv/
+env/
+ENV/
+.python-version
+
+# --- Test / Coverage / Typpruefung ---------------------------------------
+.pytest_cache/
+.cache/
+.coverage
+.coverage.*
+coverage.xml
+htmlcov/
+.tox/
+.nox/
+.mypy_cache/
+.dmypy.json
+dmypy.json
+.ruff_cache/
+
+# --- IDE / Editor -------------------------------------------------------
+# PyCharm-Projektdateien. Aktuell noch versioniert - siehe Hinweis unten,
+# falls sie kuenftig ignoriert werden sollen.
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# --- Projekt-spezifisch -------------------------------------------------
+# Laufzeit-Ausgaben von Messreihen (CSV/Sidecar), lokale Logs.
+*.log
+/messwerte/
+/output/
+/out/
+
+# Lokale Geraete-Konfiguration mit Host/IP: nur das *.example.json gehoert
+# ins Repo. Die aktive wt3000.json ist derzeit eingecheckt - bei Bedarf
+# entfernen (siehe Hinweis unten).
+# wt3000.json
+
+# --- Sonstiges --------------------------------------------------------
+*.bak
+*.tmp
+*.orig
+secrets.*
+.env
+.env.*
