@@ -458,7 +458,7 @@ wheels = [
 ]
 
 [[package]]
-name = "wt3000-scpi"
+name = "wt-treiber-lib"
 version = "0.3.0"
 source = { editable = "." }
 
