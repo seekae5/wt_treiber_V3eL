@@ -9,559 +9,559 @@
 <g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 544)">
 <title>packages</title>
 <polygon fill="white" stroke="none" points="-4,4 -4,-544 2098,-544 2098,4 -4,4"/>
-<!-- wt3000_scpi -->
+<!-- wt_treiber_lib -->
 <g id="node1" class="node">
 <title>wt3000_scpi</title>
 <polygon fill="none" stroke="black" points="1228.5,-36 1143.5,-36 1143.5,0 1228.5,0 1228.5,-36"/>
 <text xml:space="preserve" text-anchor="start" x="1151.5" y="-13.5" font-family="Times,serif" font-size="14.00">wt3000_scpi</text>
 </g>
-<!-- wt3000_scpi.wt3000_backup -->
+<!-- wt_treiber_lib.wt3000_backup -->
 <g id="node7" class="node">
 <title>wt3000_scpi.wt3000_backup</title>
 <polygon fill="none" stroke="black" points="1273.5,-180 1098.5,-180 1098.5,-144 1273.5,-144 1273.5,-180"/>
 <text xml:space="preserve" text-anchor="start" x="1106.5" y="-157.5" font-family="Times,serif" font-size="14.00">wt3000_scpi.wt3000_backup</text>
 </g>
-<!-- wt3000_scpi&#45;&gt;wt3000_scpi.wt3000_backup -->
+<!-- wt_treiber_lib&#45;&gt;wt_treiber_lib.wt3000_backup -->
 <g id="edge1" class="edge">
 <title>wt3000_scpi&#45;&gt;wt3000_scpi.wt3000_backup</title>
 <path fill="none" stroke="black" d="M1186,-36.41C1186,-60.5 1186,-104.25 1186,-132.97"/>
 <polygon fill="black" stroke="black" points="1186,-142.67 1181.5,-132.67 1186,-138.89 1186,-132.67 1186,-132.67 1186,-132.67 1186,-138.89 1190.5,-132.67 1186,-142.67"/>
 </g>
-<!-- wt3000_scpi.wt3000_common -->
+<!-- wt_treiber_lib.wt3000_common -->
 <g id="node8" class="node">
 <title>wt3000_scpi.wt3000_common</title>
 <polygon fill="none" stroke="black" points="1251.38,-396 1066.62,-396 1066.62,-360 1251.38,-360 1251.38,-396"/>
 <text xml:space="preserve" text-anchor="start" x="1074.62" y="-373.5" font-family="Times,serif" font-size="14.00">wt3000_scpi.wt3000_common</text>
 </g>
-<!-- wt3000_scpi&#45;&gt;wt3000_scpi.wt3000_common -->
+<!-- wt_treiber_lib&#45;&gt;wt_treiber_lib.wt3000_common -->
 <g id="edge2" class="edge">
 <title>wt3000_scpi&#45;&gt;wt3000_scpi.wt3000_common</title>
 <path fill="none" stroke="black" d="M1208.65,-36.35C1242.25,-64.38 1299.64,-122.31 1283,-180 1263.27,-248.37 1212.02,-315.88 1181.94,-351.38"/>
 <polygon fill="black" stroke="black" points="1175.58,-358.77 1178.69,-348.25 1178.05,-355.9 1182.1,-351.19 1182.1,-351.19 1182.1,-351.19 1178.05,-355.9 1185.51,-354.13 1175.58,-358.77"/>
 </g>
-<!-- wt3000_scpi.wt3000_core -->
+<!-- wt_treiber_lib.wt3000_core -->
 <g id="node9" class="node">
 <title>wt3000_scpi.wt3000_core</title>
 <polygon fill="none" stroke="black" points="1178.62,-468 1019.38,-468 1019.38,-432 1178.62,-432 1178.62,-468"/>
 <text xml:space="preserve" text-anchor="start" x="1027.38" y="-445.5" font-family="Times,serif" font-size="14.00">wt3000_scpi.wt3000_core</text>
 </g>
-<!-- wt3000_scpi&#45;&gt;wt3000_scpi.wt3000_core -->
+<!-- wt_treiber_lib&#45;&gt;wt_treiber_lib.wt3000_core -->
 <g id="edge3" class="edge">
 <title>wt3000_scpi&#45;&gt;wt3000_scpi.wt3000_core</title>
 <path fill="none" stroke="black" d="M1228.58,-19.52C1363.63,-21.58 1781,-31.17 1909,-72 1981.76,-95.21 2056,-84.63 2056,-161 2056,-161 2056,-161 2056,-307 2056,-431.66 1912.19,-371.27 1790,-396 1577.95,-438.92 1322.86,-447.7 1189.82,-449.12"/>
 <polygon fill="black" stroke="black" points="1180.11,-449.21 1190.07,-444.61 1183.89,-449.17 1190.11,-449.11 1190.11,-449.11 1190.11,-449.11 1183.89,-449.17 1190.15,-453.61 1180.11,-449.21"/>
 </g>
-<!-- wt3000_scpi.wt3000_device -->
+<!-- wt_treiber_lib.wt3000_device -->
 <g id="node10" class="node">
 <title>wt3000_scpi.wt3000_device</title>
 <polygon fill="none" stroke="black" points="1022.62,-108 851.38,-108 851.38,-72 1022.62,-72 1022.62,-108"/>
 <text xml:space="preserve" text-anchor="start" x="859.38" y="-85.5" font-family="Times,serif" font-size="14.00">wt3000_scpi.wt3000_device</text>
 </g>
-<!-- wt3000_scpi&#45;&gt;wt3000_scpi.wt3000_device -->
+<!-- wt_treiber_lib&#45;&gt;wt_treiber_lib.wt3000_device -->
 <g id="edge4" class="edge">
 <title>wt3000_scpi&#45;&gt;wt3000_scpi.wt3000_device</title>
 <path fill="none" stroke="black" d="M1143.2,-31.03C1106.53,-41.34 1052.95,-56.4 1009.6,-68.59"/>
 <polygon fill="black" stroke="black" points="999.99,-71.29 1008.39,-64.25 1003.63,-70.27 1009.61,-68.59 1009.61,-68.59 1009.61,-68.59 1003.63,-70.27 1010.83,-72.92 999.99,-71.29"/>
 </g>
-<!-- wt3000_scpi.wt3000_deviceconfig -->
+<!-- wt_treiber_lib.wt3000_deviceconfig -->
 <g id="node11" class="node">
 <title>wt3000_scpi.wt3000_deviceconfig</title>
 <polygon fill="none" stroke="black" points="1157.88,-252 952.12,-252 952.12,-216 1157.88,-216 1157.88,-252"/>
 <text xml:space="preserve" text-anchor="start" x="960.12" y="-229.5" font-family="Times,serif" font-size="14.00">wt3000_scpi.wt3000_deviceconfig</text>
 </g>
-<!-- wt3000_scpi&#45;&gt;wt3000_scpi.wt3000_deviceconfig -->
+<!-- wt_treiber_lib&#45;&gt;wt_treiber_lib.wt3000_deviceconfig -->
 <g id="edge5" class="edge">
 <title>wt3000_scpi&#45;&gt;wt3000_scpi.wt3000_deviceconfig</title>
 <path fill="none" stroke="black" d="M1170.33,-36.11C1149.78,-59.21 1113.58,-102.32 1090,-144 1078.97,-163.51 1069.84,-187.19 1063.67,-205.22"/>
 <polygon fill="black" stroke="black" points="1060.61,-214.47 1059.48,-203.56 1061.8,-210.88 1063.75,-204.97 1063.75,-204.97 1063.75,-204.97 1061.8,-210.88 1068.02,-206.39 1060.61,-214.47"/>
 </g>
-<!-- wt3000_scpi.wt3000_input -->
+<!-- wt_treiber_lib.wt3000_input -->
 <g id="node12" class="node">
 <title>wt3000_scpi.wt3000_input</title>
 <polygon fill="none" stroke="black" points="1529.88,-324 1366.12,-324 1366.12,-288 1529.88,-288 1529.88,-324"/>
 <text xml:space="preserve" text-anchor="start" x="1374.12" y="-301.5" font-family="Times,serif" font-size="14.00">wt3000_scpi.wt3000_input</text>
 </g>
-<!-- wt3000_scpi&#45;&gt;wt3000_scpi.wt3000_input -->
+<!-- wt_treiber_lib&#45;&gt;wt_treiber_lib.wt3000_input -->
 <g id="edge6" class="edge">
 <title>wt3000_scpi&#45;&gt;wt3000_scpi.wt3000_input</title>
 <path fill="none" stroke="black" d="M1228.81,-19.51C1286,-21.82 1389.03,-31.82 1466,-72 1547.08,-114.32 1577.57,-131.69 1613,-216 1619.2,-230.75 1622.43,-239.07 1613,-252 1603.48,-265.05 1572.92,-276.48 1540.64,-285.35"/>
 <polygon fill="black" stroke="black" points="1531.3,-287.83 1539.82,-280.91 1534.96,-286.86 1540.97,-285.26 1540.97,-285.26 1540.97,-285.26 1534.96,-286.86 1542.12,-289.61 1531.3,-287.83"/>
 </g>
-<!-- wt3000_scpi.wt3000_itemspec -->
+<!-- wt_treiber_lib.wt3000_itemspec -->
 <g id="node13" class="node">
 <title>wt3000_scpi.wt3000_itemspec</title>
 <polygon fill="none" stroke="black" points="559.38,-324 374.62,-324 374.62,-288 559.38,-288 559.38,-324"/>
 <text xml:space="preserve" text-anchor="start" x="382.62" y="-301.5" font-family="Times,serif" font-size="14.00">wt3000_scpi.wt3000_itemspec</text>
 </g>
-<!-- wt3000_scpi&#45;&gt;wt3000_scpi.wt3000_itemspec -->
+<!-- wt_treiber_lib&#45;&gt;wt_treiber_lib.wt3000_itemspec -->
 <g id="edge7" class="edge">
 <title>wt3000_scpi&#45;&gt;wt3000_scpi.wt3000_itemspec</title>
 <path fill="none" stroke="black" d="M1143.27,-21.41C1045.74,-28.35 801.26,-54.12 621,-144 571.01,-168.92 555.68,-174.77 518,-216 501.25,-234.33 487.62,-259.09 478.68,-277.84"/>
 <polygon fill="black" stroke="black" points="474.59,-286.72 474.68,-275.75 476.17,-283.28 478.77,-277.63 478.77,-277.63 478.77,-277.63 476.17,-283.28 482.86,-279.51 474.59,-286.72"/>
 </g>
-<!-- wt3000_scpi.wt3000_measure -->
+<!-- wt_treiber_lib.wt3000_measure -->
 <g id="node14" class="node">
 <title>wt3000_scpi.wt3000_measure</title>
 <polygon fill="none" stroke="black" points="361.88,-252 180.12,-252 180.12,-216 361.88,-216 361.88,-252"/>
 <text xml:space="preserve" text-anchor="start" x="188.12" y="-229.5" font-family="Times,serif" font-size="14.00">wt3000_scpi.wt3000_measure</text>
 </g>
-<!-- wt3000_scpi&#45;&gt;wt3000_scpi.wt3000_measure -->
+<!-- wt_treiber_lib&#45;&gt;wt_treiber_lib.wt3000_measure -->
 <g id="edge8" class="edge">
 <title>wt3000_scpi&#45;&gt;wt3000_scpi.wt3000_measure</title>
 <path fill="none" stroke="black" d="M1143.47,-19.19C1011.54,-20.26 610.87,-27.2 490,-72 409.58,-101.81 332.96,-170.45 295.28,-207.75"/>
 <polygon fill="black" stroke="black" points="288.28,-214.78 292.15,-204.52 290.95,-212.1 295.34,-207.7 295.34,-207.7 295.34,-207.7 290.95,-212.1 298.52,-210.87 288.28,-214.78"/>
 </g>
-<!-- wt3000_scpi.wt3000_numeric -->
+<!-- wt_treiber_lib.wt3000_numeric -->
 <g id="node15" class="node">
 <title>wt3000_scpi.wt3000_numeric</title>
 <polygon fill="none" stroke="black" points="440.5,-396 259.5,-396 259.5,-360 440.5,-360 440.5,-396"/>
 <text xml:space="preserve" text-anchor="start" x="267.5" y="-373.5" font-family="Times,serif" font-size="14.00">wt3000_scpi.wt3000_numeric</text>
 </g>
-<!-- wt3000_scpi&#45;&gt;wt3000_scpi.wt3000_numeric -->
+<!-- wt_treiber_lib&#45;&gt;wt_treiber_lib.wt3000_numeric -->
 <g id="edge9" class="edge">
 <title>wt3000_scpi&#45;&gt;wt3000_scpi.wt3000_numeric</title>
 <path fill="none" stroke="black" d="M1143.28,-19.06C976.87,-19.64 372.18,-24.99 187,-72 97.79,-94.65 0,-68.96 0,-161 0,-161 0,-161 0,-235 0,-289.62 148.24,-333.29 251.77,-357.13"/>
 <polygon fill="black" stroke="black" points="261.39,-359.32 250.65,-361.49 257.71,-358.48 251.64,-357.1 251.64,-357.1 251.64,-357.1 257.71,-358.48 252.64,-352.71 261.39,-359.32"/>
 </g>
-<!-- wt3000_scpi.wt3000_rangeio -->
+<!-- wt_treiber_lib.wt3000_rangeio -->
 <g id="node16" class="node">
 <title>wt3000_scpi.wt3000_rangeio</title>
 <polygon fill="none" stroke="black" points="1800.25,-324 1623.75,-324 1623.75,-288 1800.25,-288 1800.25,-324"/>
 <text xml:space="preserve" text-anchor="start" x="1631.75" y="-301.5" font-family="Times,serif" font-size="14.00">wt3000_scpi.wt3000_rangeio</text>
 </g>
-<!-- wt3000_scpi&#45;&gt;wt3000_scpi.wt3000_rangeio -->
+<!-- wt_treiber_lib&#45;&gt;wt_treiber_lib.wt3000_rangeio -->
 <g id="edge10" class="edge">
 <title>wt3000_scpi&#45;&gt;wt3000_scpi.wt3000_rangeio</title>
 <path fill="none" stroke="black" d="M1228.84,-18.39C1381.35,-17.27 1893.8,-22.69 1987,-144 2017.65,-183.89 1941.78,-250.75 1940,-252 1902.63,-278.14 1854.2,-291.55 1811.6,-298.36"/>
 <polygon fill="black" stroke="black" points="1801.82,-299.82 1811.05,-293.9 1805.56,-299.26 1811.71,-298.35 1811.71,-298.35 1811.71,-298.35 1805.56,-299.26 1812.38,-302.8 1801.82,-299.82"/>
 </g>
-<!-- wt3000_scpi.wt3000_ranging -->
+<!-- wt_treiber_lib.wt3000_ranging -->
 <g id="node17" class="node">
 <title>wt3000_scpi.wt3000_ranging</title>
 <polygon fill="none" stroke="black" points="1913.62,-252 1736.38,-252 1736.38,-216 1913.62,-216 1913.62,-252"/>
 <text xml:space="preserve" text-anchor="start" x="1744.38" y="-229.5" font-family="Times,serif" font-size="14.00">wt3000_scpi.wt3000_ranging</text>
 </g>
-<!-- wt3000_scpi&#45;&gt;wt3000_scpi.wt3000_ranging -->
+<!-- wt_treiber_lib&#45;&gt;wt_treiber_lib.wt3000_ranging -->
 <g id="edge11" class="edge">
 <title>wt3000_scpi&#45;&gt;wt3000_scpi.wt3000_ranging</title>
 <path fill="none" stroke="black" d="M1228.97,-19.24C1335.11,-20.51 1606.7,-28.08 1684,-72 1736.17,-101.64 1724.3,-135.91 1765,-180 1774.11,-189.87 1784.9,-199.85 1794.8,-208.44"/>
 <polygon fill="black" stroke="black" points="1802.27,-214.81 1791.74,-211.75 1799.4,-212.36 1794.66,-208.32 1794.66,-208.32 1794.66,-208.32 1799.4,-212.36 1797.58,-204.9 1802.27,-214.81"/>
 </g>
-<!-- wt3000_scpi.wt3000_sinks -->
+<!-- wt_treiber_lib.wt3000_sinks -->
 <g id="node18" class="node">
 <title>wt3000_scpi.wt3000_sinks</title>
 <polygon fill="none" stroke="black" points="273.88,-180 110.12,-180 110.12,-144 273.88,-144 273.88,-180"/>
 <text xml:space="preserve" text-anchor="start" x="118.12" y="-157.5" font-family="Times,serif" font-size="14.00">wt3000_scpi.wt3000_sinks</text>
 </g>
-<!-- wt3000_scpi&#45;&gt;wt3000_scpi.wt3000_sinks -->
+<!-- wt_treiber_lib&#45;&gt;wt_treiber_lib.wt3000_sinks -->
 <g id="edge12" class="edge">
 <title>wt3000_scpi&#45;&gt;wt3000_scpi.wt3000_sinks</title>
 <path fill="none" stroke="black" d="M1143.26,-19.86C959.54,-23.75 244.66,-40.84 209,-72 192.17,-86.71 188.78,-112.51 189.1,-132.56"/>
 <polygon fill="black" stroke="black" points="189.59,-142.36 184.6,-132.59 189.4,-138.58 189.1,-132.37 189.1,-132.37 189.1,-132.37 189.4,-138.58 193.59,-132.15 189.59,-142.36"/>
 </g>
-<!-- wt3000_scpi.wt3000_transport -->
+<!-- wt_treiber_lib.wt3000_transport -->
 <g id="node19" class="node">
 <title>wt3000_scpi.wt3000_transport</title>
 <polygon fill="none" stroke="black" points="1658,-540 1474,-540 1474,-504 1658,-504 1658,-540"/>
 <text xml:space="preserve" text-anchor="start" x="1482" y="-517.5" font-family="Times,serif" font-size="14.00">wt3000_scpi.wt3000_transport</text>
 </g>
-<!-- wt3000_scpi&#45;&gt;wt3000_scpi.wt3000_transport -->
+<!-- wt_treiber_lib&#45;&gt;wt_treiber_lib.wt3000_transport -->
 <g id="edge13" class="edge">
 <title>wt3000_scpi&#45;&gt;wt3000_scpi.wt3000_transport</title>
 <path fill="none" stroke="black" d="M1228.89,-18.47C1373.9,-17.18 1844.61,-17.41 1984,-72 2042.56,-94.93 2094,-98.11 2094,-161 2094,-161 2094,-161 2094,-379 2094,-466.08 1822.8,-501.28 1669.13,-514.23"/>
 <polygon fill="black" stroke="black" points="1659.49,-515.03 1669.08,-509.72 1663.26,-514.72 1669.45,-514.21 1669.45,-514.21 1669.45,-514.21 1663.26,-514.72 1669.82,-518.69 1659.49,-515.03"/>
 </g>
-<!-- wt3000_scpi.stage2_read_numeric -->
+<!-- wt_treiber_lib.stage2_read_numeric -->
 <g id="node2" class="node">
 <title>wt3000_scpi.stage2_read_numeric</title>
 <polygon fill="none" stroke="black" points="820.5,-324 615.5,-324 615.5,-288 820.5,-288 820.5,-324"/>
 <text xml:space="preserve" text-anchor="start" x="623.5" y="-301.5" font-family="Times,serif" font-size="14.00">wt3000_scpi.stage2_read_numeric</text>
 </g>
-<!-- wt3000_scpi.stage2_read_numeric&#45;&gt;wt3000_scpi.wt3000_common -->
+<!-- wt_treiber_lib.stage2_read_numeric&#45;&gt;wt_treiber_lib.wt3000_common -->
 <g id="edge14" class="edge">
 <title>wt3000_scpi.stage2_read_numeric&#45;&gt;wt3000_scpi.wt3000_common</title>
 <path fill="none" stroke="black" d="M820.84,-323.32C891.41,-334.52 984.71,-349.34 1055.44,-360.56"/>
 <polygon fill="black" stroke="black" points="1064.94,-362.07 1054.36,-364.95 1061.21,-361.48 1055.07,-360.5 1055.07,-360.5 1055.07,-360.5 1061.21,-361.48 1055.77,-356.06 1064.94,-362.07"/>
 </g>
-<!-- wt3000_scpi.stage2_read_numeric&#45;&gt;wt3000_scpi.wt3000_core -->
+<!-- wt_treiber_lib.stage2_read_numeric&#45;&gt;wt_treiber_lib.wt3000_core -->
 <g id="edge15" class="edge">
 <title>wt3000_scpi.stage2_read_numeric&#45;&gt;wt3000_scpi.wt3000_core</title>
 <path fill="none" stroke="black" d="M742.9,-324.36C772.6,-344.32 824.36,-376.81 873,-396 916.19,-413.04 966.29,-425.48 1008.32,-434.01"/>
 <polygon fill="black" stroke="black" points="1017.91,-435.91 1007.22,-438.38 1014.2,-435.17 1008.1,-433.96 1008.1,-433.96 1008.1,-433.96 1014.2,-435.17 1008.97,-429.55 1017.91,-435.91"/>
 </g>
-<!-- wt3000_scpi.stage2_read_numeric&#45;&gt;wt3000_scpi.wt3000_numeric -->
+<!-- wt_treiber_lib.stage2_read_numeric&#45;&gt;wt_treiber_lib.wt3000_numeric -->
 <g id="edge16" class="edge">
 <title>wt3000_scpi.stage2_read_numeric&#45;&gt;wt3000_scpi.wt3000_numeric</title>
 <path fill="none" stroke="black" d="M626.09,-324.48C573,-334.58 506.13,-347.3 451.5,-357.69"/>
 <polygon fill="black" stroke="black" points="441.94,-359.51 450.92,-353.22 445.65,-358.81 451.76,-357.64 451.76,-357.64 451.76,-357.64 445.65,-358.81 452.6,-362.06 441.94,-359.51"/>
 </g>
-<!-- wt3000_scpi.stage3_own_itemtable -->
+<!-- wt_treiber_lib.stage3_own_itemtable -->
 <g id="node3" class="node">
 <title>wt3000_scpi.stage3_own_itemtable</title>
 <polygon fill="none" stroke="black" points="819.5,-252 608.5,-252 608.5,-216 819.5,-216 819.5,-252"/>
 <text xml:space="preserve" text-anchor="start" x="616.5" y="-229.5" font-family="Times,serif" font-size="14.00">wt3000_scpi.stage3_own_itemtable</text>
 </g>
-<!-- wt3000_scpi.stage3_own_itemtable&#45;&gt;wt3000_scpi.wt3000_common -->
+<!-- wt_treiber_lib.stage3_own_itemtable&#45;&gt;wt_treiber_lib.wt3000_common -->
 <g id="edge17" class="edge">
 <title>wt3000_scpi.stage3_own_itemtable&#45;&gt;wt3000_scpi.wt3000_common</title>
 <path fill="none" stroke="black" d="M800.23,-252.39C832.79,-260.76 869.55,-272.43 901,-288 924.9,-299.83 924.93,-312.51 949,-324 982.21,-339.85 1020.73,-351.33 1055.63,-359.46"/>
 <polygon fill="black" stroke="black" points="1065.15,-361.61 1054.4,-363.8 1061.46,-360.78 1055.39,-359.41 1055.39,-359.41 1055.39,-359.41 1061.46,-360.78 1056.39,-355.02 1065.15,-361.61"/>
 </g>
-<!-- wt3000_scpi.stage3_own_itemtable&#45;&gt;wt3000_scpi.wt3000_core -->
+<!-- wt_treiber_lib.stage3_own_itemtable&#45;&gt;wt_treiber_lib.wt3000_core -->
 <g id="edge18" class="edge">
 <title>wt3000_scpi.stage3_own_itemtable&#45;&gt;wt3000_scpi.wt3000_core</title>
 <path fill="none" stroke="black" d="M756.36,-252.49C778.46,-262.12 805.67,-274.77 829,-288 903,-329.95 913.22,-353.68 987,-396 1006.45,-407.16 1028.64,-418.02 1048.11,-426.97"/>
 <polygon fill="black" stroke="black" points="1057.2,-431.1 1046.23,-431.07 1053.75,-429.54 1048.09,-426.97 1048.09,-426.97 1048.09,-426.97 1053.75,-429.54 1049.95,-422.87 1057.2,-431.1"/>
 </g>
-<!-- wt3000_scpi.stage3_own_itemtable&#45;&gt;wt3000_scpi.wt3000_itemspec -->
+<!-- wt_treiber_lib.stage3_own_itemtable&#45;&gt;wt_treiber_lib.wt3000_itemspec -->
 <g id="edge19" class="edge">
 <title>wt3000_scpi.stage3_own_itemtable&#45;&gt;wt3000_scpi.wt3000_itemspec</title>
 <path fill="none" stroke="black" d="M652.31,-252.48C617.84,-262.25 574.73,-274.47 538.76,-284.66"/>
 <polygon fill="black" stroke="black" points="529.5,-287.29 537.9,-280.23 533.14,-286.25 539.13,-284.56 539.13,-284.56 539.13,-284.56 533.14,-286.25 540.35,-288.89 529.5,-287.29"/>
 </g>
-<!-- wt3000_scpi.stage3_own_itemtable&#45;&gt;wt3000_scpi.wt3000_numeric -->
+<!-- wt_treiber_lib.stage3_own_itemtable&#45;&gt;wt_treiber_lib.wt3000_numeric -->
 <g id="edge20" class="edge">
 <title>wt3000_scpi.stage3_own_itemtable&#45;&gt;wt3000_scpi.wt3000_numeric</title>
 <path fill="none" stroke="black" d="M671.07,-252.46C650.56,-261.68 626.15,-274 606,-288 586.9,-301.28 588.43,-312.88 568,-324 532.35,-343.4 489.6,-355.79 451.44,-363.66"/>
 <polygon fill="black" stroke="black" points="442.01,-365.53 450.95,-359.17 445.72,-364.79 451.82,-363.59 451.82,-363.59 451.82,-363.59 445.72,-364.79 452.69,-368 442.01,-365.53"/>
 </g>
-<!-- wt3000_scpi.stage4_measure -->
+<!-- wt_treiber_lib.stage4_measure -->
 <g id="node4" class="node">
 <title>wt3000_scpi.stage4_measure</title>
 <polygon fill="none" stroke="black" points="393.88,-108 218.12,-108 218.12,-72 393.88,-72 393.88,-108"/>
 <text xml:space="preserve" text-anchor="start" x="226.12" y="-85.5" font-family="Times,serif" font-size="14.00">wt3000_scpi.stage4_measure</text>
 </g>
-<!-- wt3000_scpi.stage4_measure&#45;&gt;wt3000_scpi.wt3000_common -->
+<!-- wt_treiber_lib.stage4_measure&#45;&gt;wt_treiber_lib.wt3000_common -->
 <g id="edge21" class="edge">
 <title>wt3000_scpi.stage4_measure&#45;&gt;wt3000_scpi.wt3000_common</title>
 <path fill="none" stroke="black" d="M394.36,-103.9C500.2,-121.2 681.56,-156.81 828,-216 915.56,-251.39 925.49,-283.9 1011,-324 1036.84,-336.12 1066.27,-347.18 1092.05,-356.03"/>
 <polygon fill="black" stroke="black" points="1101.32,-359.17 1090.4,-360.22 1097.74,-357.96 1091.85,-355.96 1091.85,-355.96 1091.85,-355.96 1097.74,-357.96 1093.29,-351.7 1101.32,-359.17"/>
 </g>
-<!-- wt3000_scpi.stage4_measure&#45;&gt;wt3000_scpi.wt3000_core -->
+<!-- wt_treiber_lib.stage4_measure&#45;&gt;wt_treiber_lib.wt3000_core -->
 <g id="edge22" class="edge">
 <title>wt3000_scpi.stage4_measure&#45;&gt;wt3000_scpi.wt3000_core</title>
 <path fill="none" stroke="black" d="M217.7,-97.06C175.98,-103.62 127.45,-116.99 91,-144 54.01,-171.41 38,-186.96 38,-233 38,-233 38,-233 38,-307 38,-384.52 113.87,-373.33 188,-396 339.29,-442.27 809.01,-448.6 1008.22,-449.15"/>
 <polygon fill="black" stroke="black" points="1018,-449.17 1007.99,-453.65 1014.22,-449.16 1008,-449.15 1008,-449.15 1008,-449.15 1014.22,-449.16 1008.01,-444.65 1018,-449.17"/>
 </g>
-<!-- wt3000_scpi.stage4_measure&#45;&gt;wt3000_scpi.wt3000_itemspec -->
+<!-- wt_treiber_lib.stage4_measure&#45;&gt;wt_treiber_lib.wt3000_itemspec -->
 <g id="edge23" class="edge">
 <title>wt3000_scpi.stage4_measure&#45;&gt;wt3000_scpi.wt3000_itemspec</title>
 <path fill="none" stroke="black" d="M318.9,-108.15C347.05,-145.56 414.09,-234.68 447.45,-279.02"/>
 <polygon fill="black" stroke="black" points="453.3,-286.79 443.69,-281.51 451.03,-283.77 447.29,-278.8 447.29,-278.8 447.29,-278.8 451.03,-283.77 450.89,-276.1 453.3,-286.79"/>
 </g>
-<!-- wt3000_scpi.stage4_measure&#45;&gt;wt3000_scpi.wt3000_measure -->
+<!-- wt_treiber_lib.stage4_measure&#45;&gt;wt_treiber_lib.wt3000_measure -->
 <g id="edge24" class="edge">
 <title>wt3000_scpi.stage4_measure&#45;&gt;wt3000_scpi.wt3000_measure</title>
 <path fill="none" stroke="black" d="M301.71,-108.41C295.75,-132.6 284.89,-176.64 277.82,-205.35"/>
 <polygon fill="black" stroke="black" points="275.51,-214.71 273.53,-203.92 276.41,-211.03 277.9,-205 277.9,-205 277.9,-205 276.41,-211.03 282.27,-206.07 275.51,-214.71"/>
 </g>
-<!-- wt3000_scpi.stage4_measure&#45;&gt;wt3000_scpi.wt3000_numeric -->
+<!-- wt_treiber_lib.stage4_measure&#45;&gt;wt_treiber_lib.wt3000_numeric -->
 <g id="edge25" class="edge">
 <title>wt3000_scpi.stage4_measure&#45;&gt;wt3000_scpi.wt3000_numeric</title>
 <path fill="none" stroke="black" d="M217.65,-102.95C169.08,-111.53 115.74,-124.96 101,-144 91.2,-156.65 96.48,-164.65 101,-180 122.55,-253.08 133.93,-277.14 194,-324 211.83,-337.91 233.53,-348.28 255,-355.98"/>
 <polygon fill="black" stroke="black" points="264.35,-359.15 253.44,-360.2 260.77,-357.93 254.89,-355.94 254.89,-355.94 254.89,-355.94 260.77,-357.93 256.33,-351.68 264.35,-359.15"/>
 </g>
-<!-- wt3000_scpi.stage4_measure&#45;&gt;wt3000_scpi.wt3000_sinks -->
+<!-- wt_treiber_lib.stage4_measure&#45;&gt;wt_treiber_lib.wt3000_sinks -->
 <g id="edge26" class="edge">
 <title>wt3000_scpi.stage4_measure&#45;&gt;wt3000_scpi.wt3000_sinks</title>
 <path fill="none" stroke="black" d="M277.53,-108.48C263,-117.4 245.14,-128.37 229.51,-137.97"/>
 <polygon fill="black" stroke="black" points="221.15,-143.1 227.32,-134.03 224.37,-141.12 229.67,-137.87 229.67,-137.87 229.67,-137.87 224.37,-141.12 232.02,-141.7 221.15,-143.1"/>
 </g>
-<!-- wt3000_scpi.stage5_input_config -->
+<!-- wt_treiber_lib.stage5_input_config -->
 <g id="node5" class="node">
 <title>wt3000_scpi.stage5_input_config</title>
 <polygon fill="none" stroke="black" points="1603.5,-252 1404.5,-252 1404.5,-216 1603.5,-216 1603.5,-252"/>
 <text xml:space="preserve" text-anchor="start" x="1412.5" y="-229.5" font-family="Times,serif" font-size="14.00">wt3000_scpi.stage5_input_config</text>
 </g>
-<!-- wt3000_scpi.stage5_input_config&#45;&gt;wt3000_scpi.wt3000_common -->
+<!-- wt_treiber_lib.stage5_input_config&#45;&gt;wt_treiber_lib.wt3000_common -->
 <g id="edge27" class="edge">
 <title>wt3000_scpi.stage5_input_config&#45;&gt;wt3000_scpi.wt3000_common</title>
 <path fill="none" stroke="black" d="M1440.71,-252.43C1413.93,-261.15 1382.99,-273.07 1357,-288 1335.39,-300.42 1335.71,-311.76 1314,-324 1290.48,-337.26 1263.09,-347.97 1237.93,-356.2"/>
 <polygon fill="black" stroke="black" points="1228.46,-359.21 1236.63,-351.89 1232.07,-358.07 1237.99,-356.18 1237.99,-356.18 1237.99,-356.18 1232.07,-358.07 1239.36,-360.47 1228.46,-359.21"/>
 </g>
-<!-- wt3000_scpi.stage5_input_config&#45;&gt;wt3000_scpi.wt3000_core -->
+<!-- wt_treiber_lib.stage5_input_config&#45;&gt;wt_treiber_lib.wt3000_core -->
 <g id="edge28" class="edge">
 <title>wt3000_scpi.stage5_input_config&#45;&gt;wt3000_scpi.wt3000_core</title>
 <path fill="none" stroke="black" d="M1520.07,-252.23C1535.62,-271.07 1554.7,-301.55 1539,-324 1499.05,-381.14 1306.91,-418.7 1190.14,-436.66"/>
 <polygon fill="black" stroke="black" points="1180.29,-438.15 1189.5,-432.21 1184.03,-437.59 1190.18,-436.65 1190.18,-436.65 1190.18,-436.65 1184.03,-437.59 1190.85,-441.1 1180.29,-438.15"/>
 </g>
-<!-- wt3000_scpi.stage5_input_config&#45;&gt;wt3000_scpi.wt3000_input -->
+<!-- wt_treiber_lib.stage5_input_config&#45;&gt;wt_treiber_lib.wt3000_input -->
 <g id="edge29" class="edge">
 <title>wt3000_scpi.stage5_input_config&#45;&gt;wt3000_scpi.wt3000_input</title>
 <path fill="none" stroke="black" d="M1490.16,-252.3C1483.65,-260.44 1475.75,-270.31 1468.56,-279.3"/>
 <polygon fill="black" stroke="black" points="1462.44,-286.94 1465.18,-276.32 1464.81,-283.99 1468.69,-279.14 1468.69,-279.14 1468.69,-279.14 1464.81,-283.99 1472.21,-281.95 1462.44,-286.94"/>
 </g>
-<!-- wt3000_scpi.stage5b_range_probe -->
+<!-- wt_treiber_lib.stage5b_range_probe -->
 <g id="node6" class="node">
 <title>wt3000_scpi.stage5b_range_probe</title>
 <polygon fill="none" stroke="black" points="1978.12,-180 1773.88,-180 1773.88,-144 1978.12,-144 1978.12,-180"/>
 <text xml:space="preserve" text-anchor="start" x="1781.88" y="-157.5" font-family="Times,serif" font-size="14.00">wt3000_scpi.stage5b_range_probe</text>
 </g>
-<!-- wt3000_scpi.stage5b_range_probe&#45;&gt;wt3000_scpi.wt3000_common -->
+<!-- wt_treiber_lib.stage5b_range_probe&#45;&gt;wt_treiber_lib.wt3000_common -->
 <g id="edge30" class="edge">
 <title>wt3000_scpi.stage5b_range_probe&#45;&gt;wt3000_scpi.wt3000_common</title>
 <path fill="none" stroke="black" d="M1773.57,-168.48C1653.69,-175.91 1463.02,-191.17 1396,-216 1316.24,-245.55 1308.43,-276.31 1238,-324 1223.67,-333.71 1207.83,-344.35 1194.12,-353.53"/>
 <polygon fill="black" stroke="black" points="1186.02,-358.95 1191.83,-349.65 1189.17,-356.85 1194.33,-353.39 1194.33,-353.39 1194.33,-353.39 1189.17,-356.85 1196.84,-357.13 1186.02,-358.95"/>
 </g>
-<!-- wt3000_scpi.stage5b_range_probe&#45;&gt;wt3000_scpi.wt3000_core -->
+<!-- wt_treiber_lib.stage5b_range_probe&#45;&gt;wt_treiber_lib.wt3000_core -->
 <g id="edge31" class="edge">
 <title>wt3000_scpi.stage5b_range_probe&#45;&gt;wt3000_scpi.wt3000_core</title>
 <path fill="none" stroke="black" d="M1907.11,-180.33C1919.78,-189.19 1933.06,-201.25 1940,-216 1946.81,-230.48 1947.53,-237.89 1940,-252 1885.84,-353.46 1833.53,-357.94 1725,-396 1628.73,-429.76 1338.89,-442.48 1189.78,-446.88"/>
 <polygon fill="black" stroke="black" points="1180.07,-447.16 1189.94,-442.38 1183.85,-447.06 1190.07,-446.88 1190.07,-446.88 1190.07,-446.88 1183.85,-447.06 1190.2,-451.37 1180.07,-447.16"/>
 </g>
-<!-- wt3000_scpi.stage5b_range_probe&#45;&gt;wt3000_scpi.wt3000_rangeio -->
+<!-- wt_treiber_lib.stage5b_range_probe&#45;&gt;wt_treiber_lib.wt3000_rangeio -->
 <g id="edge32" class="edge">
 <title>wt3000_scpi.stage5b_range_probe&#45;&gt;wt3000_scpi.wt3000_rangeio</title>
 <path fill="none" stroke="black" d="M1896.68,-180.47C1916.38,-199.23 1940.62,-229.4 1923,-252 1908.67,-270.37 1859.14,-283.35 1811.66,-291.86"/>
 <polygon fill="black" stroke="black" points="1801.82,-293.56 1810.91,-287.42 1805.55,-292.92 1811.68,-291.86 1811.68,-291.86 1811.68,-291.86 1805.55,-292.92 1812.45,-296.29 1801.82,-293.56"/>
 </g>
-<!-- wt3000_scpi.stage5b_range_probe&#45;&gt;wt3000_scpi.wt3000_ranging -->
+<!-- wt_treiber_lib.stage5b_range_probe&#45;&gt;wt_treiber_lib.wt3000_ranging -->
 <g id="edge33" class="edge">
 <title>wt3000_scpi.stage5b_range_probe&#45;&gt;wt3000_scpi.wt3000_ranging</title>
 <path fill="none" stroke="black" d="M1863.39,-180.3C1857.53,-188.36 1850.42,-198.11 1843.93,-207.02"/>
 <polygon fill="black" stroke="black" points="1838.18,-214.91 1840.43,-204.18 1840.41,-211.85 1844.07,-206.83 1844.07,-206.83 1844.07,-206.83 1840.41,-211.85 1847.7,-209.48 1838.18,-214.91"/>
 </g>
-<!-- wt3000_scpi.wt3000_backup&#45;&gt;wt3000_scpi.wt3000_common -->
+<!-- wt_treiber_lib.wt3000_backup&#45;&gt;wt_treiber_lib.wt3000_common -->
 <g id="edge34" class="edge">
 <title>wt3000_scpi.wt3000_backup&#45;&gt;wt3000_scpi.wt3000_common</title>
 <path fill="none" stroke="black" d="M1183.84,-180.15C1179.2,-216.93 1168.25,-303.71 1162.56,-348.76"/>
 <polygon fill="black" stroke="black" points="1161.33,-358.56 1158.11,-348.07 1161.8,-354.81 1162.58,-348.64 1162.58,-348.64 1162.58,-348.64 1161.8,-354.81 1167.04,-349.2 1161.33,-358.56"/>
 </g>
-<!-- wt3000_scpi.wt3000_backup&#45;&gt;wt3000_scpi.wt3000_core -->
+<!-- wt_treiber_lib.wt3000_backup&#45;&gt;wt_treiber_lib.wt3000_core -->
 <g id="edge35" class="edge">
 <title>wt3000_scpi.wt3000_backup&#45;&gt;wt3000_scpi.wt3000_core</title>
 <path fill="none" stroke="black" d="M1201.2,-180.46C1235.13,-221.63 1310.26,-326.54 1260,-396 1243.48,-418.84 1216.78,-432 1189.83,-439.54"/>
 <polygon fill="black" stroke="black" points="1180.29,-441.95 1188.88,-435.14 1183.96,-441.03 1189.99,-439.5 1189.99,-439.5 1189.99,-439.5 1183.96,-441.03 1191.09,-443.86 1180.29,-441.95"/>
 </g>
-<!-- wt3000_scpi.wt3000_backup&#45;&gt;wt3000_scpi.wt3000_deviceconfig -->
+<!-- wt_treiber_lib.wt3000_backup&#45;&gt;wt_treiber_lib.wt3000_deviceconfig -->
 <g id="edge36" class="edge">
 <title>wt3000_scpi.wt3000_backup&#45;&gt;wt3000_scpi.wt3000_deviceconfig</title>
 <path fill="none" stroke="black" d="M1153.28,-180.48C1136.27,-189.57 1115.29,-200.78 1097.09,-210.51"/>
 <polygon fill="black" stroke="black" points="1088.38,-215.17 1095.08,-206.48 1091.71,-213.38 1097.2,-210.45 1097.2,-210.45 1097.2,-210.45 1091.71,-213.38 1099.32,-214.42 1088.38,-215.17"/>
 </g>
-<!-- wt3000_scpi.wt3000_backup&#45;&gt;wt3000_scpi.wt3000_input -->
+<!-- wt_treiber_lib.wt3000_backup&#45;&gt;wt_treiber_lib.wt3000_input -->
 <g id="edge37" class="edge">
 <title>wt3000_scpi.wt3000_backup&#45;&gt;wt3000_scpi.wt3000_input</title>
 <path fill="none" stroke="black" d="M1218.13,-180.41C1265.49,-206.09 1354.1,-254.11 1406.39,-282.45"/>
 <polygon fill="black" stroke="black" points="1414.95,-287.09 1404.01,-286.28 1411.63,-285.29 1406.16,-282.32 1406.16,-282.32 1406.16,-282.32 1411.63,-285.29 1408.3,-278.37 1414.95,-287.09"/>
 </g>
-<!-- wt3000_scpi.wt3000_backup&#45;&gt;wt3000_scpi.wt3000_itemspec -->
+<!-- wt_treiber_lib.wt3000_backup&#45;&gt;wt_treiber_lib.wt3000_itemspec -->
 <g id="edge38" class="edge">
 <title>wt3000_scpi.wt3000_backup&#45;&gt;wt3000_scpi.wt3000_itemspec</title>
 <path fill="none" stroke="black" d="M1098.05,-164.54C956.94,-168.07 686.89,-179.51 599,-216 575.98,-225.56 576.33,-237.58 556,-252 541.08,-262.58 523.97,-273.13 508.76,-281.99"/>
 <polygon fill="black" stroke="black" points="500.14,-286.94 506.56,-278.06 503.41,-285.06 508.8,-281.96 508.8,-281.96 508.8,-281.96 503.41,-285.06 511.05,-285.86 500.14,-286.94"/>
 </g>
-<!-- wt3000_scpi.wt3000_backup&#45;&gt;wt3000_scpi.wt3000_numeric -->
+<!-- wt_treiber_lib.wt3000_backup&#45;&gt;wt_treiber_lib.wt3000_numeric -->
 <g id="edge39" class="edge">
 <title>wt3000_scpi.wt3000_backup&#45;&gt;wt3000_scpi.wt3000_numeric</title>
 <path fill="none" stroke="black" d="M1098.13,-162.48C974.61,-163.51 743.32,-171.94 552,-216 530.4,-220.97 380.1,-270.9 366,-288 352.19,-304.75 348.63,-329.38 348.28,-348.48"/>
 <polygon fill="black" stroke="black" points="348.39,-358.32 343.77,-348.38 348.35,-354.54 348.27,-348.32 348.27,-348.32 348.27,-348.32 348.35,-354.54 352.77,-348.27 348.39,-358.32"/>
 </g>
-<!-- wt3000_scpi.wt3000_backup&#45;&gt;wt3000_scpi.wt3000_rangeio -->
+<!-- wt_treiber_lib.wt3000_backup&#45;&gt;wt_treiber_lib.wt3000_rangeio -->
 <g id="edge40" class="edge">
 <title>wt3000_scpi.wt3000_backup&#45;&gt;wt3000_scpi.wt3000_rangeio</title>
 <path fill="none" stroke="black" d="M1273.81,-171.06C1389.77,-182.14 1582.88,-202.26 1613,-216 1644.46,-230.35 1672.97,-258.33 1691.22,-279.1"/>
 <polygon fill="black" stroke="black" points="1697.61,-286.58 1687.69,-281.9 1695.15,-283.7 1691.11,-278.97 1691.11,-278.97 1691.11,-278.97 1695.15,-283.7 1694.53,-276.05 1697.61,-286.58"/>
 </g>
-<!-- wt3000_scpi.wt3000_backup&#45;&gt;wt3000_scpi.wt3000_ranging -->
+<!-- wt_treiber_lib.wt3000_backup&#45;&gt;wt_treiber_lib.wt3000_ranging -->
 <g id="edge41" class="edge">
 <title>wt3000_scpi.wt3000_backup&#45;&gt;wt3000_scpi.wt3000_ranging</title>
 <path fill="none" stroke="black" d="M1273.84,-172.62C1391.9,-185.56 1601.19,-208.48 1725.1,-222.06"/>
 <polygon fill="black" stroke="black" points="1734.87,-223.13 1724.44,-226.51 1731.11,-222.71 1724.93,-222.04 1724.93,-222.04 1724.93,-222.04 1731.11,-222.71 1725.42,-217.56 1734.87,-223.13"/>
 </g>
-<!-- wt3000_scpi.wt3000_common&#45;&gt;wt3000_scpi.wt3000_core -->
+<!-- wt_treiber_lib.wt3000_common&#45;&gt;wt_treiber_lib.wt3000_core -->
 <g id="edge42" class="edge">
 <title>wt3000_scpi.wt3000_common&#45;&gt;wt3000_scpi.wt3000_core</title>
 <path fill="none" stroke="black" d="M1144.17,-396.3C1137.12,-404.53 1128.56,-414.52 1120.79,-423.58"/>
 <polygon fill="black" stroke="black" points="1114.45,-430.97 1117.55,-420.45 1116.91,-428.1 1120.96,-423.38 1120.96,-423.38 1120.96,-423.38 1116.91,-428.1 1124.38,-426.31 1114.45,-430.97"/>
 </g>
-<!-- wt3000_scpi.wt3000_core&#45;&gt;wt3000_scpi.wt3000_transport -->
+<!-- wt_treiber_lib.wt3000_core&#45;&gt;wt_treiber_lib.wt3000_transport -->
 <g id="edge43" class="edge">
 <title>wt3000_scpi.wt3000_core&#45;&gt;wt3000_scpi.wt3000_transport</title>
 <path fill="none" stroke="black" d="M1179.01,-462.99C1257.42,-474.75 1377.28,-492.71 1462.82,-505.53"/>
 <polygon fill="black" stroke="black" points="1472.65,-507.01 1462.1,-509.98 1468.91,-506.45 1462.76,-505.53 1462.76,-505.53 1462.76,-505.53 1468.91,-506.45 1463.43,-501.08 1472.65,-507.01"/>
 </g>
-<!-- wt3000_scpi.wt3000_device&#45;&gt;wt3000_scpi.wt3000_backup -->
+<!-- wt_treiber_lib.wt3000_device&#45;&gt;wt_treiber_lib.wt3000_backup -->
 <g id="edge44" class="edge">
 <title>wt3000_scpi.wt3000_device&#45;&gt;wt3000_scpi.wt3000_backup</title>
 <path fill="none" stroke="black" d="M999.19,-108.48C1033.93,-118.25 1077.4,-130.47 1113.66,-140.66"/>
 <polygon fill="black" stroke="black" points="1123,-143.29 1112.15,-144.91 1119.36,-142.27 1113.37,-140.58 1113.37,-140.58 1113.37,-140.58 1119.36,-142.27 1114.59,-136.25 1123,-143.29"/>
 </g>
-<!-- wt3000_scpi.wt3000_device&#45;&gt;wt3000_scpi.wt3000_common -->
+<!-- wt_treiber_lib.wt3000_device&#45;&gt;wt_treiber_lib.wt3000_common -->
 <g id="edge45" class="edge">
 <title>wt3000_scpi.wt3000_device&#45;&gt;wt3000_scpi.wt3000_common</title>
 <path fill="none" stroke="black" d="M932.37,-108.18C924.97,-139.57 914.07,-207.09 943,-252 962.37,-282.08 983.75,-270.58 1015,-288 1052.59,-308.96 1094.3,-335.06 1123.11,-353.57"/>
 <polygon fill="black" stroke="black" points="1131.34,-358.87 1120.49,-357.24 1128.16,-356.82 1122.93,-353.45 1122.93,-353.45 1122.93,-353.45 1128.16,-356.82 1125.37,-349.67 1131.34,-358.87"/>
 </g>
-<!-- wt3000_scpi.wt3000_device&#45;&gt;wt3000_scpi.wt3000_core -->
+<!-- wt_treiber_lib.wt3000_device&#45;&gt;wt_treiber_lib.wt3000_core -->
 <g id="edge46" class="edge">
 <title>wt3000_scpi.wt3000_device&#45;&gt;wt3000_scpi.wt3000_core</title>
 <path fill="none" stroke="black" d="M929.93,-108.33C926.16,-118.53 921.91,-131.78 920,-144 912.57,-191.47 906.99,-207.45 925,-252 954.95,-326.1 1025.36,-391.02 1066.86,-424.64"/>
 <polygon fill="black" stroke="black" points="1074.54,-430.76 1063.92,-428.05 1071.59,-428.4 1066.72,-424.53 1066.72,-424.53 1066.72,-424.53 1071.59,-428.4 1069.53,-421.01 1074.54,-430.76"/>
 </g>
-<!-- wt3000_scpi.wt3000_device&#45;&gt;wt3000_scpi.wt3000_deviceconfig -->
+<!-- wt_treiber_lib.wt3000_device&#45;&gt;wt_treiber_lib.wt3000_deviceconfig -->
 <g id="edge47" class="edge">
 <title>wt3000_scpi.wt3000_device&#45;&gt;wt3000_scpi.wt3000_deviceconfig</title>
 <path fill="none" stroke="black" d="M951.47,-108.41C972.1,-133.24 1010.12,-178.99 1033.89,-207.6"/>
 <polygon fill="black" stroke="black" points="1040,-214.95 1030.15,-210.14 1037.59,-212.04 1033.61,-207.26 1033.61,-207.26 1033.61,-207.26 1037.59,-212.04 1037.07,-204.38 1040,-214.95"/>
 </g>
-<!-- wt3000_scpi.wt3000_device&#45;&gt;wt3000_scpi.wt3000_input -->
+<!-- wt_treiber_lib.wt3000_device&#45;&gt;wt_treiber_lib.wt3000_input -->
 <g id="edge48" class="edge">
 <title>wt3000_scpi.wt3000_device&#45;&gt;wt3000_scpi.wt3000_input</title>
 <path fill="none" stroke="black" d="M1022.86,-98.11C1110.13,-106.41 1238.61,-121.86 1283,-144 1291.56,-148.27 1379.29,-235.88 1423.22,-280.03"/>
 <polygon fill="black" stroke="black" points="1430.02,-286.87 1419.78,-282.96 1427.35,-284.19 1422.97,-279.78 1422.97,-279.78 1422.97,-279.78 1427.35,-284.19 1426.16,-276.61 1430.02,-286.87"/>
 </g>
-<!-- wt3000_scpi.wt3000_device&#45;&gt;wt3000_scpi.wt3000_itemspec -->
+<!-- wt_treiber_lib.wt3000_device&#45;&gt;wt_treiber_lib.wt3000_itemspec -->
 <g id="edge49" class="edge">
 <title>wt3000_scpi.wt3000_device&#45;&gt;wt3000_scpi.wt3000_itemspec</title>
 <path fill="none" stroke="black" d="M851.13,-107.11C770.53,-124.93 648.81,-158.94 556,-216 548.43,-220.65 514.57,-255.31 490.87,-279.97"/>
 <polygon fill="black" stroke="black" points="484.12,-287.01 487.79,-276.68 486.73,-284.28 491.04,-279.79 491.04,-279.79 491.04,-279.79 486.73,-284.28 494.28,-282.91 484.12,-287.01"/>
 </g>
-<!-- wt3000_scpi.wt3000_device&#45;&gt;wt3000_scpi.wt3000_measure -->
+<!-- wt_treiber_lib.wt3000_device&#45;&gt;wt_treiber_lib.wt3000_measure -->
 <g id="edge50" class="edge">
 <title>wt3000_scpi.wt3000_device&#45;&gt;wt3000_scpi.wt3000_measure</title>
 <path fill="none" stroke="black" d="M851.25,-99.53C775.62,-107.93 662.73,-122.63 566,-144 543.47,-148.98 417.35,-187.66 337.48,-212.36"/>
 <polygon fill="black" stroke="black" points="328.18,-215.24 336.41,-207.98 331.8,-214.12 337.74,-212.28 337.74,-212.28 337.74,-212.28 331.8,-214.12 339.07,-216.58 328.18,-215.24"/>
 </g>
-<!-- wt3000_scpi.wt3000_device&#45;&gt;wt3000_scpi.wt3000_numeric -->
+<!-- wt_treiber_lib.wt3000_device&#45;&gt;wt_treiber_lib.wt3000_numeric -->
 <g id="edge51" class="edge">
 <title>wt3000_scpi.wt3000_device&#45;&gt;wt3000_scpi.wt3000_numeric</title>
 <path fill="none" stroke="black" d="M851.07,-100.31C786.89,-108.49 697.44,-122.49 621,-144 579.73,-155.61 479.3,-194.86 442,-216 395.91,-242.12 370.57,-240.56 347,-288 337.7,-306.72 339.06,-330.48 342.41,-348.74"/>
 <polygon fill="black" stroke="black" points="344.49,-358.38 337.98,-349.56 343.69,-354.69 342.38,-348.61 342.38,-348.61 342.38,-348.61 343.69,-354.69 346.78,-347.66 344.49,-358.38"/>
 </g>
-<!-- wt3000_scpi.wt3000_device&#45;&gt;wt3000_scpi.wt3000_rangeio -->
+<!-- wt_treiber_lib.wt3000_device&#45;&gt;wt_treiber_lib.wt3000_rangeio -->
 <g id="edge52" class="edge">
 <title>wt3000_scpi.wt3000_device&#45;&gt;wt3000_scpi.wt3000_rangeio</title>
 <path fill="none" stroke="black" d="M1022.81,-98.74C1100.13,-106.73 1216.59,-121.25 1316,-144 1366.97,-155.66 1377.15,-167.82 1428,-180 1526.06,-203.5 1567.03,-161.72 1652,-216 1674.87,-230.61 1691.13,-257.39 1700.91,-277.78"/>
 <polygon fill="black" stroke="black" points="1704.93,-286.64 1696.7,-279.39 1703.37,-283.2 1700.8,-277.54 1700.8,-277.54 1700.8,-277.54 1703.37,-283.2 1704.9,-275.68 1704.93,-286.64"/>
 </g>
-<!-- wt3000_scpi.wt3000_device&#45;&gt;wt3000_scpi.wt3000_ranging -->
+<!-- wt_treiber_lib.wt3000_device&#45;&gt;wt_treiber_lib.wt3000_ranging -->
 <g id="edge53" class="edge">
 <title>wt3000_scpi.wt3000_device&#45;&gt;wt3000_scpi.wt3000_ranging</title>
 <path fill="none" stroke="black" d="M1022.99,-97.32C1121.33,-105.23 1286.95,-120.65 1428,-144 1540.04,-162.55 1667.94,-192.9 1747.59,-212.92"/>
 <polygon fill="black" stroke="black" points="1756.84,-215.25 1746.04,-217.17 1753.17,-214.33 1747.14,-212.81 1747.14,-212.81 1747.14,-212.81 1753.17,-214.33 1748.24,-208.44 1756.84,-215.25"/>
 </g>
-<!-- wt3000_scpi.wt3000_device&#45;&gt;wt3000_scpi.wt3000_sinks -->
+<!-- wt_treiber_lib.wt3000_device&#45;&gt;wt_treiber_lib.wt3000_sinks -->
 <g id="edge54" class="edge">
 <title>wt3000_scpi.wt3000_device&#45;&gt;wt3000_scpi.wt3000_sinks</title>
 <path fill="none" stroke="black" d="M851.18,-99.06C710.22,-112.31 430.83,-138.56 285.21,-152.24"/>
 <polygon fill="black" stroke="black" points="275.31,-153.17 284.85,-147.76 279.08,-152.82 285.27,-152.24 285.27,-152.24 285.27,-152.24 279.08,-152.82 285.69,-156.72 275.31,-153.17"/>
 </g>
-<!-- wt3000_scpi.wt3000_deviceconfig&#45;&gt;wt3000_scpi.wt3000_common -->
+<!-- wt_treiber_lib.wt3000_deviceconfig&#45;&gt;wt_treiber_lib.wt3000_common -->
 <g id="edge55" class="edge">
 <title>wt3000_scpi.wt3000_deviceconfig&#45;&gt;wt3000_scpi.wt3000_common</title>
 <path fill="none" stroke="black" d="M1067.75,-252.41C1085.78,-277.03 1118.87,-322.2 1139.85,-350.86"/>
 <polygon fill="black" stroke="black" points="1145.75,-358.91 1136.21,-353.5 1143.51,-355.86 1139.84,-350.84 1139.84,-350.84 1139.84,-350.84 1143.51,-355.86 1143.47,-348.18 1145.75,-358.91"/>
 </g>
-<!-- wt3000_scpi.wt3000_deviceconfig&#45;&gt;wt3000_scpi.wt3000_core -->
+<!-- wt_treiber_lib.wt3000_deviceconfig&#45;&gt;wt_treiber_lib.wt3000_core -->
 <g id="edge56" class="edge">
 <title>wt3000_scpi.wt3000_deviceconfig&#45;&gt;wt3000_scpi.wt3000_core</title>
 <path fill="none" stroke="black" d="M1051.9,-252.07C1047.18,-282.16 1040.45,-346.16 1058,-396 1061.42,-405.73 1067.39,-415.07 1073.73,-423.13"/>
 <polygon fill="black" stroke="black" points="1080.15,-430.71 1070.25,-425.99 1077.7,-427.82 1073.69,-423.08 1073.69,-423.08 1073.69,-423.08 1077.7,-427.82 1077.12,-420.17 1080.15,-430.71"/>
 </g>
-<!-- wt3000_scpi.wt3000_input&#45;&gt;wt3000_scpi.wt3000_common -->
+<!-- wt_treiber_lib.wt3000_input&#45;&gt;wt_treiber_lib.wt3000_common -->
 <g id="edge57" class="edge">
 <title>wt3000_scpi.wt3000_input&#45;&gt;wt3000_scpi.wt3000_common</title>
 <path fill="none" stroke="black" d="M1375.82,-324.48C1335.14,-334.34 1284.16,-346.69 1241.85,-356.93"/>
 <polygon fill="black" stroke="black" points="1232.2,-359.27 1240.86,-352.54 1235.87,-358.38 1241.92,-356.92 1241.92,-356.92 1241.92,-356.92 1235.87,-358.38 1242.97,-361.29 1232.2,-359.27"/>
 </g>
-<!-- wt3000_scpi.wt3000_input&#45;&gt;wt3000_scpi.wt3000_core -->
+<!-- wt_treiber_lib.wt3000_input&#45;&gt;wt_treiber_lib.wt3000_core -->
 <g id="edge58" class="edge">
 <title>wt3000_scpi.wt3000_input&#45;&gt;wt3000_scpi.wt3000_core</title>
 <path fill="none" stroke="black" d="M1422.44,-324.4C1392.54,-344.1 1340.99,-376.05 1293,-396 1260.13,-409.67 1222.66,-420.85 1189.48,-429.37"/>
 <polygon fill="black" stroke="black" points="1180.05,-431.74 1188.65,-424.94 1183.72,-430.82 1189.75,-429.3 1189.75,-429.3 1189.75,-429.3 1183.72,-430.82 1190.85,-433.67 1180.05,-431.74"/>
 </g>
-<!-- wt3000_scpi.wt3000_itemspec&#45;&gt;wt3000_scpi.wt3000_common -->
+<!-- wt_treiber_lib.wt3000_itemspec&#45;&gt;wt_treiber_lib.wt3000_common -->
 <g id="edge59" class="edge">
 <title>wt3000_scpi.wt3000_itemspec&#45;&gt;wt3000_scpi.wt3000_common</title>
 <path fill="none" stroke="black" d="M559.67,-318.68C575.14,-320.53 591.02,-322.37 606,-324 762.58,-341.08 944.43,-357.93 1055.59,-367.9"/>
 <polygon fill="black" stroke="black" points="1065.25,-368.77 1054.89,-372.36 1061.48,-368.43 1055.29,-367.88 1055.29,-367.88 1055.29,-367.88 1061.48,-368.43 1055.69,-363.39 1065.25,-368.77"/>
 </g>
-<!-- wt3000_scpi.wt3000_itemspec&#45;&gt;wt3000_scpi.wt3000_core -->
+<!-- wt_treiber_lib.wt3000_itemspec&#45;&gt;wt_treiber_lib.wt3000_core -->
 <g id="edge60" class="edge">
 <title>wt3000_scpi.wt3000_itemspec&#45;&gt;wt3000_scpi.wt3000_core</title>
 <path fill="none" stroke="black" d="M525.99,-324.48C592.08,-343.67 702.59,-374.6 799,-396 868.75,-411.48 948.43,-425.38 1008.13,-435.06"/>
 <polygon fill="black" stroke="black" points="1017.84,-436.62 1007.25,-439.47 1014.1,-436.02 1007.96,-435.03 1007.96,-435.03 1007.96,-435.03 1014.1,-436.02 1008.68,-430.59 1017.84,-436.62"/>
 </g>
-<!-- wt3000_scpi.wt3000_itemspec&#45;&gt;wt3000_scpi.wt3000_numeric -->
+<!-- wt_treiber_lib.wt3000_itemspec&#45;&gt;wt_treiber_lib.wt3000_numeric -->
 <g id="edge61" class="edge">
 <title>wt3000_scpi.wt3000_itemspec&#45;&gt;wt3000_scpi.wt3000_numeric</title>
 <path fill="none" stroke="black" d="M437.78,-324.48C422.73,-333.49 404.19,-344.58 388.04,-354.24"/>
 <polygon fill="black" stroke="black" points="379.9,-359.11 386.17,-350.12 383.14,-357.17 388.48,-353.98 388.48,-353.98 388.48,-353.98 383.14,-357.17 390.79,-357.84 379.9,-359.11"/>
 </g>
-<!-- wt3000_scpi.wt3000_measure&#45;&gt;wt3000_scpi.wt3000_common -->
+<!-- wt_treiber_lib.wt3000_measure&#45;&gt;wt_treiber_lib.wt3000_common -->
 <g id="edge62" class="edge">
 <title>wt3000_scpi.wt3000_measure&#45;&gt;wt3000_scpi.wt3000_common</title>
 <path fill="none" stroke="black" d="M362.1,-239.33C497.25,-246.49 744.05,-262.58 829,-288 861.76,-297.8 864.8,-312.49 897,-324 947.78,-342.15 1006.45,-354.74 1055.38,-363.08"/>
 <polygon fill="black" stroke="black" points="1065.11,-364.7 1054.5,-367.5 1061.38,-364.08 1055.24,-363.06 1055.24,-363.06 1055.24,-363.06 1061.38,-364.08 1055.98,-358.62 1065.11,-364.7"/>
 </g>
-<!-- wt3000_scpi.wt3000_measure&#45;&gt;wt3000_scpi.wt3000_core -->
+<!-- wt_treiber_lib.wt3000_measure&#45;&gt;wt_treiber_lib.wt3000_core -->
 <g id="edge63" class="edge">
 <title>wt3000_scpi.wt3000_measure&#45;&gt;wt3000_scpi.wt3000_core</title>
 <path fill="none" stroke="black" d="M261.04,-252.25C243.6,-284.98 212.75,-356.35 250,-396 275.64,-423.29 793.81,-440.61 1007.79,-446.63"/>
 <polygon fill="black" stroke="black" points="1017.76,-446.9 1007.64,-451.12 1013.98,-446.8 1007.76,-446.63 1007.76,-446.63 1007.76,-446.63 1013.98,-446.8 1007.89,-442.13 1017.76,-446.9"/>
 </g>
-<!-- wt3000_scpi.wt3000_measure&#45;&gt;wt3000_scpi.wt3000_itemspec -->
+<!-- wt_treiber_lib.wt3000_measure&#45;&gt;wt_treiber_lib.wt3000_itemspec -->
 <g id="edge64" class="edge">
 <title>wt3000_scpi.wt3000_measure&#45;&gt;wt3000_scpi.wt3000_itemspec</title>
 <path fill="none" stroke="black" d="M319.95,-252.48C346.6,-262 379.76,-273.84 407.84,-283.87"/>
 <polygon fill="black" stroke="black" points="417.18,-287.21 406.25,-288.08 413.62,-285.94 407.77,-283.85 407.77,-283.85 407.77,-283.85 413.62,-285.94 409.28,-279.61 417.18,-287.21"/>
 </g>
-<!-- wt3000_scpi.wt3000_measure&#45;&gt;wt3000_scpi.wt3000_numeric -->
+<!-- wt_treiber_lib.wt3000_measure&#45;&gt;wt_treiber_lib.wt3000_numeric -->
 <g id="edge65" class="edge">
 <title>wt3000_scpi.wt3000_measure&#45;&gt;wt3000_scpi.wt3000_numeric</title>
 <path fill="none" stroke="black" d="M272.9,-252.47C275.55,-271.23 281.65,-301.4 295,-324 301.13,-334.38 309.85,-344.08 318.54,-352.26"/>
 <polygon fill="black" stroke="black" points="325.87,-358.81 315.41,-355.5 323.05,-356.29 318.41,-352.15 318.41,-352.15 318.41,-352.15 323.05,-356.29 321.41,-348.79 325.87,-358.81"/>
 </g>
-<!-- wt3000_scpi.wt3000_numeric&#45;&gt;wt3000_scpi.wt3000_core -->
+<!-- wt_treiber_lib.wt3000_numeric&#45;&gt;wt_treiber_lib.wt3000_core -->
 <g id="edge66" class="edge">
 <title>wt3000_scpi.wt3000_numeric&#45;&gt;wt3000_scpi.wt3000_core</title>
 <path fill="none" stroke="black" d="M441,-394.18C445.73,-394.83 450.42,-395.44 455,-396 651.47,-419.95 883,-436.06 1007.96,-443.76"/>
 <polygon fill="black" stroke="black" points="1017.76,-444.36 1007.51,-448.24 1013.99,-444.13 1007.78,-443.75 1007.78,-443.75 1007.78,-443.75 1013.99,-444.13 1008.06,-439.26 1017.76,-444.36"/>
 </g>
-<!-- wt3000_scpi.wt3000_rangeio&#45;&gt;wt3000_scpi.wt3000_common -->
+<!-- wt_treiber_lib.wt3000_rangeio&#45;&gt;wt_treiber_lib.wt3000_common -->
 <g id="edge67" class="edge">
 <title>wt3000_scpi.wt3000_rangeio&#45;&gt;wt3000_scpi.wt3000_common</title>
 <path fill="none" stroke="black" d="M1623.46,-318.21C1525.03,-330.67 1366.26,-350.76 1262.26,-363.93"/>
 <polygon fill="black" stroke="black" points="1252.63,-365.15 1261.99,-359.43 1256.39,-364.67 1262.55,-363.89 1262.55,-363.89 1262.55,-363.89 1256.39,-364.67 1263.12,-368.36 1252.63,-365.15"/>
 </g>
-<!-- wt3000_scpi.wt3000_rangeio&#45;&gt;wt3000_scpi.wt3000_core -->
+<!-- wt_treiber_lib.wt3000_rangeio&#45;&gt;wt_treiber_lib.wt3000_core -->
 <g id="edge68" class="edge">
 <title>wt3000_scpi.wt3000_rangeio&#45;&gt;wt3000_scpi.wt3000_core</title>
 <path fill="none" stroke="black" d="M1698.23,-324.25C1680.37,-345.24 1647.07,-379.87 1610,-396 1536.81,-427.84 1316.2,-441.07 1190.07,-446.14"/>
 <polygon fill="black" stroke="black" points="1180.13,-446.53 1189.95,-441.64 1183.91,-446.38 1190.12,-446.14 1190.12,-446.14 1190.12,-446.14 1183.91,-446.38 1190.3,-450.64 1180.13,-446.53"/>
 </g>
-<!-- wt3000_scpi.wt3000_ranging&#45;&gt;wt3000_scpi.wt3000_common -->
+<!-- wt_treiber_lib.wt3000_ranging&#45;&gt;wt_treiber_lib.wt3000_common -->
 <g id="edge69" class="edge">
 <title>wt3000_scpi.wt3000_ranging&#45;&gt;wt3000_scpi.wt3000_common</title>
 <path fill="none" stroke="black" d="M1740.08,-252.46C1701.4,-261.42 1655.34,-273.51 1615,-288 1579.82,-300.63 1574.81,-313.3 1539,-324 1447.72,-351.29 1339.83,-364.63 1262.37,-371.09"/>
 <polygon fill="black" stroke="black" points="1252.86,-371.85 1262.47,-366.56 1256.63,-371.55 1262.83,-371.05 1262.83,-371.05 1262.83,-371.05 1256.63,-371.55 1263.19,-375.53 1252.86,-371.85"/>
 </g>
-<!-- wt3000_scpi.wt3000_ranging&#45;&gt;wt3000_scpi.wt3000_core -->
+<!-- wt_treiber_lib.wt3000_ranging&#45;&gt;wt_treiber_lib.wt3000_core -->
 <g id="edge70" class="edge">
 <title>wt3000_scpi.wt3000_ranging&#45;&gt;wt3000_scpi.wt3000_core</title>
 <path fill="none" stroke="black" d="M1826.38,-252.29C1827.01,-271.74 1825.11,-303.32 1809,-324 1761.33,-385.2 1724.96,-376.02 1650,-396 1492,-438.13 1300.61,-447.67 1190.02,-449.33"/>
 <polygon fill="black" stroke="black" points="1180.13,-449.46 1190.07,-444.83 1183.92,-449.41 1190.13,-449.33 1190.13,-449.33 1190.13,-449.33 1183.92,-449.41 1190.19,-453.83 1180.13,-449.46"/>
 </g>
-<!-- wt3000_scpi.wt3000_ranging&#45;&gt;wt3000_scpi.wt3000_rangeio -->
+<!-- wt_treiber_lib.wt3000_ranging&#45;&gt;wt_treiber_lib.wt3000_rangeio -->
 <g id="edge71" class="edge">
 <title>wt3000_scpi.wt3000_ranging&#45;&gt;wt3000_scpi.wt3000_rangeio</title>
 <path fill="none" stroke="black" d="M1796.78,-252.48C1782.38,-261.4 1764.68,-272.37 1749.18,-281.97"/>
 <polygon fill="black" stroke="black" points="1740.9,-287.1 1747.03,-278.01 1744.11,-285.11 1749.4,-281.83 1749.4,-281.83 1749.4,-281.83 1744.11,-285.11 1751.77,-285.66 1740.9,-287.1"/>
 </g>
-<!-- wt3000_scpi.wt3000_sinks&#45;&gt;wt3000_scpi.wt3000_core -->
+<!-- wt_treiber_lib.wt3000_sinks&#45;&gt;wt_treiber_lib.wt3000_core -->
 <g id="edge72" class="edge">
 <title>wt3000_scpi.wt3000_sinks&#45;&gt;wt3000_scpi.wt3000_core</title>
 <path fill="none" stroke="black" d="M179.27,-180.15C172.71,-190.08 165.39,-203.12 162,-216 157.92,-231.47 158.68,-236.35 162,-252 176.69,-321.24 170.95,-356.97 230,-396 293.72,-438.12 798.59,-446.77 1008.23,-448.54"/>
 <polygon fill="black" stroke="black" points="1017.98,-448.62 1007.94,-453.04 1014.2,-448.59 1007.98,-448.54 1007.98,-448.54 1007.98,-448.54 1014.2,-448.59 1008.01,-444.04 1017.98,-448.62"/>
 </g>
-<!-- wt3000_scpi.wt3000_sinks&#45;&gt;wt3000_scpi.wt3000_measure -->
+<!-- wt_treiber_lib.wt3000_sinks&#45;&gt;wt_treiber_lib.wt3000_measure -->
 <g id="edge73" class="edge">
 <title>wt3000_scpi.wt3000_sinks&#45;&gt;wt3000_scpi.wt3000_measure</title>
 <path fill="none" stroke="black" d="M211.53,-180.3C221.12,-188.8 232.84,-199.19 243.33,-208.49"/>
 <polygon fill="black" stroke="black" points="250.51,-214.85 240.04,-211.58 247.68,-212.34 243.03,-208.21 243.03,-208.21 243.03,-208.21 247.68,-212.34 246.01,-204.85 250.51,-214.85"/>
 </g>
-<!-- wt3000_scpi.wt3000_sinks&#45;&gt;wt3000_scpi.wt3000_numeric -->
+<!-- wt_treiber_lib.wt3000_sinks&#45;&gt;wt_treiber_lib.wt3000_numeric -->
 <g id="edge74" class="edge">
 <title>wt3000_scpi.wt3000_sinks&#45;&gt;wt3000_scpi.wt3000_numeric</title>
 <path fill="none" stroke="black" d="M181.15,-180.28C170.97,-198.88 158.96,-228.91 171,-252 196.66,-301.21 251.53,-335.02 293.8,-354.95"/>

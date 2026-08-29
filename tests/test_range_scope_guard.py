@@ -9,8 +9,8 @@ from __future__ import annotations
 import pytest
 from conftest import FakeSession, range_responses
 
-from wt3000_scpi.wt3000_core import WTError
-from wt3000_scpi.wt3000_rangeio import Quantity, RangeAccess
+from wt_treiber_lib.wt3000_core import WTError
+from wt_treiber_lib.wt3000_rangeio import Quantity, RangeAccess
 
 #: Der vorliegende Aufbau hat vier Elemente. 7 gibt es nicht - und 0 auch
 #: nicht, das ist die Zahl, die aus einer Schleife mit falscher Untergrenze
@@ -185,7 +185,7 @@ def test_geplanter_weg_verhaelt_sich_unveraendert():
     Zeitpunkt, nichts gesendet. Ohne ihn stuende die Begruendung fuer die
     Verhaltensaenderung nur in einem Kommentar.
     """
-    from wt3000_scpi.wt3000_ranging import RangePlan, RangeSpec, apply_plan
+    from wt_treiber_lib.wt3000_ranging import RangePlan, RangeSpec, apply_plan
 
     sitzung = FakeSession(range_responses())
     ohne_units = RangeAccess(sitzung, allow_changes=True)

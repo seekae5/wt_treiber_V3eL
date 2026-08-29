@@ -18,8 +18,8 @@ from pathlib import Path
 import pytest
 from conftest import Geraetemodell
 
-import wt3000_scpi
-from wt3000_scpi import WT3000, WTConfig
+import wt_treiber_lib
+from wt_treiber_lib import WT3000, WTConfig
 
 WURZEL = Path(__file__).resolve().parents[1]
 README = WURZEL / "README.md"
@@ -48,7 +48,7 @@ def fassade(monkeypatch):
         )
 
     monkeypatch.setattr(WT3000, "connect", staticmethod(verbinden))
-    monkeypatch.setattr(wt3000_scpi.WT3000, "connect", staticmethod(verbinden))
+    monkeypatch.setattr(wt_treiber_lib.WT3000, "connect", staticmethod(verbinden))
 
 
 # ---------------------------------------------------------------------------
@@ -140,7 +140,7 @@ def test_die_drei_wegweiser_sind_genannt(pfad):
 
 def test_die_beschriebene_verzeichnisstruktur_gibt_es():
     """Der Aufbau-Abschnitt zaehlt Verzeichnisse auf - sie muessen existieren."""
-    for pfad in ("src/wt3000_scpi", "examples", "docs", "tests", "tools/hardware"):
+    for pfad in ("src/wt_treiber_lib", "examples", "docs", "tests", "tools/hardware"):
         assert (WURZEL / pfad).is_dir(), f"README nennt {pfad}, das es nicht gibt"
     assert (WURZEL / "live_messwerte.py").is_file()
 
@@ -157,12 +157,12 @@ def test_die_genannte_mindestversion_stimmt_mit_pyproject_ueberein():
 
 
 def test_die_genannte_version_stimmt_mit_dem_paket_ueberein():
-    assert wt3000_scpi.__version__ in README.read_text(encoding="utf-8")
+    assert wt_treiber_lib.__version__ in README.read_text(encoding="utf-8")
 
 
 def test_die_vier_gesperrten_gruppen_stimmen():
     """Das README zaehlt sie namentlich auf - sie duerfen nicht abdriften."""
-    from wt3000_scpi.wt3000_input import DEFAULT_PROTECTED
+    from wt_treiber_lib.wt3000_input import DEFAULT_PROTECTED
 
     text = README.read_text(encoding="utf-8")
     for gruppe in DEFAULT_PROTECTED:

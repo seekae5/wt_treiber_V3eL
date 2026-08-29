@@ -11,8 +11,8 @@ from pathlib import Path
 
 import pytest
 
-from wt3000_scpi.wt3000_core import WTConfig, WTError
-from wt3000_scpi.wt3000_transport import (
+from wt_treiber_lib.wt3000_core import WTConfig, WTError
+from wt_treiber_lib.wt3000_transport import (
     CONFIG_FILE_NAME,
     config_search_paths,
     resolve_dll_path,

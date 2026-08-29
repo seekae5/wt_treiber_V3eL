@@ -4,9 +4,9 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "wt3000-scpi"
+name = "wt_treiber_lib"
 version = "0.3.0"
-description = "SCPI-Treiber fuer das Yokogawa WT3000 (tmctl/Ethernet)"
+description = "Treiber-Bibliothek fuer das WT3000 ueber Ether und tmctl.dll"
 requires-python = ">=3.10"
 dependencies = []
 
@@ -24,7 +24,7 @@ dev = [
 ]
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/wt3000_scpi"]
+packages = ["src/wt_treiber_lib"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
@@ -57,7 +57,7 @@ src = ["src"]
 select = ["E", "F", "W"]
 
 [tool.mypy]
-files = ["src/wt3000_scpi"]
+files = ["src/wt_treiber_lib"]
 python_version = "3.10"
 # Der Transport ist Windows-gebunden ('ctypes.WinDLL'). Ohne diese Angabe
 # meldet eine Pruefung auf macOS oder Linux einen Fehler, der auf dem

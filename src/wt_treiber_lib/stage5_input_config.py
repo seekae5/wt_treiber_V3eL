@@ -25,7 +25,7 @@ import logging
 from datetime import datetime
 from pathlib import Path
 
-# Paketmodule werden mit 'python -m wt3000_scpi.stage5_input_config' gestartet.
+# Paketmodule werden mit 'python -m wt_treiber_lib.stage5_input_config' gestartet.
 from .wt3000_common import output_dir, setup_logging
 from .wt3000_core import (
     TmctlTransport,

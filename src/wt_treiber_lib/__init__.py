@@ -7,14 +7,14 @@
 #
 # GRUNDREGEL DIESER DATEI
 #
-#     Wer nur 'from wt3000_scpi import ...' schreibt, kommt an jede
-#     Anwenderfunktion. Ein Import aus 'wt3000_scpi.wt3000_*' ist im
+#     Wer nur 'from wt_treiber_lib import ...' schreibt, kommt an jede
+#     Anwenderfunktion. Ein Import aus 'wt_treiber_lib.wt3000_*' ist im
 #     Messautomationsskript nie noetig.
 #
 # Der Massstab ist dabei die Fassade: JEDER Typ, den eine Methode von 'WT3000'
 # als Argument verlangt oder als Ergebnis herausgibt, steht hier. Vorher galt
 # das nicht - 'wt.applied_ranges(plan)' erwartete einen 'RangePlan', den man nur
-# ueber 'from wt3000_scpi.wt3000_ranging import RangePlan' bekam. Der Anwender
+# ueber 'from wt_treiber_lib.wt3000_ranging import RangePlan' bekam. Der Anwender
 # musste also die interne Schichtung kennen, die ihn nichts angeht; die Fassade
 # war gebaut, aber der Weg zu ihren Argumenten fuehrte an ihr vorbei. Dasselbe
 # galt fuer 'ItemSpec', 'ItemTable', die GROUP_*-Konstanten und die Tabellen der

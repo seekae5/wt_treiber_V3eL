@@ -9,9 +9,9 @@ from __future__ import annotations
 import pytest
 
 # Gemeinsame Formatierung der Bereichsparameter.
-from wt3000_scpi.wt3000_common import format_nrf
-from wt3000_scpi.wt3000_core import WTError
-from wt3000_scpi.wt3000_input import (
+from wt_treiber_lib.wt3000_common import format_nrf
+from wt_treiber_lib.wt3000_core import WTError
+from wt_treiber_lib.wt3000_input import (
     VOLTAGE_RANGES,
     _check_allowed,
     # UEBERARBEITET (M0-1): format_voltage,

@@ -19,11 +19,11 @@ from __future__ import annotations
 import csv
 import json
 
-from wt3000_scpi.wt3000_core import WTConfig, WTSession
-from wt3000_scpi.wt3000_measure import run_measurement_loop, write_metadata
-from wt3000_scpi.wt3000_numeric import FUNCTION_UNITS, ItemTable, NumericItem, unit_of
-from wt3000_scpi.wt3000_sinks import CsvSink, JsonlSink
-from wt3000_scpi.wt3000_transport import FakeTransport, float_block
+from wt_treiber_lib.wt3000_core import WTConfig, WTSession
+from wt_treiber_lib.wt3000_measure import run_measurement_loop, write_metadata
+from wt_treiber_lib.wt3000_numeric import FUNCTION_UNITS, ItemTable, NumericItem, unit_of
+from wt_treiber_lib.wt3000_sinks import CsvSink, JsonlSink
+from wt_treiber_lib.wt3000_transport import FakeTransport, float_block
 
 
 # ---------------------------------------------------------------------------

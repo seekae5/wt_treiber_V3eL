@@ -5,14 +5,14 @@
 #
 # VOREINSTELLUNG: SCHREIBT NICHTS.
 #
-#     python -m wt3000_scpi.stage5b_range_probe
+#     python -m wt_treiber_lib.stage5b_range_probe
 #
 # Die Sitzung wird mit read_only=True geoeffnet und RangeAccess mit
 # allow_changes=False - zwei unabhaengige Sperren, genau wie Stufe 5.
 #
 # MIT SCHREIBPROBE: nur auf ausdrueckliche Ansage.
 #
-#     python -m wt3000_scpi.stage5b_range_probe --write-probe
+#     python -m wt_treiber_lib.stage5b_range_probe --write-probe
 #
 # Dann geht zusaetzlich EIN Set-Kommando hinaus, das den aktuellen
 # Spannungsbereich des ersten Elements mit seinem EIGENEN Wert ueberschreibt.
@@ -51,7 +51,7 @@ from collections.abc import Sequence
 from datetime import datetime
 from pathlib import Path
 
-# Paketmodule werden mit 'python -m wt3000_scpi.stage5b_range_probe' gestartet.
+# Paketmodule werden mit 'python -m wt_treiber_lib.stage5b_range_probe' gestartet.
 from .wt3000_common import output_dir, setup_logging
 from .wt3000_core import (
     TmctlTransport,
@@ -129,7 +129,7 @@ def run_noop_write_probe(
 def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     """Kommandozeile auswerten. Ohne Schalter bleibt der Lauf rein lesend."""
     parser = argparse.ArgumentParser(
-        prog="python -m wt3000_scpi.stage5b_range_probe",
+        prog="python -m wt_treiber_lib.stage5b_range_probe",
         description=(
             "Messbereiche des WT3000 erfassen. Schreibt in der Voreinstellung "
             "nichts."

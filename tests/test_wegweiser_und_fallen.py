@@ -20,14 +20,14 @@ import logging
 import pytest
 from conftest import ItemTableTransport, base_responses
 
-from wt3000_scpi import (
+from wt_treiber_lib import (
     WT3000,
     ItemSpec,
     Quantity,
     WTConfig,
     build_integration_profile,
 )
-from wt3000_scpi.wt3000_itemspec import build_item_table
+from wt_treiber_lib.wt3000_itemspec import build_item_table
 
 
 def geraet() -> ItemTableTransport:
@@ -80,10 +80,10 @@ WEGE = (
 
 def docstring(pfad: str) -> str:
     """'Klasse.methode' aufloesen - ueber den Paketexport, nicht ueber Module."""
-    import wt3000_scpi
+    import wt_treiber_lib
 
     klasse, _, methode = pfad.partition(".")
-    objekt = getattr(getattr(wt3000_scpi, klasse), methode)
+    objekt = getattr(getattr(wt_treiber_lib, klasse), methode)
     # Ein Kontextmanager ist eingepackt; das Original traegt den Docstring.
     objekt = getattr(objekt, "__wrapped__", objekt)
     return objekt.__doc__ or ""
@@ -196,7 +196,7 @@ def test_die_warnung_gilt_fuer_alle_drei_wege():
     """record(), start() und stream() sind derselbe Fehler - dieselbe Meldung."""
     import inspect
 
-    from wt3000_scpi import MeasureControl
+    from wt_treiber_lib import MeasureControl
 
     for name, ende in (("record", "Strg+C"), ("start", "stop()"), ("stream", "break")):
         quelle = inspect.getsource(getattr(MeasureControl, name))

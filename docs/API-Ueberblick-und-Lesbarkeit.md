@@ -1,6 +1,6 @@
 # WT3000-Treiber: API-Überblick und Lesbarkeitsanalyse
 
-**Stand:** 2026-08-27 · **Paket:** `wt3000_scpi` 0.3.0 · **Basis:** Kopie von `wt_treiber_V3e`
+**Stand:** 2026-08-27 · **Paket:** `wt_treiber_lib` 0.3.0 · **Basis:** Kopie von `wt_treiber_V3e`
 **Zweck dieser Datei:** Bestandsaufnahme und Umbauplan.
 
 > **Suchst du den Einstieg statt der Analyse? → [Schnellstart](Schnellstart.md)** — fünf
@@ -34,9 +34,9 @@ Das Paket ist in vier Schichten azyklisch geschichtet (Reihenfolge aus `__init__
 andere aus dem beim Verbinden gelesenen Gerätesteckbrief (`DeviceInfo`) selbst.
 
 ```python
-from wt3000_scpi import WT3000
+from wt_treiber_lib import WT3000
 
-with WT3000.connect(ip="192.168.10.20") as wt:      # rein lesend
+with WT3000.connect(ip="192.168.10.20") as wt:  # rein lesend
     wt.device.log_summary()
     print(wt.input.get_wiring())
 ```
@@ -141,7 +141,7 @@ Spalte **Sperre**: `–` = immer erlaubt (nur Lesen) · `AC` = braucht `allow_ch
 **Weg 3 — Plan mit garantiertem Rückweg** (der eigentlich gemeinte Weg für Messreihen):
 
 ```python
-from wt3000_scpi import Quantity, RangePlan, RangeSpec, AutoRangeSpec
+from wt_treiber_lib import Quantity, RangePlan, RangeSpec, AutoRangeSpec
 
 plan = RangePlan.of(
     RangeSpec(Quantity.VOLTAGE, "ALL", 300.0),
@@ -149,7 +149,7 @@ plan = RangePlan.of(
     AutoRangeSpec(Quantity.CURRENT, 4, False),
 )
 with wt.applied_ranges(plan, backup_file=Path("bereiche.json")) as report:
-    ...        # hier stehen die Bereiche nach Plan
+    ...  # hier stehen die Bereiche nach Plan
 # hier ist der Ausgangszustand nachweislich zurückgestellt
 ```
 
@@ -403,14 +403,14 @@ Wird **nicht** automatisch von `record()` hergestellt — der Aufruf gehört sic
 Für „irgendeine Sperre hat abgewiesen“ genügt ein Zweig — er fängt alle drei:
 
 ```python
-from wt3000_scpi import ConfigLocked, ReadOnlyViolation
+from wt_treiber_lib import ConfigLocked, ReadOnlyViolation
 
 try:
     wt.input.set_voltage_range(300.0)
 except ReadOnlyViolation:
     print("Sitzung ist nur lesend - read_only=False setzen")
 except ConfigLocked as fehler:
-    print(f"Sperre des Fachobjekts: {fehler}")   # nennt selbst den Ausweg
+    print(f"Sperre des Fachobjekts: {fehler}")  # nennt selbst den Ausweg
 ```
 
 **Fehlerstrategie bei Kommunikationsabbrüchen** — `ErrorPolicy`:
@@ -431,7 +431,8 @@ Langzeitläufe ohne Aufsicht. Nur `TmctlError` und `ProtocolError` fallen darunt
 Gruppen-Freigabe für die Dauer eines Blocks:
 
 ```python
-from wt3000_scpi import GROUP_RANGE
+from wt_treiber_lib import GROUP_RANGE
+
 with wt.input.unlocked(GROUP_RANGE):
     wt.input.set_voltage_range(300.0)
 ```
@@ -491,7 +492,7 @@ und nicht der Anwender, der ihn zu benutzen versucht.
 
 ### D3 — Die Beispiele im Paket zeigen den umständlichen Weg 🔴 ✅ **erledigt (E4)**
 
-`stage2…stage5b` liegen **im Paket** (`src/wt3000_scpi/`) und benutzen durchweg die tiefe API:
+`stage2…stage5b` liegen **im Paket** (`../src/wt_treiber_lib/`) und benutzen durchweg die tiefe API:
 `TmctlTransport` + `WTSession` + `InputConfig(...)` von Hand, verschachtelte `try/finally`,
 Backup/Restore selbst nachgebaut. `stage4_measure.py` braucht dafür **140 Zeilen** und vier
 Verschachtelungsebenen. Dasselbe leistet die Fassade in etwa zwölf Zeilen:
@@ -714,7 +715,7 @@ Sortiert nach **Wirkung je Aufwand**.
 ### E1 🔴 Paket-Export vervollständigen — ✅ **umgesetzt**
 
 `__init__.py` um die in D2 aufgeführten Namen ergänzt, so dass **jedes Argument, das die Fassade
-verlangt, aus `wt3000_scpi` importierbar ist**. Die Regel steht im Kopf der Datei:
+verlangt, aus `wt_treiber_lib` importierbar ist**. Die Regel steht im Kopf der Datei:
 
 > Wer nur `from wt3000_scpi import ...` schreibt, kommt an jede Anwenderfunktion. Ein Import aus
 > `wt3000_scpi.wt3000_*` ist im Messautomationsskript nie nötig.
@@ -957,11 +958,11 @@ berührt Signaturen und gehört deshalb ans Ende, mit einer Version Übergangsfr
 
 | Datei | Änderung |
 |---|---|
-| `src/wt3000_scpi/wt3000_core.py` | neue Basisklasse `ConfigLocked` (+ `__all__`) |
-| `src/wt3000_scpi/wt3000_input.py` | `ConfigLocked` → `InputLocked`, erbt aus `wt3000_core` |
-| `src/wt3000_scpi/wt3000_deviceconfig.py` | `ConfigLocked` → `DeviceConfigLocked`, erbt aus `wt3000_core` |
-| `src/wt3000_scpi/wt3000_rangeio.py` | `ChangesNotAllowed` erbt jetzt aus `ConfigLocked` statt `WTError` |
-| `src/wt3000_scpi/__init__.py` | Export von 60 auf 114 Namen, nach Aufgabe gegliedert, Regel im Kopf |
+| `../src/wt_treiber_lib/wt3000_core.py` | neue Basisklasse `ConfigLocked` (+ `__all__`) |
+| `../src/wt_treiber_lib/wt3000_input.py` | `ConfigLocked` → `InputLocked`, erbt aus `wt3000_core` |
+| `../src/wt_treiber_lib/wt3000_deviceconfig.py` | `ConfigLocked` → `DeviceConfigLocked`, erbt aus `wt3000_core` |
+| `../src/wt_treiber_lib/wt3000_rangeio.py` | `ChangesNotAllowed` erbt jetzt aus `ConfigLocked` statt `WTError` |
+| `../src/wt_treiber_lib/__init__.py` | Export von 60 auf 114 Namen, nach Aufgabe gegliedert, Regel im Kopf |
 | `tests/test_package_layout.py` | 15 neue Prüfsätze für beide Regeln |
 
 ### Was Schritt 2 konkret geändert hat
@@ -979,8 +980,8 @@ Kein Produktivcode berührt. **874 Tests grün**, `ruff check` sauber.
 |---|---|
 | `examples/01…06_*.py` | neu — sechs lauffähige Beispiele über die Fassade |
 | `examples/README.md` | neu — Index mit Spalte „schreibt am Gerät“ |
-| `examples/_pfad.py` | neu — macht `wt3000_scpi` ohne Installation importierbar |
-| `src/wt3000_scpi/stage2…stage5b.py` | Kopfblock „KEINE VORLAGE FÜR EIGENEN CODE“ + Verweis |
+| `examples/_pfad.py` | neu — macht `wt_treiber_lib` ohne Installation importierbar |
+| `../src/wt_treiber_lib/stage2…stage5b.py` | Kopfblock „KEINE VORLAGE FÜR EIGENEN CODE“ + Verweis |
 | `tests/test_beispiele.py` | neu — fährt jedes Beispiel gegen ein simuliertes Gerät |
 
 An den `stage*`-Skripten wurde **nur der Kommentarkopf** angefasst, keine Zeile Code.

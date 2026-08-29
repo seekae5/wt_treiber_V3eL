@@ -11,7 +11,7 @@ from pathlib import Path
 
 import pytest
 
-from wt3000_scpi.wt3000_common import find_project_root, output_dir
+from wt_treiber_lib.wt3000_common import find_project_root, output_dir
 
 
 @pytest.fixture
@@ -145,9 +145,9 @@ def test_kein_skript_haengt_mehr_an_path_cwd():
     'wt3000_transport.config_search_paths()', das von dort aus nach oben
     sucht, und in 'wt3000_common.find_project_root()' selbst.
     """
-    import wt3000_scpi
+    import wt_treiber_lib
 
-    paket = Path(wt3000_scpi.__file__).parent
+    paket = Path(wt_treiber_lib.__file__).parent
     ausnahmen = {"wt3000_transport.py", "wt3000_common.py"}
     treffer = [
         pfad.name
@@ -159,9 +159,9 @@ def test_kein_skript_haengt_mehr_an_path_cwd():
 
 def test_die_geraeteskripte_unter_tools_ebenso():
     """tools/hardware/ liegt ausserhalb des Pakets und faellt sonst durchs Raster."""
-    import wt3000_scpi
+    import wt_treiber_lib
 
-    tools = Path(wt3000_scpi.__file__).parents[2] / "tools" / "hardware"
+    tools = Path(wt_treiber_lib.__file__).parents[2] / "tools" / "hardware"
     if not tools.is_dir():  # pragma: no cover - nur im Quellbaum vorhanden
         pytest.skip("tools/hardware/ nicht vorhanden (installiertes Paket)")
 

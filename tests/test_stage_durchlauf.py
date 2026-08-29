@@ -16,10 +16,10 @@ import json
 import pytest
 from conftest import ItemTableTransport
 
-from wt3000_scpi import stage2_read_numeric as stage2
-from wt3000_scpi import stage3_own_itemtable as stage3
-from wt3000_scpi import stage4_measure as stage4
-from wt3000_scpi import stage5_input_config as stage5
+from wt_treiber_lib import stage2_read_numeric as stage2
+from wt_treiber_lib import stage3_own_itemtable as stage3
+from wt_treiber_lib import stage4_measure as stage4
+from wt_treiber_lib import stage5_input_config as stage5
 
 REMOTE_ON = ":COMMunicate:REMote ON"
 REMOTE_OFF = ":COMMunicate:REMote OFF"

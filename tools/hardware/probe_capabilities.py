@@ -67,14 +67,14 @@ import time
 from datetime import datetime
 from pathlib import Path
 
-from wt3000_scpi.wt3000_common import (
+from wt_treiber_lib.wt3000_common import (
     output_dir,
     parse_condition,
     parse_nr3,
     setup_logging,
     strip_response_header,
 )
-from wt3000_scpi.wt3000_core import (
+from wt_treiber_lib.wt3000_core import (
     TmctlTransport,
     WTConfig,
     WTError,

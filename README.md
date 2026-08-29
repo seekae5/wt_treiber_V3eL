@@ -5,7 +5,7 @@ Gedacht für Messautomationsskripte: verbinden, messen, in eine CSV schreiben �
 Gerätezustand hinterher so hinterlassen, wie er vorgefunden wurde.
 
 ```python
-from wt3000_scpi import WT3000
+from wt_treiber_lib import WT3000
 
 with WT3000.connect(ip="192.168.10.20") as wt:
     for zeile in wt.device.describe():
@@ -120,9 +120,9 @@ live_messwerte.py    Anwenderskript mit Kommandozeile
 
 Die Bibliothek ist azyklisch in vier Schichten gegliedert — Transport, SCPI-Fachmodule, Abläufe,
 Fassade. **Für den Anwender zählt nur die oberste:** die Klasse `WT3000`. Ein Import aus
-`wt3000_scpi.wt3000_*` ist im eigenen Skript nie nötig; alles kommt aus `wt3000_scpi`.
+`wt3000_scpi.wt3000_*` ist im eigenen Skript nie nötig; alles kommt aus `wt_treiber_lib`.
 
-Die Dateien `src/wt3000_scpi/stage2…stage5b.py` stammen aus der Entstehungszeit der Bibliothek und
+Die Dateien `src/wt_treiber_lib/stage2…stage5b.py` stammen aus der Entstehungszeit der Bibliothek und
 lösen dieselben Aufgaben **ohne** die Fassade. Als Vorlage für eigenen Code sind sie nicht gedacht
 — das sagen auch ihre Kopfzeilen; ihr Wert liegt in den Begründungen in ihren Kommentaren.
 

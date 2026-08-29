@@ -22,7 +22,7 @@ import logging
 import pytest
 from conftest import ItemTableTransport
 
-from wt3000_scpi import (
+from wt_treiber_lib import (
     WT3000,
     CallbackSink,
     ItemSpec,
@@ -34,7 +34,7 @@ from wt3000_scpi import (
     spec_from_key,
     specs_from_keys,
 )
-from wt3000_scpi.wt3000_itemspec import build_item_table
+from wt_treiber_lib.wt3000_itemspec import build_item_table
 
 
 def geraet() -> ItemTableTransport:
@@ -195,7 +195,7 @@ def test_die_alte_aufrufform_bleibt_gueltig():
     """
     import inspect
 
-    from wt3000_scpi import MeasureControl
+    from wt_treiber_lib import MeasureControl
 
     for name, stelle in (("record", 2), ("record_csv", 2), ("start", 2), ("stream", 1)):
         parameter = list(inspect.signature(getattr(MeasureControl, name)).parameters)

@@ -30,9 +30,9 @@ import json
 
 import pytest
 
-from wt3000_scpi import WT3000, WTConfig
-from wt3000_scpi.wt3000_core import WTSession
-from wt3000_scpi.wt3000_measure import (
+from wt_treiber_lib import WT3000, WTConfig
+from wt_treiber_lib.wt3000_core import WTSession
+from wt_treiber_lib.wt3000_measure import (
     SIDECAR_VERSION,
     ErrorPolicy,
     LoopStatistics,
@@ -45,8 +45,8 @@ from wt3000_scpi.wt3000_measure import (
     sidecar_path,
     verify_sidecar,
 )
-from wt3000_scpi.wt3000_numeric import ItemTable
-from wt3000_scpi.wt3000_sinks import (
+from wt_treiber_lib.wt3000_numeric import ItemTable
+from wt_treiber_lib.wt3000_sinks import (
     CallbackSink,
     CsvSink,
     JsonlSink,

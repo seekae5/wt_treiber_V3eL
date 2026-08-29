@@ -16,8 +16,8 @@ from __future__ import annotations
 
 import pytest
 
-from wt3000_scpi.wt3000_common import condition_warnings, parse_condition, parse_nr1
-from wt3000_scpi.wt3000_core import WTError
+from wt_treiber_lib.wt3000_common import condition_warnings, parse_condition, parse_nr1
+from wt_treiber_lib.wt3000_core import WTError
 
 # ---------------------------------------------------------------------------
 # parse_nr1
@@ -144,11 +144,11 @@ def test_kein_rohes_int_oder_float_mehr_auf_geraeteantworten():
     import re
     from pathlib import Path
 
-    import wt3000_scpi
+    import wt_treiber_lib
 
     muster = re.compile(r"\b(?:int|float)\s*\(\s*[^)]*\.query\s*\(")
     treffer = []
-    for pfad in sorted(Path(wt3000_scpi.__file__).parent.glob("*.py")):
+    for pfad in sorted(Path(wt_treiber_lib.__file__).parent.glob("*.py")):
         for nummer, zeile in enumerate(pfad.read_text(encoding="utf-8").splitlines(), 1):
             if muster.search(zeile):
                 treffer.append(f"{pfad.name}:{nummer}: {zeile.strip()}")

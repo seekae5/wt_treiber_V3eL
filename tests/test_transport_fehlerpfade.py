@@ -33,7 +33,7 @@ import sys
 import pytest
 from conftest import ECHTER_TMCTL_KONSTRUKTOR
 
-from wt3000_scpi.wt3000_transport import (
+from wt_treiber_lib.wt3000_transport import (
     ProtocolError,
     TmctlTransport,
     WTConfig,

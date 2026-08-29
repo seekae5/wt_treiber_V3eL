@@ -15,9 +15,9 @@
 
 from __future__ import annotations
 
-import _pfad  # noqa: F401  - macht wt3000_scpi ohne Installation importierbar
+import _pfad  # noqa: F401  - macht wt_treiber_lib ohne Installation importierbar
 
-from wt3000_scpi import (
+from wt_treiber_lib import (
     WT3000,
     AutoRangeSpec,
     Quantity,

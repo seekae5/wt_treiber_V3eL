@@ -30,21 +30,21 @@ import time
 
 import pytest
 
-from wt3000_scpi import WT3000
-from wt3000_scpi.wt3000_core import (
+from wt_treiber_lib import WT3000
+from wt_treiber_lib.wt3000_core import (
     ConcurrentAccessError,
     WTConfig,
     WTError,
     WTSession,
 )
-from wt3000_scpi.wt3000_measure import (
+from wt_treiber_lib.wt3000_measure import (
     LoopStatistics,
     Measurement,
     iter_samples,
     run_measurement_loop,
 )
-from wt3000_scpi.wt3000_numeric import ItemTable
-from wt3000_scpi.wt3000_transport import FakeTransport, float_block
+from wt_treiber_lib.wt3000_numeric import ItemTable
+from wt_treiber_lib.wt3000_transport import FakeTransport, float_block
 
 from conftest import base_responses
 

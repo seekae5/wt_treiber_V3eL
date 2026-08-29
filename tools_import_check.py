@@ -24,16 +24,16 @@ import sys
 def main() -> int:
     """Alle Fachmodule importieren. Rueckgabewert 0 = erfolgreich."""
     try:
-        paket = importlib.import_module("wt3000_scpi")
+        paket = importlib.import_module("wt_treiber_lib")
     except ImportError as fehler:
-        print(f"FEHLER: wt3000_scpi ist nicht importierbar: {fehler}")
+        print(f"FEHLER: wt_treiber_lib ist nicht importierbar: {fehler}")
         print("Abhilfe: 'pip install -e .' im Projektverzeichnis ausfuehren.")
         return 1
 
     fehlgeschlagen: list[str] = []
     for name in paket.MODULES:
         try:
-            importlib.import_module(f"wt3000_scpi.{name}")
+            importlib.import_module(f"wt_treiber_lib.{name}")
         except Exception as fehler:  # bewusst breit: auch Syntax-/Namensfehler
             fehlgeschlagen.append(f"{name}: {fehler}")
 
@@ -43,7 +43,7 @@ def main() -> int:
             print(f"  {eintrag}")
         return 1
 
-    print(f"wt3000_scpi {paket.__version__}: {len(paket.MODULES)} Module importierbar.")
+    print(f"wt_treiber_lib {paket.__version__}: {len(paket.MODULES)} Module importierbar.")
     print("Fachliche Pruefung: 'pytest' im Projektverzeichnis.")
     return 0
 

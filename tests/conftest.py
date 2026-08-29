@@ -49,14 +49,14 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 # set_timeout/close, nicht am Konstruktor. Ebenso das monkeypatch auf
 # wt3000_device.TmctlTransport in test_device_facade.py: dort wird der Name
 # ersetzt, der echte Konstruktor also gar nicht erreicht.
-from wt3000_scpi.wt3000_transport import (  # noqa: E402
+from wt_treiber_lib.wt3000_transport import (  # noqa: E402
     FakeTransport,
     TmctlTransport,
     float_block,
 )
 
 # Fuer den Integrationszustand, den 'Geraetemodell' unten mitfuehrt.
-from wt3000_scpi.wt3000_deviceconfig import IntegrationState  # noqa: E402
+from wt_treiber_lib.wt3000_deviceconfig import IntegrationState  # noqa: E402
 
 
 def _kein_geraetezugriff(self, *args, **kwargs):
@@ -66,7 +66,7 @@ def _kein_geraetezugriff(self, *args, **kwargs):
         "TmctlTransport() ist stillgelegt, weil tests/conftest.py importiert "
         "wurde: die Testsuite laeuft ohne Geraet und ohne tmctl.dll.\n"
         "  - In Tests: 'FakeTransport' benutzen "
-        "(wt3000_scpi.wt3000_transport).\n"
+        "(wt_treiber_lib.wt3000_transport).\n"
         "  - In einem Geraeteskript unter tools/hardware/: pruefen, ob eine "
         "Zeile 'from tests...' oder 'import conftest' im Modulkopf steht - "
         "meist von der Entwicklungsumgebung automatisch ergaenzt. Aus tests/ "
@@ -146,7 +146,7 @@ def fake_session() -> FakeSession:
 @pytest.fixture
 def access(fake_session: FakeSession):
     """Schreibfaehiger RangeAccess auf der FakeSession, Wiring V3A3,P1W2."""
-    from wt3000_scpi.wt3000_rangeio import RangeAccess
+    from wt_treiber_lib.wt3000_rangeio import RangeAccess
 
     return RangeAccess(
         fake_session,
@@ -157,7 +157,7 @@ def access(fake_session: FakeSession):
 
 def element_settings(**overrides):
     """ElementSettings des Aufbaus, einzelne Felder ueberschreibbar."""
-    from wt3000_scpi.wt3000_input import ElementSettings
+    from wt_treiber_lib.wt3000_input import ElementSettings
 
     base = dict(
         element=1,
@@ -184,7 +184,7 @@ def element_settings(**overrides):
 
 def input_snapshot(*elements, **overrides):
     """InputSnapshot mit den uebergebenen Elementen."""
-    from wt3000_scpi.wt3000_input import InputSnapshot
+    from wt_treiber_lib.wt3000_input import InputSnapshot
 
     base = dict(
         crest_factor=3,
@@ -525,7 +525,7 @@ def input_responses(elemente: tuple[int, ...] = (1, 2, 3, 4)) -> dict[str, str]:
     Stromsensoren (10 V), Element 4 direkt (5 A) - dieselbe Konstellation wie
     in range_responses().
     """
-    from wt3000_scpi import wt3000_input as wi
+    from wt_treiber_lib import wt3000_input as wi
 
     tabelle: dict[str, str] = {
         ":INPUT": "ELEMENT1,1000V;ELEMENT2,1000V;ELEMENT3,1000V;ELEMENT4,1000V",

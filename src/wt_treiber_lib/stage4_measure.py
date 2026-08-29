@@ -25,7 +25,7 @@ import logging
 from datetime import datetime
 from pathlib import Path
 
-# Paketmodule werden mit 'python -m wt3000_scpi.stage4_measure' gestartet.
+# Paketmodule werden mit 'python -m wt_treiber_lib.stage4_measure' gestartet.
 from .wt3000_common import (
     condition_warnings,
     output_dir,

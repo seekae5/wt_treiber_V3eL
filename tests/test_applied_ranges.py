@@ -19,9 +19,9 @@ import logging
 
 import pytest
 
-from wt3000_scpi.wt3000_core import WTError
-from wt3000_scpi.wt3000_rangeio import Quantity, RangeAccess, RangeValue
-from wt3000_scpi.wt3000_ranging import (
+from wt_treiber_lib.wt3000_core import WTError
+from wt_treiber_lib.wt3000_rangeio import Quantity, RangeAccess, RangeValue
+from wt_treiber_lib.wt3000_ranging import (
     AutoRangeSpec,
     RangeBackup,
     RangePlan,

@@ -22,11 +22,11 @@ from dataclasses import replace
 
 import pytest
 
-from wt3000_scpi import WT3000, WTConfig
-from wt3000_scpi.wt3000_core import WTError, WTSession
-from wt3000_scpi.wt3000_device import DeviceInfo
-from wt3000_scpi.wt3000_input import GROUP_RANGE, GROUP_WIRING, InputConfig
-from wt3000_scpi.wt3000_transport import FakeTransport
+from wt_treiber_lib import WT3000, WTConfig
+from wt_treiber_lib.wt3000_core import WTError, WTSession
+from wt_treiber_lib.wt3000_device import DeviceInfo
+from wt_treiber_lib.wt3000_input import GROUP_RANGE, GROUP_WIRING, InputConfig
+from wt_treiber_lib.wt3000_transport import FakeTransport
 
 from conftest import base_responses
 

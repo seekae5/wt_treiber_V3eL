@@ -13,7 +13,7 @@ from datetime import datetime, timezone
 
 import pytest
 
-from wt3000_scpi.wt3000_core import (
+from wt_treiber_lib.wt3000_core import (
     DeviceError,
     ProtocolError,
     ReadOnlyViolation,
@@ -23,13 +23,13 @@ from wt3000_scpi.wt3000_core import (
     WTError,
     WTSession,
 )
-from wt3000_scpi.wt3000_measure import (
+from wt_treiber_lib.wt3000_measure import (
     Sample,
     run_measurement_loop,
     write_metadata,
 )
-from wt3000_scpi.wt3000_sinks import CsvSink
-from wt3000_scpi.wt3000_numeric import (
+from wt_treiber_lib.wt3000_sinks import CsvSink
+from wt_treiber_lib.wt3000_numeric import (
     FLOAT_NO_DATA,
     FLOAT_OVERRANGE,
     ItemTable,
@@ -38,7 +38,7 @@ from wt3000_scpi.wt3000_numeric import (
     parse_float_block,
     read_numeric_values,
 )
-from wt3000_scpi.wt3000_transport import FakeTransport, TmctlTransport, float_block
+from wt_treiber_lib.wt3000_transport import FakeTransport, TmctlTransport, float_block
 
 CONFIG = WTConfig(timeout_ms=5000, drain_timeout_ms=500)
 

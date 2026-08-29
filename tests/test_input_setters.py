@@ -20,8 +20,8 @@ from __future__ import annotations
 import pytest
 from conftest import FakeSession
 
-from wt3000_scpi.wt3000_core import WTError
-from wt3000_scpi.wt3000_input import (
+from wt_treiber_lib.wt3000_core import WTError
+from wt_treiber_lib.wt3000_input import (
     GROUP_MODE,
     GROUP_SYNC,
     InputConfig,
@@ -103,7 +103,7 @@ def test_unbekannter_messmodus_wird_weiterhin_abgelehnt():
 
 def test_gesperrte_gruppe_verhindert_den_schreibzugriff():
     """Die Korrektur zu F-05 lockert keine der beiden Sicherungen."""
-    from wt3000_scpi.wt3000_input import ConfigLocked
+    from wt_treiber_lib.wt3000_input import ConfigLocked
 
     session = FakeSession({":INPUT:SYNCHRONIZE:ELEMENT1": "EXT"})
     cfg = InputConfig(

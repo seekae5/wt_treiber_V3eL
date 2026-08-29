@@ -11,14 +11,14 @@ from __future__ import annotations
 
 import pytest
 
-from wt3000_scpi.wt3000_core import WTError
-from wt3000_scpi.wt3000_rangeio import (
+from wt_treiber_lib.wt3000_core import WTError
+from wt_treiber_lib.wt3000_rangeio import (
     Quantity,
     RangeValue,
     parse_range_value,
     ranges_match,
 )
-from wt3000_scpi.wt3000_ranging import AutoRangeSpec, RangePlan, RangeSpec
+from wt_treiber_lib.wt3000_ranging import AutoRangeSpec, RangePlan, RangeSpec
 
 # Elemente 1-3 haengen am externen Stromsensor (10 V), Element 4 direkt (5 A);
 # alle vier stehen auf 1000 V. Siehe conftest.range_responses().
@@ -130,7 +130,7 @@ def test_nicht_vorhandenes_element_bricht_ab(access):
 
 def test_sigma_ohne_wiring_units_wird_nicht_geraten(fake_session):
     """Ohne sigma_members wird der Scope abgelehnt statt geraten."""
-    from wt3000_scpi.wt3000_rangeio import RangeAccess
+    from wt_treiber_lib.wt3000_rangeio import RangeAccess
 
     blind = RangeAccess(fake_session, allow_changes=True)
     with pytest.raises(WTError):

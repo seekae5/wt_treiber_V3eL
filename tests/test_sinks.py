@@ -12,17 +12,17 @@ from datetime import datetime, timezone
 
 import pytest
 
-from wt3000_scpi.wt3000_core import WTConfig, WTError, WTSession
-from wt3000_scpi.wt3000_measure import Sample, SampleMark, SampleSink, run_measurement_loop
-from wt3000_scpi.wt3000_numeric import ItemTable, NumericValue, ValueStatus
-from wt3000_scpi.wt3000_sinks import (
+from wt_treiber_lib.wt3000_core import WTConfig, WTError, WTSession
+from wt_treiber_lib.wt3000_measure import Sample, SampleMark, SampleSink, run_measurement_loop
+from wt_treiber_lib.wt3000_numeric import ItemTable, NumericValue, ValueStatus
+from wt_treiber_lib.wt3000_sinks import (
     CallbackSink,
     CsvSink,
     JsonlSink,
     MultiSink,
     SinkNotOpen,
 )
-from wt3000_scpi.wt3000_transport import FakeTransport, float_block
+from wt_treiber_lib.wt3000_transport import FakeTransport, float_block
 
 
 # ---------------------------------------------------------------------------

@@ -21,7 +21,7 @@ import pytest
 
 from conftest import geraeteskript
 
-from wt3000_scpi.wt3000_common import format_nrf
+from wt_treiber_lib.wt3000_common import format_nrf
 
 ELEMENT = 4
 REMOTE_ON = ":COMMunicate:REMote ON"
@@ -307,7 +307,7 @@ def test_teststrom_ist_eine_gueltige_bereichsstufe():
     keiner von beiden zuordnen. Genau das begruendet der Kommentar ueber
     TEST_VALUE in probe_current_range.py; dieser Pruefsatz haelt ihn fest.
     """
-    from wt3000_scpi.wt3000_input import CURRENT_RANGES
+    from wt_treiber_lib.wt3000_input import CURRENT_RANGES
 
     modul = geraeteskript("probe_current_range")
     tabellen = [

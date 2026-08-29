@@ -21,8 +21,8 @@ from pathlib import Path
 import pytest
 from conftest import Geraetemodell
 
-import wt3000_scpi
-from wt3000_scpi import WT3000, WTConfig
+import wt_treiber_lib
+from wt_treiber_lib import WT3000, WTConfig
 
 SCHNELLSTART = Path(__file__).resolve().parents[1] / "docs" / "Schnellstart.md"
 
@@ -90,7 +90,7 @@ def fassade(monkeypatch):
         )
 
     monkeypatch.setattr(WT3000, "connect", staticmethod(verbinden))
-    monkeypatch.setattr(wt3000_scpi.WT3000, "connect", staticmethod(verbinden))
+    monkeypatch.setattr(wt_treiber_lib.WT3000, "connect", staticmethod(verbinden))
     return verbinden
 
 
@@ -167,7 +167,7 @@ def test_rezept_4_stellt_die_bereiche_hinterher_zurueck(fassade, tmp_path, monke
     """
     monkeypatch.chdir(tmp_path)
 
-    from wt3000_scpi import Quantity
+    from wt_treiber_lib import Quantity
 
     modell = Geraetemodell()
     vorher = {

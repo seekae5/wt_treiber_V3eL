@@ -35,12 +35,12 @@ import json
 import pytest
 from conftest import geraeteskript
 
-from wt3000_scpi import stage2_read_numeric as stage2
-from wt3000_scpi import stage3_own_itemtable as stage3
-from wt3000_scpi import stage4_measure as stage4
-from wt3000_scpi import stage5_input_config as stage5
-from wt3000_scpi import stage5b_range_probe as stage5b
-from wt3000_scpi.wt3000_transport import WTConfig, config_file_in_use
+from wt_treiber_lib import stage2_read_numeric as stage2
+from wt_treiber_lib import stage3_own_itemtable as stage3
+from wt_treiber_lib import stage4_measure as stage4
+from wt_treiber_lib import stage5_input_config as stage5
+from wt_treiber_lib import stage5b_range_probe as stage5b
+from wt_treiber_lib.wt3000_transport import WTConfig, config_file_in_use
 
 
 def lauf_bis_zum_kopf(modul) -> None:
@@ -180,7 +180,7 @@ def test_tippfehler_in_der_konfiguration_landet_im_protokoll(
 def test_protokollkopf_nennt_verbindung_und_herkunft(stufenlauf, monkeypatch, tmp_path, laden):
     """A-09, erste Haelfte: 'describe()' wird von keinem Skript aufgerufen.
 
-    Aus dem Aufruf 'python -m wt3000_scpi.stage4_measure' laesst sich nicht
+    Aus dem Aufruf 'python -m wt_treiber_lib.stage4_measure' laesst sich nicht
     ablesen, gegen welches Geraet gemessen wurde. Die Zeile kostet nichts und
     macht den archivierten Lauf nachvollziehbar. Die zweite Haelfte - die
     Parameter am Aufruf statt aus verstecktem Prozesszustand - kommt in

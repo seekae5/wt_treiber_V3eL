@@ -20,9 +20,9 @@ from datetime import datetime
 import pytest
 from conftest import base_responses, integrate_responses
 
-from wt3000_scpi import WT3000, WTConfig, WTError
-from wt3000_scpi.wt3000_core import ReadOnlyViolation
-from wt3000_scpi.wt3000_deviceconfig import (
+from wt_treiber_lib import WT3000, WTConfig, WTError
+from wt_treiber_lib.wt3000_core import ReadOnlyViolation
+from wt_treiber_lib.wt3000_deviceconfig import (
     GROUP_INTEGRATE,
     GROUP_RESET,
     GROUP_RUN,
@@ -39,8 +39,8 @@ from wt3000_scpi.wt3000_deviceconfig import (
     parse_state,
     parse_timer,
 )
-from wt3000_scpi.wt3000_measure import build_integration_profile
-from wt3000_scpi.wt3000_transport import FakeTransport
+from wt_treiber_lib.wt3000_measure import build_integration_profile
+from wt_treiber_lib.wt3000_transport import FakeTransport
 
 
 def open_facade(transport: FakeTransport, **kwargs) -> WT3000:
@@ -51,7 +51,7 @@ def open_facade(transport: FakeTransport, **kwargs) -> WT3000:
 
 def integ(transport: FakeTransport, allow_changes: bool = True, **kwargs) -> IntegrationConfig:
     """IntegrationConfig direkt auf einer Sitzung - ohne den Umweg ueber die Fassade."""
-    from wt3000_scpi.wt3000_core import WTSession
+    from wt_treiber_lib.wt3000_core import WTSession
 
     session = WTSession(transport, WTConfig(use_remote=False), read_only=False)
     return IntegrationConfig(session, allow_changes=allow_changes, **kwargs)
@@ -219,7 +219,7 @@ def test_nur_lesen_sitzung_haelt_das_kommando_vor_dem_transport_auf():
     'allow_changes' ist die Sperre dieses Moduls, 'read_only' die der Sitzung.
     Wer nur die erste oeffnet, kommt trotzdem nicht durch.
     """
-    from wt3000_scpi.wt3000_core import WTSession
+    from wt_treiber_lib.wt3000_core import WTSession
 
     transport = FakeTransport(integrate_responses())
     session = WTSession(transport, WTConfig(use_remote=False), read_only=True)

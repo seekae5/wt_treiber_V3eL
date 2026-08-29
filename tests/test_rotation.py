@@ -29,9 +29,9 @@ from datetime import datetime, timezone
 
 import pytest
 
-from wt3000_scpi.wt3000_measure import Sample, SampleMark
-from wt3000_scpi.wt3000_numeric import NumericValue, ValueStatus
-from wt3000_scpi.wt3000_sinks import (
+from wt_treiber_lib.wt3000_measure import Sample, SampleMark
+from wt_treiber_lib.wt3000_numeric import NumericValue, ValueStatus
+from wt_treiber_lib.wt3000_sinks import (
     AppendMismatch,
     CsvSink,
     JsonlSink,
@@ -40,7 +40,7 @@ from wt3000_scpi.wt3000_sinks import (
     segment_path,
     unique_path,
 )
-from wt3000_scpi.wt3000_core import WTError
+from wt_treiber_lib.wt3000_core import WTError
 
 
 # ---------------------------------------------------------------------------
@@ -155,7 +155,7 @@ def test_rotation_nach_groesse(tmp_path):
 
 def test_rotation_nach_zeit(tmp_path, monkeypatch):
     """Die Uhr wird gestellt, statt im Test zu warten."""
-    import wt3000_scpi.wt3000_sinks as sinks
+    import wt_treiber_lib.wt3000_sinks as sinks
 
     jetzt = {"t": 1000.0}
     monkeypatch.setattr(sinks.time, "monotonic", lambda: jetzt["t"])
@@ -240,7 +240,7 @@ def test_eigene_namensgebung(tmp_path):
 
 
 def test_schreiben_ohne_open_faellt_auf(tmp_path):
-    from wt3000_scpi.wt3000_sinks import SinkNotOpen
+    from wt_treiber_lib.wt3000_sinks import SinkNotOpen
 
     sink = RotatingSink(CsvSink, tmp_path / "m.csv", RotationPolicy(max_rows=2))
     with pytest.raises(SinkNotOpen):

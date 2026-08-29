@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # =============================================================================
 # Datei: live_messwerte.py
-# Kleines Anwenderskript zum Erproben des gebauten Pakets 'wt3000_scpi':
+# Kleines Anwenderskript zum Erproben des gebauten Pakets 'wt_treiber_lib':
 # verbindet sich mit dem WT3000, liest die AKTUELL im Geraet eingestellte
 # Item-Tabelle und gibt die Messwerte im Takt in der Konsole aus.
 #
@@ -24,7 +24,7 @@ import argparse
 import logging
 from pathlib import Path
 
-from wt3000_scpi import (
+from wt_treiber_lib import (
     WT3000,
     CallbackSink,
     CsvSink,

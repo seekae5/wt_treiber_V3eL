@@ -15,9 +15,9 @@ from datetime import datetime, timezone
 
 import pytest
 
-from wt3000_scpi.wt3000_measure import Sample, SampleMark
-from wt3000_scpi.wt3000_sinks import CsvSink
-from wt3000_scpi.wt3000_numeric import NumericValue, ValueStatus
+from wt_treiber_lib.wt3000_measure import Sample, SampleMark
+from wt_treiber_lib.wt3000_sinks import CsvSink
+from wt_treiber_lib.wt3000_numeric import NumericValue, ValueStatus
 
 
 # ---------------------------------------------------------------------------
@@ -190,9 +190,9 @@ def test_laengenpruefung_aus_p3_gilt_weiter(tmp_path):
 
 def test_aus_der_paketwurzel_importierbar():
     """Eigene Senken sollen den Typ an der Paketwurzel finden."""
-    import wt3000_scpi
+    import wt_treiber_lib
 
-    assert wt3000_scpi.Sample is Sample
-    assert wt3000_scpi.SampleMark is SampleMark
-    assert "Sample" in wt3000_scpi.__all__
-    assert "SampleMark" in wt3000_scpi.__all__
+    assert wt_treiber_lib.Sample is Sample
+    assert wt_treiber_lib.SampleMark is SampleMark
+    assert "Sample" in wt_treiber_lib.__all__
+    assert "SampleMark" in wt_treiber_lib.__all__

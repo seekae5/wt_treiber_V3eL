@@ -31,8 +31,8 @@ import json
 
 import pytest
 
-from wt3000_scpi.wt3000_core import ConcurrentAccessError, TmctlError, WTConfig, WTSession
-from wt3000_scpi.wt3000_measure import (
+from wt_treiber_lib.wt3000_core import ConcurrentAccessError, TmctlError, WTConfig, WTSession
+from wt_treiber_lib.wt3000_measure import (
     COMMUNICATION_ERRORS,
     ErrorPolicy,
     LoopStatistics,
@@ -43,9 +43,9 @@ from wt3000_scpi.wt3000_measure import (
     run_measurement_loop,
     verify_after_reconnect,
 )
-from wt3000_scpi.wt3000_numeric import ItemTable, ValueStatus
-from wt3000_scpi.wt3000_sinks import CsvSink, JsonlSink
-from wt3000_scpi.wt3000_transport import FakeTransport, float_block
+from wt_treiber_lib.wt3000_numeric import ItemTable, ValueStatus
+from wt_treiber_lib.wt3000_sinks import CsvSink, JsonlSink
+from wt_treiber_lib.wt3000_transport import FakeTransport, float_block
 
 
 # ---------------------------------------------------------------------------

@@ -13,9 +13,9 @@ from __future__ import annotations
 
 import pytest
 
-from wt3000_scpi import WT3000, WTConfig
-from wt3000_scpi.wt3000_core import WTError
-from wt3000_scpi.wt3000_transport import FakeTransport
+from wt_treiber_lib import WT3000, WTConfig
+from wt_treiber_lib.wt3000_core import WTError
+from wt_treiber_lib.wt3000_transport import FakeTransport
 
 from conftest import base_responses
 

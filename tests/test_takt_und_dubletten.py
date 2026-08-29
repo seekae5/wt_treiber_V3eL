@@ -24,16 +24,16 @@ import logging
 
 import pytest
 
-from wt3000_scpi.wt3000_core import WTConfig, WTSession
-from wt3000_scpi.wt3000_measure import (
+from wt_treiber_lib.wt3000_core import WTConfig, WTSession
+from wt_treiber_lib.wt3000_measure import (
     LoopStatistics,
     SampleMark,
     check_sample_interval,
     device_update_rate,
     run_measurement_loop,
 )
-from wt3000_scpi.wt3000_numeric import ItemTable, read_numeric_block
-from wt3000_scpi.wt3000_transport import FakeTransport, float_block
+from wt_treiber_lib.wt3000_numeric import ItemTable, read_numeric_block
+from wt_treiber_lib.wt3000_transport import FakeTransport, float_block
 
 FLOAT_NO_DATA = 0x7FC00000
 
@@ -307,7 +307,7 @@ def test_read_numeric_block_liefert_rohbytes_und_werte():
 
 def test_read_numeric_block_bricht_bei_falscher_anzahl_ab():
     """Die Zusage aus P-3 gilt fuer den neuen Einstieg unveraendert."""
-    from wt3000_scpi.wt3000_core import ProtocolError
+    from wt_treiber_lib.wt3000_core import ProtocolError
 
     transport = FakeTransport({":NUMeric:NORMal:VALue?": float_block([1.0, 2.0])})
     sess = WTSession(transport, WTConfig())

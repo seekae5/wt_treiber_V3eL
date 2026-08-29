@@ -18,8 +18,8 @@ from __future__ import annotations
 import pytest
 from conftest import range_responses
 
-from wt3000_scpi import stage5b_range_probe as stage5b
-from wt3000_scpi.wt3000_transport import FakeTransport
+from wt_treiber_lib import stage5b_range_probe as stage5b
+from wt_treiber_lib.wt3000_transport import FakeTransport
 
 
 def geraeteantworten() -> dict:

@@ -26,7 +26,7 @@ from pathlib import Path
 import pytest
 from conftest import ItemTableTransport
 
-from wt3000_scpi import (
+from wt_treiber_lib import (
     WT3000,
     CallbackSink,
     ErrorPolicy,

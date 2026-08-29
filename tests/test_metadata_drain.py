@@ -34,10 +34,10 @@ import json
 
 import pytest
 
-from wt3000_scpi.wt3000_core import WTSession
-from wt3000_scpi.wt3000_measure import write_metadata
-from wt3000_scpi.wt3000_numeric import ItemTable, NumericItem
-from wt3000_scpi.wt3000_transport import FakeTransport, TmctlError, WTConfig
+from wt_treiber_lib.wt3000_core import WTSession
+from wt_treiber_lib.wt3000_measure import write_metadata
+from wt_treiber_lib.wt3000_numeric import ItemTable, NumericItem
+from wt_treiber_lib.wt3000_transport import FakeTransport, TmctlError, WTConfig
 
 #: Rumpf, den das Geraet auf ':INPut?' liefert - lang, deshalb der Kandidat
 #: fuer einen Timeout. Er darf in KEINEM anderen Feld auftauchen.

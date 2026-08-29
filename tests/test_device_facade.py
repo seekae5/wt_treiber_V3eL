@@ -17,16 +17,16 @@ import pytest
 # jetzt in conftest.py - die Stufenskripte brauchen dasselbe Geraetemodell.
 from conftest import ItemTableTransport, base_responses
 
-from wt3000_scpi import OPTION_REQUIREMENTS, WT3000, WTConfig, WTError
+from wt_treiber_lib import OPTION_REQUIREMENTS, WT3000, WTConfig, WTError
 # Die reinen Funktionen der Optionserfassung werden einzeln
 # geprueft, nicht nur ueber die Fassade.
-from wt3000_scpi.wt3000_device import parse_options, required_options
-from wt3000_scpi import wt3000_device  # fuer monkeypatch auf TmctlTransport
-from wt3000_scpi.wt3000_core import ReadOnlyViolation, TmctlError
-from wt3000_scpi.wt3000_input import ConfigLocked
-from wt3000_scpi.wt3000_itemspec import ItemSpec
-from wt3000_scpi.wt3000_numeric import ValueStatus
-from wt3000_scpi.wt3000_transport import FakeTransport
+from wt_treiber_lib.wt3000_device import parse_options, required_options
+from wt_treiber_lib import wt3000_device  # fuer monkeypatch auf TmctlTransport
+from wt_treiber_lib.wt3000_core import ReadOnlyViolation, TmctlError
+from wt_treiber_lib.wt3000_input import ConfigLocked
+from wt_treiber_lib.wt3000_itemspec import ItemSpec
+from wt_treiber_lib.wt3000_numeric import ValueStatus
+from wt_treiber_lib.wt3000_transport import FakeTransport
 
 def open_facade(transport: FakeTransport, **kwargs) -> WT3000:
     """Fassade auf einem Fake-Transport, ohne Fernsteuerung."""

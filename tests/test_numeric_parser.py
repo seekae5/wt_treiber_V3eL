@@ -14,8 +14,8 @@ import struct
 
 import pytest
 
-from wt3000_scpi.wt3000_core import ProtocolError
-from wt3000_scpi.wt3000_numeric import (
+from wt_treiber_lib.wt3000_core import ProtocolError
+from wt_treiber_lib.wt3000_numeric import (
     FLOAT_NO_DATA,
     FLOAT_OVERRANGE,
     ItemTable,

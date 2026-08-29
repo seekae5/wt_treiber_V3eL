@@ -28,7 +28,7 @@ Nicht in dieser Reihe, aber verwandt:
 
 - [`../live_messwerte.py`](../live_messwerte.py) — dasselbe wie 02, aber mit Kommandozeile
   (`--ip`, `--intervall`, `--anzahl`) und laufender Konsolenausgabe.
-- `src/wt3000_scpi/stage2…stage5b.py` — die Stufenskripte aus der Entstehungszeit der Bibliothek.
+- `../src/wt_treiber_lib/stage2…stage5b.py` — die Stufenskripte aus der Entstehungszeit der Bibliothek.
   Sie lösen dieselben Aufgaben **ohne** die Fassade und sind dadurch drei- bis viermal so lang.
   Als Vorlage für eigenen Code sind sie nicht gedacht; ihr Wert liegt in den Begründungen in den
   Kommentaren.
@@ -43,7 +43,7 @@ Nicht in dieser Reihe, aber verwandt:
 
 ## Zur Zeile `import _pfad`
 
-Sie macht `wt3000_scpi` aus `src/` importierbar, ohne dass das Paket installiert sein muss — damit
+Sie macht `wt_treiber_lib` aus `src/` importierbar, ohne dass das Paket installiert sein muss — damit
 ein Beispiel sofort läuft, statt zuerst an einem `ImportError` zu scheitern. Nach
 
 ```bash

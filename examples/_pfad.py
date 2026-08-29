@@ -1,4 +1,4 @@
-# Macht 'wt3000_scpi' aus dem Quellbaum importierbar, ohne dass das Paket
+# Macht 'wt_treiber_lib' aus dem Quellbaum importierbar, ohne dass das Paket
 # installiert sein muss - damit ein Beispiel sofort laeuft, statt zuerst an
 # einem ImportError zu scheitern.
 #

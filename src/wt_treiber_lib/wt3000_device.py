@@ -1,7 +1,7 @@
 # Oeffentliche Fassade: verdrahtet Transport, Sitzung und Fachobjekte aus dem
 # am Geraet gelesenen Steckbrief. Normaler Einstieg:
 #
-#     from wt3000_scpi import WT3000, Quantity
+#     from wt_treiber_lib import WT3000, Quantity
 #
 #     with WT3000.connect(ip="192.168.10.20") as wt:
 #         wt.device.log_summary()

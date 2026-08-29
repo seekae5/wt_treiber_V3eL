@@ -13,7 +13,7 @@ from __future__ import annotations
 
 import pytest
 
-from wt3000_scpi.wt3000_common import (
+from wt_treiber_lib.wt3000_common import (
     ALL,
     SIGMA,
     SIGMB,
@@ -23,10 +23,10 @@ from wt3000_scpi.wt3000_common import (
     is_element_scope,
     scope_suffix,
 )
-from wt3000_scpi.wt3000_core import WTError
-from wt3000_scpi.wt3000_input import scope_node
-from wt3000_scpi.wt3000_itemspec import _canonical_element, items_match
-from wt3000_scpi.wt3000_numeric import NumericItem
+from wt_treiber_lib.wt3000_core import WTError
+from wt_treiber_lib.wt3000_input import scope_node
+from wt_treiber_lib.wt3000_itemspec import _canonical_element, items_match
+from wt_treiber_lib.wt3000_numeric import NumericItem
 
 
 # ---------------------------------------------------------------------------

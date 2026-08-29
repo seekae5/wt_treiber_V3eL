@@ -8,7 +8,7 @@ zurecht.
 Anwenderskript nie nötig — wenn doch, ist das ein Fehler der Bibliothek, kein Fehler des Skripts.
 
 ```python
-from wt3000_scpi import WT3000
+from wt_treiber_lib import WT3000
 ```
 
 > Jeder Python-Block dieser Seite wird von `tests/test_schnellstart_doku.py` gegen ein simuliertes
@@ -61,7 +61,7 @@ Vier Gruppen bleiben auch dann gesperrt, weil sie den eingemessenen Zustand fest
 Verdrahtung, bestückte Elemente. Verändert nichts.
 
 ```python
-from wt3000_scpi import WT3000
+from wt_treiber_lib import WT3000
 
 with WT3000.connect(ip="192.168.10.20") as wt:
     for zeile in wt.device.describe():
@@ -102,10 +102,10 @@ richtige erste Versuch am realen Gerät.
 
 ```python
 from pathlib import Path
-from wt3000_scpi import WT3000
+from wt_treiber_lib import WT3000
 
 ziel = Path("messungen")
-ziel.mkdir(parents=True, exist_ok=True)          # der Treiber legt kein Verzeichnis an
+ziel.mkdir(parents=True, exist_ok=True)  # der Treiber legt kein Verzeichnis an
 
 with WT3000.connect(ip="192.168.10.20") as wt:
     # OHNE 'table' wird die Item-Tabelle des Geraets uebernommen - gemessen
@@ -113,10 +113,10 @@ with WT3000.connect(ip="192.168.10.20") as wt:
     # sehen will, holt sie sich mit 'tabelle = wt.items.read()'.
     stats = wt.measure.record_csv(
         ziel / "messreihe.csv",
-        interval_s=1.0,        # Takt DIESER Schleife, nicht die Geraeterate
-        max_samples=60,        # ohne Limit laeuft sie bis Strg+C
-        use_hold=False,        # HOLD ist ein Set-Kommando - hier nicht erlaubt
-        sidecar=True,          # legt messreihe.csv.meta.json daneben
+        interval_s=1.0,  # Takt DIESER Schleife, nicht die Geraeterate
+        max_samples=60,  # ohne Limit laeuft sie bis Strg+C
+        use_hold=False,  # HOLD ist ein Set-Kommando - hier nicht erlaubt
+        sidecar=True,  # legt messreihe.csv.meta.json daneben
     )
 
 stats.log_summary(1.0)
@@ -144,7 +144,7 @@ Dafür wird die Item-Tabelle geschrieben — und deshalb **beide Schlösser geö
 
 ```python
 from pathlib import Path
-from wt3000_scpi import WT3000
+from wt_treiber_lib import WT3000
 
 ziel = Path("messungen")
 ziel.mkdir(parents=True, exist_ok=True)
@@ -159,7 +159,7 @@ with WT3000.connect(ip="192.168.10.20", read_only=False, allow_changes=True) as 
         # Setzt die Tabelle, prueft sie zurueck und stellt am Blockende in
         # JEDEM Fall den Ausgangszustand wieder her - auch bei Strg+C.
         with wt.items.applied(
-            wt.items.from_keys(SPALTEN), backup_file=ziel / "itemtabelle_backup.json"
+                wt.items.from_keys(SPALTEN), backup_file=ziel / "itemtabelle_backup.json"
         ) as tabelle:
             stats = wt.measure.record_csv(
                 ziel / "eigene_groessen.csv",
@@ -198,15 +198,15 @@ garantiert zurückgestellt — auch bei einem Fehler oder Strg+C mitten in der M
 
 ```python
 from pathlib import Path
-from wt3000_scpi import WT3000, Quantity, RangePlan, RangeSpec, AutoRangeSpec
+from wt_treiber_lib import WT3000, Quantity, RangePlan, RangeSpec, AutoRangeSpec
 
 ziel = Path("messungen")
 ziel.mkdir(parents=True, exist_ok=True)
 
 plan = RangePlan.of(
-    RangeSpec(Quantity.VOLTAGE, "ALL", 600.0),         # scope: Element, "SIGMA" oder "ALL"
+    RangeSpec(Quantity.VOLTAGE, "ALL", 600.0),  # scope: Element, "SIGMA" oder "ALL"
     RangeSpec(Quantity.CURRENT, 4, 10.0),
-    AutoRangeSpec(Quantity.CURRENT, "SIGMA", True),    # Autorange fuer Element 1-3 EIN
+    AutoRangeSpec(Quantity.CURRENT, "SIGMA", True),  # Autorange fuer Element 1-3 EIN
 )
 print("\n".join(plan.describe()))
 
@@ -223,12 +223,12 @@ Ein fester Bereich schaltet Autorange für dieselbe Größe von selbst aus — d
 Welche Stufen das Gerät annimmt, muss man nicht raten:
 
 ```python
-from wt3000_scpi import VOLTAGE_RANGES, CURRENT_RANGES, SENSOR_RANGES, UPDATE_RATES_S
+from wt_treiber_lib import VOLTAGE_RANGES, CURRENT_RANGES, SENSOR_RANGES, UPDATE_RATES_S
 
-VOLTAGE_RANGES[3]        # Crest-Faktor 3: (15.0, 30.0, ..., 600.0, 1000.0) in V
+VOLTAGE_RANGES[3]  # Crest-Faktor 3: (15.0, 30.0, ..., 600.0, 1000.0) in V
 CURRENT_RANGES[(30, 3)]  # 30-A-Element, CF 3: (0.5, 1.0, ..., 30.0) in A
-SENSOR_RANGES[3]         # externer Stromsensor, CF 3: (0.05, ..., 10.0) in V
-UPDATE_RATES_S           # (0.05, 0.1, 0.25, 0.5, 1.0, 2.0, 5.0, 10.0, 20.0)
+SENSOR_RANGES[3]  # externer Stromsensor, CF 3: (0.05, ..., 10.0) in V
+UPDATE_RATES_S  # (0.05, 0.1, 0.25, 0.5, 1.0, 2.0, 5.0, 10.0, 20.0)
 ```
 
 `allow_snapping=True` an `applied_ranges()` erlaubt dem Gerät, einen Zwischenwert auf die nächste
@@ -243,7 +243,7 @@ feststeht.
 
 ```python
 from pathlib import Path
-from wt3000_scpi import WT3000, CsvSink, ErrorPolicy
+from wt_treiber_lib import WT3000, CsvSink, ErrorPolicy
 
 ziel = Path("messungen")
 ziel.mkdir(parents=True, exist_ok=True)
@@ -252,14 +252,13 @@ with WT3000.connect(ip="192.168.10.20", read_only=False, allow_changes=True) as 
     tabelle = wt.items.read()
 
     with wt.measure.start(
-        CsvSink(ziel / "pruefstandslauf.csv"),
-        tabelle,
-        interval_s=0.5,
-        error_policy=ErrorPolicy.unattended(),   # Aussetzer ueberstehen statt abbrechen
-        sidecar=True,
+            CsvSink(ziel / "pruefstandslauf.csv"),
+            tabelle,
+            interval_s=0.5,
+            error_policy=ErrorPolicy.unattended(),  # Aussetzer ueberstehen statt abbrechen
+            sidecar=True,
     ) as messung:
-
-        pruefstand_hochfahren()                  # eigener Code
+        pruefstand_hochfahren()  # eigener Code
         warten_bis_temperatur_erreicht()
         pruefstand_abfahren()
 
@@ -293,7 +292,7 @@ Der Treiber läuft vollständig ohne WT3000 und ohne `tmctl.dll`. Damit lässt s
 schreiben und durchspielen, bevor man ins Labor geht:
 
 ```python
-from wt3000_scpi import WT3000, WTConfig, FakeTransport
+from wt_treiber_lib import WT3000, WTConfig, FakeTransport
 
 antworten = {
     "*IDN": "YOKOGAWA,WT3000,C1B234567,F2.11",
@@ -319,7 +318,7 @@ Die Meldungen dieses Treibers nennen den Ausweg, nicht nur das Problem. Es lohnt
 auszugeben statt sie zu verschlucken:
 
 ```python
-from wt3000_scpi import WT3000, WTError, ConfigLocked, ReadOnlyViolation
+from wt_treiber_lib import WT3000, WTError, ConfigLocked, ReadOnlyViolation
 
 try:
     with WT3000.connect() as wt:
@@ -327,7 +326,7 @@ try:
 except ReadOnlyViolation:
     print("Sitzung ist nur lesend - read_only=False setzen")
 except ConfigLocked as fehler:
-    print(f"Sperre eines Fachobjekts: {fehler}")   # nennt die noetige Freigabe
+    print(f"Sperre eines Fachobjekts: {fehler}")  # nennt die noetige Freigabe
 except WTError as fehler:
     print(f"Fehler: {fehler}")
 ```

@@ -12,7 +12,7 @@ from __future__ import annotations
 
 from conftest import element_settings, input_snapshot
 
-from wt3000_scpi.wt3000_input import (
+from wt_treiber_lib.wt3000_input import (
     MODE_TOKENS,
     SYNC_TOKENS,
     canonical_enum_token,
@@ -126,7 +126,7 @@ def test_fehlendes_element_wird_gemeldet():
 def test_diff_ist_verlustfrei_ueber_json(tmp_path):
     """Ein geladener Snapshot muss zum Original passen - sonst laeuft der
     Restore nach einem Neustart des Skripts gegen ein anderes Soll."""
-    from wt3000_scpi.wt3000_input import InputSnapshot
+    from wt_treiber_lib.wt3000_input import InputSnapshot
 
     soll = input_snapshot()
     pfad = tmp_path / "snapshot.json"

@@ -9,11 +9,11 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any
 
-from wt3000_scpi import WT3000, WTError
-from wt3000_scpi.wt3000_common import output_dir, setup_logging
-from wt3000_scpi.wt3000_core import config_file_in_use
-from wt3000_scpi.wt3000_itemspec import ItemSpec
-from wt3000_scpi.wt3000_numeric import NumericValue
+from wt_treiber_lib import WT3000, WTError
+from wt_treiber_lib.wt3000_common import output_dir, setup_logging
+from wt_treiber_lib.wt3000_core import config_file_in_use
+from wt_treiber_lib.wt3000_itemspec import ItemSpec
+from wt_treiber_lib.wt3000_numeric import NumericValue
 
 
 FUNKTIONEN: tuple[str, ...] = ("U", "I", "P", "S", "Q", "LAMBDA", "PHI")

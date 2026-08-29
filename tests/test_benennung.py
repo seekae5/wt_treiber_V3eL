@@ -22,7 +22,7 @@ import logging
 import pytest
 from conftest import ItemTableTransport
 
-from wt3000_scpi import (
+from wt_treiber_lib import (
     WT3000,
     InputConfig,
     ItemSpec,
@@ -33,7 +33,7 @@ from wt3000_scpi import (
     WTError,
     GROUP_RANGE,
 )
-from wt3000_scpi.wt3000_input import scope_node
+from wt_treiber_lib.wt3000_input import scope_node
 
 
 def fassade(**kwargs) -> WT3000:
@@ -101,9 +101,9 @@ def test_auch_der_bereichsplan_benutzt_den_begriff():
 
 def test_der_alias_ist_aus_dem_paket_importierbar():
     """Ein Typ, den Signaturen fuehren, gehoert in die Paketoberflaeche (E1)."""
-    import wt3000_scpi
+    import wt_treiber_lib
 
-    assert "Scope" in wt3000_scpi.__all__
+    assert "Scope" in wt_treiber_lib.__all__
 
 
 def test_der_hilfsname_heisst_ebenfalls_scope():
@@ -224,9 +224,9 @@ def test_der_quelltext_bleibt_bei_einer_schreibweise():
     import re
     from pathlib import Path
 
-    import wt3000_scpi
+    import wt_treiber_lib
 
-    paket = Path(wt3000_scpi.__file__).parent
+    paket = Path(wt_treiber_lib.__file__).parent
     treffer = {
         p.name: sorted(set(re.findall(r"\S*[äöüÄÖÜß]\S*", p.read_text(encoding="utf-8"))))
         for p in sorted(paket.glob("*.py"))

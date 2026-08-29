@@ -57,15 +57,15 @@ import logging
 from datetime import datetime
 from pathlib import Path
 
-from wt3000_scpi.wt3000_common import output_dir, setup_logging
-from wt3000_scpi.wt3000_core import (
+from wt_treiber_lib.wt3000_common import output_dir, setup_logging
+from wt_treiber_lib.wt3000_core import (
     TmctlTransport,
     WTConfig,
     WTError,
     WTSession,
     config_file_in_use,
 )
-from wt3000_scpi.wt3000_input import GROUP_CFACTOR, GROUP_WIRING, InputConfig, Wiring
+from wt_treiber_lib.wt3000_input import GROUP_CFACTOR, GROUP_WIRING, InputConfig, Wiring
 
 # ---------------------------------------------------------------------------
 # Laufparameter

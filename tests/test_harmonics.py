@@ -22,9 +22,9 @@ from __future__ import annotations
 import pytest
 from conftest import base_responses, harmonics_responses
 
-from wt3000_scpi import WT3000, WTConfig, WTError
-from wt3000_scpi.wt3000_core import WTSession
-from wt3000_scpi.wt3000_deviceconfig import (
+from wt_treiber_lib import WT3000, WTConfig, WTError
+from wt_treiber_lib.wt3000_core import WTSession
+from wt_treiber_lib.wt3000_deviceconfig import (
     ConfigLocked,
     FrequencyBand,
     HarmonicsConfig,
@@ -32,8 +32,8 @@ from wt3000_scpi.wt3000_deviceconfig import (
     ThdFormula,
     parse_order,
 )
-from wt3000_scpi.wt3000_measure import build_harmonics_profile
-from wt3000_scpi.wt3000_transport import FakeTransport
+from wt_treiber_lib.wt3000_measure import build_harmonics_profile
+from wt_treiber_lib.wt3000_transport import FakeTransport
 
 
 def harm(transport: FakeTransport, allow_changes: bool = True, **kwargs) -> HarmonicsConfig:

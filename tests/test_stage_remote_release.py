@@ -15,11 +15,11 @@ from __future__ import annotations
 
 import pytest
 
-from wt3000_scpi import stage3_own_itemtable as stage3
-from wt3000_scpi import stage4_measure as stage4
-from wt3000_scpi.wt3000_core import WTError
-from wt3000_scpi.wt3000_itemspec import build_item_table
-from wt3000_scpi.wt3000_measure import build_standard_profile
+from wt_treiber_lib import stage3_own_itemtable as stage3
+from wt_treiber_lib import stage4_measure as stage4
+from wt_treiber_lib.wt3000_core import WTError
+from wt_treiber_lib.wt3000_itemspec import build_item_table
+from wt_treiber_lib.wt3000_measure import build_standard_profile
 
 REMOTE_ON = ":COMMunicate:REMote ON"
 REMOTE_OFF = ":COMMunicate:REMote OFF"

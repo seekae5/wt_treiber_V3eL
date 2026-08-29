@@ -26,7 +26,7 @@ from collections import Counter
 from datetime import datetime
 from pathlib import Path
 
-# Paketmodule werden mit 'python -m wt3000_scpi.stage3_own_itemtable' gestartet.
+# Paketmodule werden mit 'python -m wt_treiber_lib.stage3_own_itemtable' gestartet.
 from .wt3000_common import (
     condition_warnings,
     output_dir,

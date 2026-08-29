@@ -30,9 +30,9 @@ from conftest import (
     integrate_responses,
 )
 
-from wt3000_scpi import WT3000, WTConfig, WTError
-from wt3000_scpi.wt3000_backup import BACKUP_VERSION, SessionBackup, device_fingerprint
-from wt3000_scpi.wt3000_deviceconfig import (
+from wt_treiber_lib import WT3000, WTConfig, WTError
+from wt_treiber_lib.wt3000_backup import BACKUP_VERSION, SessionBackup, device_fingerprint
+from wt_treiber_lib.wt3000_deviceconfig import (
     AveragingType,
     FrequencyBand,
     IntegrationMode,
@@ -41,7 +41,7 @@ from wt3000_scpi.wt3000_deviceconfig import (
     SyncMode,
     ThdFormula,
 )
-from wt3000_scpi.wt3000_transport import FakeTransport
+from wt_treiber_lib.wt3000_transport import FakeTransport
 
 
 def alle_antworten(**kwargs) -> dict:

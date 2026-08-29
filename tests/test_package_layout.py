@@ -14,9 +14,9 @@ from pathlib import Path
 
 import pytest
 
-import wt3000_scpi
+import wt_treiber_lib
 
-PACKAGE_DIR = Path(wt3000_scpi.__file__).parent
+PACKAGE_DIR = Path(wt_treiber_lib.__file__).parent
 
 # Erlaubte Importe je Modul - die Schichtung aus dem Kopf von __init__.py.
 LAYERS: dict[str, set[str]] = {
@@ -124,10 +124,10 @@ def modul_dateien() -> list[Path]:
     return sorted(p for p in PACKAGE_DIR.glob("*.py") if p.name != "__init__.py")
 
 
-@pytest.mark.parametrize("name", wt3000_scpi.MODULES)
+@pytest.mark.parametrize("name", wt_treiber_lib.MODULES)
 def test_jedes_fachmodul_ist_importierbar(name):
     """Importieren darf keine tmctl.dll und kein Geraet voraussetzen."""
-    importlib.import_module(f"wt3000_scpi.{name}")
+    importlib.import_module(f"wt_treiber_lib.{name}")
 
 
 @pytest.mark.parametrize("pfad", modul_dateien(), ids=lambda p: p.stem)
@@ -192,7 +192,7 @@ STUFENSKRIPTE = (
 def test_stufenskripte_fuehren_beim_import_nichts_aus():
     """Layer 4 darf erst ueber main() aktiv werden, nicht beim Import."""
     for name in STUFENSKRIPTE:
-        modul = importlib.import_module(f"wt3000_scpi.{name}")
+        modul = importlib.import_module(f"wt_treiber_lib.{name}")
         assert callable(modul.main)
 
 
@@ -215,11 +215,11 @@ def test_import_legt_keine_datei_an(name, tmp_path, monkeypatch):
     """
     monkeypatch.chdir(tmp_path)
     for modul in list(sys.modules):
-        if modul == f"wt3000_scpi.{name}":
+        if modul == f"wt_treiber_lib.{name}":
             del sys.modules[modul]
 
     vorher = set(tmp_path.rglob("*"))
-    importlib.import_module(f"wt3000_scpi.{name}")
+    importlib.import_module(f"wt_treiber_lib.{name}")
     neu = set(tmp_path.rglob("*")) - vorher
 
     assert not neu, f"{name} hat beim Import angelegt: {sorted(p.name for p in neu)}"
@@ -239,7 +239,7 @@ def test_testsuite_kann_keine_geraeteverbindung_oeffnen():
     Seit es nach tools/hardware/ umgezogen ist, sichert conftest.py die Zusage
     aktiv ab - dieser Test haelt fest, dass die Sperre auch wirklich greift.
     """
-    from wt3000_scpi.wt3000_transport import TmctlTransport, WTConfig
+    from wt_treiber_lib.wt3000_transport import TmctlTransport, WTConfig
 
     with pytest.raises(RuntimeError, match="ohne Geraet"):
         TmctlTransport(WTConfig())
@@ -251,7 +251,7 @@ def test_die_sperre_laesst_den_protokollvertrag_unberuehrt():
     'issubclass(TmctlTransport, Transport)' in test_fake_transport.py haengt an
     write/read/query/set_timeout/close - nicht am Konstruktor.
     """
-    from wt3000_scpi.wt3000_transport import TmctlTransport, Transport
+    from wt_treiber_lib.wt3000_transport import TmctlTransport, Transport
 
     assert issubclass(TmctlTransport, Transport)
 
@@ -259,7 +259,7 @@ def test_die_sperre_laesst_den_protokollvertrag_unberuehrt():
 # ---------------------------------------------------------------------------
 # Die Paketoberflaeche ist vollstaendig
 #
-# Zugesagt im Kopf von __init__.py: wer nur 'from wt3000_scpi import ...'
+# Zugesagt im Kopf von __init__.py: wer nur 'from wt_treiber_lib import ...'
 # schreibt, kommt an jede Anwenderfunktion. Diese Zusage war bisher nicht
 # geprueft und stimmte auch nicht - 'wt.applied_ranges(plan)' verlangte einen
 # 'RangePlan', den das Paket nicht herausgab. Ab hier faellt so etwas auf.
@@ -289,29 +289,29 @@ def paketeigene_namen() -> dict[str, str]:
     Paket nicht zu verantworten.
     """
     eigene: dict[str, str] = {}
-    for modulname in wt3000_scpi.MODULES:
-        modul = importlib.import_module(f"wt3000_scpi.{modulname}")
+    for modulname in wt_treiber_lib.MODULES:
+        modul = importlib.import_module(f"wt_treiber_lib.{modulname}")
         for name, objekt in vars(modul).items():
             if name.startswith("_"):
                 continue
-            if getattr(objekt, "__module__", "").startswith("wt3000_scpi"):
+            if getattr(objekt, "__module__", "").startswith("wt_treiber_lib"):
                 eigene.setdefault(name, modulname)
     return eigene
 
 
 def test_jeder_name_in_all_ist_auch_vorhanden():
     """Ein Tippfehler in __all__ faellt sonst erst beim 'import *' auf."""
-    fehlend = [name for name in wt3000_scpi.__all__ if not hasattr(wt3000_scpi, name)]
+    fehlend = [name for name in wt_treiber_lib.__all__ if not hasattr(wt_treiber_lib, name)]
     assert not fehlend, f"__all__ nennt Namen, die das Paket nicht hat: {fehlend}"
 
 
 @pytest.mark.parametrize("klassenname", FASSADENKLASSEN)
 def test_argumente_der_fassade_sind_aus_dem_paket_importierbar(klassenname):
-    """Kein Anwenderskript muss aus 'wt3000_scpi.wt3000_*' importieren.
+    """Kein Anwenderskript muss aus 'wt_treiber_lib.wt3000_*' importieren.
 
     Geprueft wird ueber die Annotationen: jeder paketeigene Typ, den eine
     oeffentliche Methode dieser Klassen ENTGEGENNIMMT oder HERAUSGIBT, muss in
-    'wt3000_scpi.__all__' stehen. Wer kuenftig einen neuen Typ in eine Signatur
+    'wt_treiber_lib.__all__' stehen. Wer kuenftig einen neuen Typ in eine Signatur
     schreibt und ihn nicht exportiert, sieht es hier - und nicht der Anwender,
     der ihn zu benutzen versucht.
 
@@ -322,8 +322,8 @@ def test_argumente_der_fassade_sind_aus_dem_paket_importierbar(klassenname):
     Laufzeit aus.
     """
     eigene = paketeigene_namen()
-    exportiert = set(wt3000_scpi.__all__)
-    klasse = getattr(wt3000_scpi, klassenname)
+    exportiert = set(wt_treiber_lib.__all__)
+    klasse = getattr(wt_treiber_lib, klassenname)
 
     fehlend: dict[str, set[str]] = {}
     for name, objekt in vars(klasse).items():
@@ -340,7 +340,7 @@ def test_argumente_der_fassade_sind_aus_dem_paket_importierbar(klassenname):
 
     assert not fehlend, "\n".join(
         f"{klassenname}.{sorted(stellen)} braucht {typ!r} "
-        f"(aus wt3000_scpi.{eigene[typ]}), das Paket exportiert es aber nicht"
+        f"(aus wt_treiber_lib.{eigene[typ]}), das Paket exportiert es aber nicht"
         for typ, stellen in sorted(fehlend.items())
     )
 
@@ -358,12 +358,12 @@ def test_argumente_der_fassade_sind_aus_dem_paket_importierbar(klassenname):
 
 def test_kein_modul_definiert_configlocked_ein_zweites_mal():
     """Die Basis liegt in wt3000_core - und nur dort."""
-    from wt3000_scpi import wt3000_core
+    from wt_treiber_lib import wt3000_core
 
-    assert wt3000_scpi.ConfigLocked is wt3000_core.ConfigLocked
+    assert wt_treiber_lib.ConfigLocked is wt3000_core.ConfigLocked
 
     doppelt = []
-    for modulname in wt3000_scpi.MODULES:
+    for modulname in wt_treiber_lib.MODULES:
         if modulname == "wt3000_core":
             continue
         quelle = (PACKAGE_DIR / f"{modulname}.py").read_text(encoding="utf-8")
@@ -381,7 +381,7 @@ def test_kein_modul_definiert_configlocked_ein_zweites_mal():
 )
 def test_jede_sperre_erbt_von_der_gemeinsamen_basis(name):
     """'except ConfigLocked' muss jede Sperre der Fachobjekte fangen."""
-    assert issubclass(getattr(wt3000_scpi, name), wt3000_scpi.ConfigLocked)
+    assert issubclass(getattr(wt_treiber_lib, name), wt_treiber_lib.ConfigLocked)
 
 
 def test_die_sitzungssperre_bleibt_ausserhalb_der_familie():
@@ -391,4 +391,4 @@ def test_die_sitzungssperre_bleibt_ausserhalb_der_familie():
     Fachobjekten. Sie unter 'ConfigLocked' zu haengen hiesse, dem Aufrufer die
     Unterscheidung zu nehmen, welches der beiden Schloesser noch zu ist.
     """
-    assert not issubclass(wt3000_scpi.ReadOnlyViolation, wt3000_scpi.ConfigLocked)
+    assert not issubclass(wt_treiber_lib.ReadOnlyViolation, wt_treiber_lib.ConfigLocked)

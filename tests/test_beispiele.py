@@ -21,7 +21,7 @@ from pathlib import Path
 import pytest
 from conftest import Geraetemodell
 
-from wt3000_scpi import IntegrationState, Quantity, wt3000_device
+from wt_treiber_lib import IntegrationState, Quantity, wt3000_device
 
 BEISPIELE = Path(__file__).resolve().parents[1] / "examples"
 
@@ -142,7 +142,7 @@ def test_beispiel_benutzt_die_fassade(name):
     assert "WTSession(" not in quelle, f"{name} baut die Sitzung selbst - dafuer ist die Fassade da"
     assert "TmctlTransport(" not in quelle, f"{name} baut den Transport selbst"
     # Kein Import aus einem Fachmodul: die Zusage aus dem Kopf von __init__.py.
-    assert "wt3000_scpi.wt3000_" not in quelle, f"{name} importiert an der Fassade vorbei"
+    assert "wt_treiber_lib.wt3000_" not in quelle, f"{name} importiert an der Fassade vorbei"
 
 
 @pytest.mark.parametrize("name", SKRIPTE)
