@@ -75,6 +75,7 @@ class SessionBackup:
     integration: IntegrationSettings | None = None
     computation: ComputationSettings | None = None
     harmonics: HarmonicsSettings | None = None
+    motor: MotorSettings | None = None
     created: str = field(
         default_factory=lambda: datetime.now().isoformat(timespec="seconds")
     )
@@ -94,6 +95,7 @@ class SessionBackup:
         integration: IntegrationConfig | None = None,
         computation: ComputationConfig | None = None,
         harmonics: HarmonicsConfig | None = None,
+        motor: MotorConfig | None = None,
         tail_limit: int = DEFAULT_TAIL_LIMIT,
     ) -> "SessionBackup":
         """Alles erfassen, was uebergeben wurde. Reine Queries.
@@ -119,6 +121,8 @@ class SessionBackup:
             backup.computation = computation.capture()
         if harmonics is not None:
             backup.harmonics = harmonics.capture()
+        if motor is not None:
+            backup.motor = motor.capture()
 
         _log.info("Sitzungs-Backup erfasst: %s", ", ".join(backup.parts()) or "<leer>")
         return backup
@@ -138,6 +142,8 @@ class SessionBackup:
             vorhanden.append("Rechenfunktionen")
         if self.harmonics is not None:
             vorhanden.append("Oberschwingungen")
+        if self.motor is not None:
+            vorhanden.append("Motorauswertung")
         return vorhanden
 
     def describe(self) -> list[str]:
@@ -155,6 +161,8 @@ class SessionBackup:
             lines.extend(f"  {zeile}" for zeile in self.computation.describe())
         if self.harmonics is not None:
             lines.extend(f"  {zeile}" for zeile in self.harmonics.describe())
+        if self.motor is not None:
+            lines.extend(f"  {zeile}" for zeile in self.motor.describe())
         return lines
 
     def log_summary(self) -> None:
@@ -187,6 +195,7 @@ class SessionBackup:
             "integration": None if self.integration is None else self.integration.to_dict(),
             "computation": None if self.computation is None else self.computation.to_dict(),
             "harmonics": None if self.harmonics is None else self.harmonics.to_dict(),
+            "motor": None if self.motor is None else self.motor.to_dict(),
         }
 
     @classmethod
@@ -217,6 +226,7 @@ class SessionBackup:
             integration=_optional(IntegrationSettings, data.get("integration")),
             computation=_optional(ComputationSettings, data.get("computation")),
             harmonics=_optional(HarmonicsSettings, data.get("harmonics")),
+            motor=_optional(MotorSettings, data.get("motor")),
             created=str(data.get("created", "")),
             version=version,
         )
@@ -267,6 +277,7 @@ class SessionBackup:
         integration: IntegrationConfig | None = None,
         computation: ComputationConfig | None = None,
         harmonics: HarmonicsConfig | None = None,
+        motor: MotorConfig | None = None,
         device: Mapping[str, Any] | None = None,
         force: bool = False,
     ) -> int:
@@ -322,6 +333,9 @@ class SessionBackup:
         if self.harmonics is not None and harmonics is not None:
             harmonics.restore(self.harmonics)
             schritte += 1
+        if self.motor is not None and motor is not None:
+            motor.restore(self.motor)
+            schritte += 1
         if self.integration is not None and integration is not None:
             integration.restore(self.integration)
             schritte += 1
@@ -353,6 +367,7 @@ class SessionBackup:
         integration: IntegrationConfig | None = None,
         computation: ComputationConfig | None = None,
         harmonics: HarmonicsConfig | None = None,
+        motor: MotorConfig | None = None,
     ) -> list[str]:
         """Steht das Geraet wieder so da wie im Backup? Rueckgabe: Abweichungen.
 
@@ -392,6 +407,7 @@ class SessionBackup:
             ("Integration", self.integration, integration),
             ("Rechenfunktionen", self.computation, computation),
             ("Oberschwingungen", self.harmonics, harmonics),
+            ("Motorauswertung", self.motor, motor),
         ):
             if gesichert is None or objekt is None:
                 continue

@@ -34,7 +34,12 @@ from .wt3000_common import (
 )
 from .wt3000_backup import SessionBackup, device_fingerprint
 from .wt3000_core import TmctlTransport, Transport, WTConfig, WTError, WTSession
-from .wt3000_deviceconfig import ComputationConfig, HarmonicsConfig, IntegrationConfig
+from .wt3000_deviceconfig import (
+    ComputationConfig,
+    HarmonicsConfig,
+    IntegrationConfig,
+    MotorConfig,
+)
 from .wt3000_input import ALL_GROUPS as ALL_INPUT_GROUPS
 from .wt3000_input import InputConfig, WiringUnit
 from .wt3000_itemspec import (
@@ -1398,6 +1403,7 @@ class WT3000:
         self._integration: IntegrationConfig | None = None
         self._computation: ComputationConfig | None = None
         self._harmonics: HarmonicsConfig | None = None
+        self._motor: MotorConfig | None = None
 
     # -- Erzeugen -----------------------------------------------------------
 
@@ -1607,6 +1613,34 @@ class WT3000:
         return self._harmonics
 
     @property
+    def motor(self) -> MotorConfig:
+        """Motorauswertung (':MOTor') - Drehzahl, Drehmoment, Pm, Schlupf.
+
+        Die Gruppe verlangt die Motorauswertung. Ihre Erkennung ist der eine
+        Sonderfall dieses Treibers: am eingemessenen Geraet meldete '*OPT?'
+        KEIN MTR, obwohl ':MOTor:PM?' antwortete - zuverlaessig war der
+        Modellcode '-MV' aus '*IDN?'. 'require_option(":MOTor")' deckt beide
+        Wege ab (Modellcode ODER MTR); die Begruendung steht am Kopf von
+        OPTION_REQUIREMENTS.
+
+        Sie steht wie 'harmonics' bewusst in der Fassade und nicht im
+        Fachmodul: 'DeviceInfo' ist Layer 4, 'MotorConfig' Layer 2 - und dort
+        gehoert der Steckbrief nicht hin.
+
+        Diese Klasse stellt die AUSWERTUNG ein. Die Messwerte selbst kommen
+        ueber die Item-Tabelle; das Gegenstueck ist 'wt.items.motor_profile()'.
+        """
+        self._require_open()
+        self._device.require_option(":MOTor")
+        if self._motor is None:
+            self._motor = MotorConfig(
+                self._session,
+                allow_changes=self._allow_changes,
+                elements=self._device.elements,
+            )
+        return self._motor
+
+    @property
     def measure(self) -> MeasureControl:
         """Messwerte lesen und aufzeichnen."""
         self._require_open()
@@ -1637,6 +1671,17 @@ class WT3000:
                 "':HARMonics' wird nicht mitgesichert - Option fehlt (%s)",
                 self._device.options_summary(),
             )
+        # Dieselbe Ueberlegung fuer die Motorauswertung: ohne sie antwortet die
+        # Gruppe gar nicht, und ein Timeout mitten in der Sicherung waere das
+        # Gegenteil eines Sicherheitsnetzes.
+        motor = self.motor if self._device.supports(":MOTor") else None
+        if motor is None:
+            _log.info(
+                "':MOTor' wird nicht mitgesichert - Motorauswertung fehlt "
+                "(Modell %s, *OPT? -> %s)",
+                self._device.model or "?",
+                self._device.options_raw,
+            )
 
         backup = SessionBackup.capture(
             device=device_fingerprint(
@@ -1655,6 +1700,7 @@ class WT3000:
             integration=self.integration,
             computation=self.computation,
             harmonics=harmonics,
+            motor=motor,
         )
         if path is not None:
             backup.save(path)
@@ -1686,6 +1732,7 @@ class WT3000:
         geladen.log_summary()
 
         harmonics = self.harmonics if self._device.supports(":HARMonics") else None
+        motor = self.motor if self._device.supports(":MOTor") else None
         aktuell = device_fingerprint(
             model=self._device.model, serial=self._device.serial
         )
@@ -1698,6 +1745,7 @@ class WT3000:
                 integration=self.integration,
                 computation=self.computation,
                 harmonics=harmonics,
+                motor=motor,
                 device=aktuell,
                 force=force,
             )
@@ -1709,6 +1757,7 @@ class WT3000:
             integration=self.integration,
             computation=self.computation,
             harmonics=harmonics,
+            motor=motor,
         )
 
     # -- Geraetesteckbrief auffrischen ---------------------------------------

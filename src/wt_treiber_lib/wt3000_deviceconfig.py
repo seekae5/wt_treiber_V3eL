@@ -1,5 +1,5 @@
-# Konfiguration der Gruppen ':INTEGrate', ':MEASure' und ':HARMonics'. Sie
-# teilen Parser, Schreibpfad und die doppelte Schreibsperre aus wt3000_input.
+# Konfiguration der Gruppen ':INTEGrate', ':MEASure', ':HARMonics' und
+# ':MOTor'. Sie teilen Parser, Schreibpfad und die doppelte Schreibsperre.
 # Die Fassade prueft optionsgebundene Gruppen, weil nur sie den Geraetesteckbrief
 # kennt.
 #
@@ -22,9 +22,12 @@ from .wt3000_common import (
     DEFAULT_ELEMENTS,
     canonical_enum_token,
     enum_match,
+    format_nrf,
     parse_boolean,
     parse_nr1,
+    parse_nr3,
     strip_response_header,
+    values_match,
 )
 from .wt3000_core import ConfigLocked, WTError, WTSession
 
@@ -39,8 +42,8 @@ _log = logging.getLogger("wt3000.deviceconfig")
 class DeviceConfigLocked(ConfigLocked):
     """Ein Schreibzugriff wurde von der Sicherung dieses Moduls abgewiesen.
 
-    Betrifft alle drei Fachobjekte dieses Moduls: 'IntegrationConfig',
-    'ComputationConfig' und 'HarmonicsConfig'.
+    Betrifft alle vier Fachobjekte dieses Moduls: 'IntegrationConfig',
+    'ComputationConfig', 'HarmonicsConfig' und 'MotorConfig'.
 
     Diese Klasse hiess frueher ebenfalls 'ConfigLocked' und war damit
     namensgleich, aber nicht identisch mit der Klasse in 'wt3000_input' - mit
@@ -252,6 +255,10 @@ def _optional_datetime(text: str | None) -> datetime | None:
         return datetime.fromisoformat(text)
     except ValueError as exc:
         raise WTError(f"Zeitangabe {text!r} im Backup ist nicht lesbar: {exc}") from exc
+
+
+
+
 
 
 @dataclass(frozen=True)
@@ -1944,3 +1951,1089 @@ class HarmonicsConfig:
                 f"{was}: Element {element} ist nicht bestueckt "
                 f"(bestueckt: {self._elements})"
             )
+
+
+# ===========================================================================
+# ':MOTor' - Motorauswertung (Handbuch 6.17, Seiten 6-81 bis 6-83)
+# ===========================================================================
+#
+# Die Gruppe erfasst Drehzahl und Drehmoment aus zwei Sensoreingaengen und
+# rechnet daraus die mechanische Leistung Pm, die Synchrondrehzahl SyncSp und
+# den Schlupf Slip. Am Bedienfeld ist das MOTOR SET (SHIFT+SCALING).
+#
+# OPTIONSPFLICHT. Nur Modelle mit der Motorauswertung (/MTR bzw. Modellcode
+# '-MV') beantworten diese Gruppe ueberhaupt. Geprueft wird das in der Fassade
+# ('wt.motor' ruft 'require_option(":MOTor")'), weil nur sie den
+# Geraetesteckbrief kennt - dieselbe Aufteilung wie bei ':HARMonics'.
+#
+# DIE BEIDEN SIGNALEINGAENGE SIND STRUKTURGLEICH. Drehzahl und Drehmoment
+# haben je TYPE, RANGe, AUTO, PRANge, SCALing und UNIT unter demselben
+# Teilbaum-Aufbau; nur der jeweils fuenfte Knoten unterscheidet sie
+# (':SPEed:PULSe' zaehlt Impulse je Umdrehung, ':TORQue:RATE:{UPPer|LOWer}'
+# nennt die Nennwerte des Drehmomentsignals). Das Modul nutzt diese Symmetrie
+# INTERN ueber '_MotorSignal', bietet nach aussen aber ausgeschriebene
+# Methodenpaare an - 'set_speed_range_v(20)' liest sich am Pruefstand besser
+# als 'set_range(_MotorSignal.SPEED, 20)', und es ist dieselbe Entscheidung,
+# die 'wt3000_input' mit 'set_voltage_range'/'set_current_range' getroffen hat.
+#
+# DER EINGANGSTYP GATET DIE UEBRIGEN PARAMETER. Laut Handbuch gelten RANGe und
+# AUTO nur bei TYPE=ANALog, PRANge/PULSe/RATE nur bei TYPE=PULSe. Das ist hier
+# keine Formalie: das Handbuchbeispiel zu ':MOTor:SPEed?' fuehrt auf einem
+# analog eingestellten Geraet AUSSCHLIESSLICH TYPE, RANGE, AUTO, SCALING und
+# UNIT auf - die Pulsknoten fehlen in der Antwort. Ob sie einzeln trotzdem
+# antworten, ist ZU VERIFIZIEREN. 'capture()' fragt deshalb erst den Typ und
+# danach nur noch, was zu diesem Typ gehoert; ein Timeout mitten in einer
+# Sicherung waere das Gegenteil eines Sicherheitsnetzes (dieselbe Begruendung
+# wie beim Auslassen von ':HARMonics' im Sitzungs-Backup).
+
+
+class MotorInputType(Enum):
+    """Eingangsart eines Signaleingangs (':MOTor:{SPEed|TORQue}:TYPE').
+
+    ANALOG  Spannungssignal; RANGe und AUTO sind wirksam
+    PULSE   Impulssignal; PRANge und PULSe bzw. RATE sind wirksam
+    """
+
+    ANALOG = "ANALog"
+    PULSE = "PULSe"
+
+
+class MotorLineFilter(Enum):
+    """Line-Filter der Motoreingaenge (':MOTor:FILTer:LINE').
+
+    ACHTUNG - ein ANDERER Satz als 'wt3000_input.LineFilter'. Dort gibt es
+    500 Hz und 5,5 kHz, hier 100 Hz; gemeinsam ist nur OFF und 50 kHz
+    (Handbuch 6-81 gegen 6-63). Die beiden Filter sitzen an verschiedenen
+    Eingaengen und werden getrennt gestellt.
+    """
+
+    OFF = "OFF"
+    HZ100 = "100HZ"
+    KHZ50 = "50KHZ"
+
+
+MOTOR_TYPE_TOKENS: frozenset[str] = frozenset(t.value.upper() for t in MotorInputType)
+
+#: Spannungsbereiche der ANALOG-Eingaenge in Volt - fuer Drehzahl UND
+#: Drehmoment derselbe Satz (Handbuch 6-82 und 6-83).
+MOTOR_ANALOG_RANGES_V: tuple[float, ...] = (1.0, 2.0, 5.0, 10.0, 20.0)
+
+#: Skalierungsfaktoren fuer Drehzahl, Drehmoment und Pm.
+MOTOR_SCALING_MIN: float = 0.0001
+MOTOR_SCALING_MAX: float = 99999.9999
+
+#: Polzahl des Motors (':MOTor:POLE').
+MOTOR_POLE_MIN: int = 1
+MOTOR_POLE_MAX: int = 99
+
+#: Impulse je Umdrehung (':MOTor:SPEed:PULSe').
+MOTOR_PULSE_MIN: int = 1
+MOTOR_PULSE_MAX: int = 9999
+
+#: Drehzahlbereich im Pulsbetrieb (':MOTor:SPEed:PRANge').
+MOTOR_SPEED_PRANGE_MIN: float = 0.0
+MOTOR_SPEED_PRANGE_MAX: float = 99999.9999
+
+#: Drehmomentbereich im Pulsbetrieb (':MOTor:TORQue:PRANge').
+MOTOR_TORQUE_PRANGE_MIN: float = -10000.0
+MOTOR_TORQUE_PRANGE_MAX: float = 10000.0
+
+#: Frequenz der Drehmoment-Nennwerte (':MOTor:TORQue:RATE:{UPPer|LOWer}').
+MOTOR_RATE_FREQUENCY_MIN: float = 1.0
+MOTOR_RATE_FREQUENCY_MAX: float = 100e6
+
+#: Die Einheitentexte sind reine Beschriftung - hoechstens acht Zeichen.
+MOTOR_UNIT_MAX_CHARS: int = 8
+
+#: Synchronisationsquellen ohne Elementbezug (':MOTor:SYNChronize').
+MOTOR_SYNC_FIXED: frozenset[str] = frozenset({"EXTERNAL", "NONE"})
+
+#: Gruppe fuer die Schreibsperre. Bewusst NICHT in DEFAULT_PROTECTED: kein
+#: Kommando dieser Gruppe verwirft Messwerte, anders als ':INTEGrate:RESet'.
+GROUP_MOTOR: str = "MOTOR"
+
+_NODE_MOTOR: str = ":MOTor"
+_NODE_MOTOR_FILTER: str = ":MOTor:FILTer:LINE"
+_NODE_MOTOR_POLE: str = ":MOTor:POLE"
+_NODE_MOTOR_SYNC: str = ":MOTor:SYNChronize"
+_NODE_MOTOR_SSPEED: str = ":MOTor:SSPeed"
+_NODE_MOTOR_PM_SCALING: str = ":MOTor:PM:SCALing"
+_NODE_MOTOR_PM_UNIT: str = ":MOTor:PM:UNIT"
+_NODE_MOTOR_SPEED_PULSE: str = ":MOTor:SPEed:PULSe"
+_NODE_MOTOR_TORQUE_RATE: str = ":MOTor:TORQue:RATE"
+
+
+class _MotorSignal(Enum):
+    """Der SCPI-Teilbaum eines Signaleingangs - modulintern.
+
+    Nicht Teil der Oberflaeche: nach aussen gibt es ausgeschriebene
+    Methodenpaare (siehe Kopf dieses Abschnitts). Diese Aufzaehlung existiert
+    nur, damit die strukturgleichen Knoten nicht zweimal im Quelltext stehen.
+    """
+
+    SPEED = ":MOTor:SPEed"
+    TORQUE = ":MOTor:TORQue"
+
+    @property
+    def label(self) -> str:
+        """Deutscher Name fuer Meldungen."""
+        return "Drehzahl" if self is _MotorSignal.SPEED else "Drehmoment"
+
+    @property
+    def prefix(self) -> str:
+        """Namensteil der oeffentlichen Methodenpaare - fuer Fehlermeldungen.
+
+        Damit nennt eine Meldung den Aufruf, den der Anwender braucht, statt
+        ihn den Zusammenhang selbst herstellen zu lassen.
+        """
+        return "speed" if self is _MotorSignal.SPEED else "torque"
+
+
+def parse_motor_pair(response: str, context: str = "") -> tuple[float, float]:
+    """Zwei durch Komma getrennte Zahlen aus einer Antwort lesen.
+
+    Gebraucht von ':MOTor:SPEed:PRANge?' ('10000.0000,0.0000'), von
+    ':MOTor:TORQue:PRANge?' und von ':MOTor:TORQue:RATE:UPPer?'
+    ('50.0000,15.000E+03'). Die Reihenfolge ist in allen drei Faellen
+    'oberer Wert zuerst' bzw. 'Nennwert, dann Frequenz'.
+    """
+    text = strip_response_header(response)
+    parts = [teil.strip() for teil in text.split(",")]
+    if len(parts) != 2:
+        suffix = f" ({context})" if context else ""
+        raise WTError(f"Kein Zahlenpaar in der Antwort {response!r}{suffix}")
+    return parse_nr3(parts[0], context), parse_nr3(parts[1], context)
+
+
+def parse_motor_unit(response: str) -> str:
+    """Einheitentext aus der Antwort schaelen: '"rpm"' -> 'rpm'.
+
+    Das Geraet gibt den Text in Anfuehrungszeichen zurueck (Handbuch 6-82).
+    Sie gehoeren zur SCPI-Syntax und nicht zum Wert.
+    """
+    return strip_response_header(response).strip().strip('"').strip("'")
+
+
+def _motor_filter_token(value: "MotorLineFilter | str | float") -> str:
+    """Filterangabe auf das Geraetetoken abbilden: 100 -> '100HZ'.
+
+    Angenommen werden die Aufzaehlung, die Tokens und reine Frequenzzahlen.
+    Letzteres ist noetig, weil das Geraet auf die Abfrage die GRENZFREQUENZ
+    zurueckmeldet und nicht das Token - genau wie beim Line-Filter der
+    Spannungs- und Stromeingaenge (siehe wt3000_input.parse_line_filter).
+    """
+    if isinstance(value, MotorLineFilter):
+        return value.value
+    token = strip_response_header(str(value)).strip().upper()
+    try:
+        hertz = float(token)
+    except ValueError:
+        return token
+    return {0.0: "OFF", 100.0: "100HZ", 50000.0: "50KHZ"}.get(hertz, token)
+
+
+@dataclass(frozen=True)
+class MotorSignalSettings:
+    """Momentaufnahme EINES Signaleingangs - Drehzahl oder Drehmoment.
+
+    'None' heisst hier ueberall dasselbe und ist keine Luecke, sondern eine
+    Aussage: DIESER PARAMETER GEHOERT NICHT ZUM EINGESTELLTEN EINGANGSTYP und
+    wurde deshalb gar nicht erst abgefragt. Bei TYPE=ANALog bleiben
+    'pulse_upper'/'pulse_lower' leer, bei TYPE=PULSe 'range_v'/'auto'.
+    Die Begruendung steht im Kopf des Abschnitts.
+    """
+
+    input_type: MotorInputType
+    scaling: float
+    unit: str
+    #: Nur bei ANALOG erhoben.
+    range_v: float | None = None
+    auto: bool | None = None
+    #: Nur bei PULSE erhoben (oberer und unterer Wert).
+    pulse_upper: float | None = None
+    pulse_lower: float | None = None
+
+    def to_dict(self) -> dict:
+        """Serialisierbare Darstellung fuer das Sitzungs-Backup."""
+        return {
+            "input_type": self.input_type.value,
+            "scaling": self.scaling,
+            "unit": self.unit,
+            "range_v": self.range_v,
+            "auto": self.auto,
+            "pulse_upper": self.pulse_upper,
+            "pulse_lower": self.pulse_lower,
+        }
+
+    @classmethod
+    def from_dict(cls, data: dict) -> "MotorSignalSettings":
+        """Gegenstueck zu to_dict()."""
+
+        def zahl(name: str) -> float | None:
+            wert = data.get(name)
+            return None if wert is None else float(wert)
+
+        return cls(
+            input_type=MotorInputType(data["input_type"]),
+            scaling=float(data["scaling"]),
+            unit=str(data["unit"]),
+            range_v=zahl("range_v"),
+            auto=None if data.get("auto") is None else bool(data["auto"]),
+            pulse_upper=zahl("pulse_upper"),
+            pulse_lower=zahl("pulse_lower"),
+        )
+
+    def describe(self, label: str) -> list[str]:
+        """Als Zeilenliste fuer Protokoll und Konsole."""
+        zeilen = [f"{label}: {self.input_type.value}, Skalierung {self.scaling:g}"
+                  + (f', Einheit "{self.unit}"' if self.unit else "")]
+        if self.input_type is MotorInputType.ANALOG:
+            zeilen.append(
+                f"  Bereich:  {self.range_v:g} V" if self.range_v is not None else
+                "  Bereich:  <nicht erhoben>"
+            )
+            zeilen.append(f"  Autorange: {'ein' if self.auto else 'aus'}")
+        else:
+            zeilen.append(
+                f"  Pulsbereich: {self.pulse_upper:g} .. {self.pulse_lower:g}"
+                if self.pulse_upper is not None and self.pulse_lower is not None
+                else "  Pulsbereich: <nicht erhoben>"
+            )
+        return zeilen
+
+
+@dataclass(frozen=True)
+class MotorSettings:
+    """Momentaufnahme der gesamten Motorgruppe."""
+
+    speed: MotorSignalSettings
+    torque: MotorSignalSettings
+    pm_scaling: float
+    pm_unit: str
+    line_filter: MotorLineFilter
+    poles: int
+    sync_source: str
+    sync_speed_source: str
+    #: Nur bei Drehzahl-TYPE=PULSe erhoben: Impulse je Umdrehung.
+    speed_pulses: int | None = None
+    #: Nur bei Drehmoment-TYPE=PULSe erhoben: (Nennwert, Frequenz in Hz).
+    torque_rate_upper: tuple[float, float] | None = None
+    torque_rate_lower: tuple[float, float] | None = None
+
+    def to_dict(self) -> dict:
+        """Serialisierbare Darstellung fuer das Sitzungs-Backup."""
+        return {
+            "speed": self.speed.to_dict(),
+            "torque": self.torque.to_dict(),
+            "pm_scaling": self.pm_scaling,
+            "pm_unit": self.pm_unit,
+            "line_filter": self.line_filter.value,
+            "poles": self.poles,
+            "sync_source": self.sync_source,
+            "sync_speed_source": self.sync_speed_source,
+            "speed_pulses": self.speed_pulses,
+            "torque_rate_upper": None
+            if self.torque_rate_upper is None
+            else list(self.torque_rate_upper),
+            "torque_rate_lower": None
+            if self.torque_rate_lower is None
+            else list(self.torque_rate_lower),
+        }
+
+    @classmethod
+    def from_dict(cls, data: dict) -> "MotorSettings":
+        """Gegenstueck zu to_dict()."""
+
+        def paar(name: str) -> tuple[float, float] | None:
+            wert = data.get(name)
+            return None if wert is None else (float(wert[0]), float(wert[1]))
+
+        return cls(
+            speed=MotorSignalSettings.from_dict(data["speed"]),
+            torque=MotorSignalSettings.from_dict(data["torque"]),
+            pm_scaling=float(data["pm_scaling"]),
+            pm_unit=str(data["pm_unit"]),
+            line_filter=MotorLineFilter(data["line_filter"]),
+            poles=int(data["poles"]),
+            sync_source=str(data["sync_source"]),
+            sync_speed_source=str(data["sync_speed_source"]),
+            speed_pulses=None
+            if data.get("speed_pulses") is None
+            else int(data["speed_pulses"]),
+            torque_rate_upper=paar("torque_rate_upper"),
+            torque_rate_lower=paar("torque_rate_lower"),
+        )
+
+    def describe(self) -> list[str]:
+        """Als Zeilenliste fuer Protokoll und Konsole."""
+        zeilen = ["Motorauswertung:"]
+        zeilen.extend(f"  {zeile}" for zeile in self.speed.describe("Drehzahl"))
+        if self.speed_pulses is not None:
+            zeilen.append(f"    Impulse je Umdrehung: {self.speed_pulses}")
+        zeilen.extend(f"  {zeile}" for zeile in self.torque.describe("Drehmoment"))
+        for name, paar in (("oberer", self.torque_rate_upper), ("unterer", self.torque_rate_lower)):
+            if paar is not None:
+                zeilen.append(f"    Nennwert {name}: {paar[0]:g} bei {paar[1]:g} Hz")
+        zeilen.append(
+            f"  Pm: Skalierung {self.pm_scaling:g}"
+            + (f', Einheit "{self.pm_unit}"' if self.pm_unit else "")
+        )
+        zeilen.append(
+            f"  Line-Filter: {self.line_filter.value}    Polzahl: {self.poles}"
+        )
+        zeilen.append(
+            f"  Sync-Quelle: {self.sync_source}    "
+            f"Synchrondrehzahl aus: {self.sync_speed_source}"
+        )
+        return zeilen
+
+
+class MotorConfig:
+    """Lesen und (gesichertes) Einstellen der Motorauswertung (':MOTor').
+
+    EMPFOHLENER WEG, um Drehzahl- und Drehmomenteingang zu stellen. Erreichbar
+    ueber die Fassade als 'wt.motor'; sie prueft dabei die Geraeteoption, was
+    dieses Modul nicht kann - es kennt den Steckbrief nicht.
+
+    Dieselbe doppelte Sperre wie bei den Nachbarklassen: 'allow_changes=False'
+    lehnt jeden Schreibaufruf ab, bevor etwas gesendet wird, und die Sitzung
+    lehnt in 'read_only' ohnehin jedes Set-Kommando ab. Eine zusaetzlich
+    geschuetzte Gruppe gibt es nicht, weil kein Kommando hier Messwerte
+    verwirft.
+
+    WAS DIESE KLASSE STELLT UND WAS NICHT. Sie konfiguriert die AUSWERTUNG -
+    Eingangsart, Bereich, Skalierung, Polzahl, Synchronisation. Die Messwerte
+    selbst (Speed, Torque, Pm, SyncSp, Slip) kommen wie alle anderen ueber die
+    Item-Tabelle; das Gegenstueck dazu ist
+    'wt3000_measure.build_motor_profile()'.
+
+    TYPISCHE REIHENFOLGE. Der Eingangstyp gatet die uebrigen Parameter, er
+    gehoert deshalb zuerst gesetzt:
+
+        wt.motor.set_speed_type(MotorInputType.ANALOG)
+        wt.motor.set_speed_range_v(20.0)
+        wt.motor.set_speed_scaling(1.0)
+        wt.motor.set_poles(4)
+
+    'restore()' haelt sich an dieselbe Reihenfolge.
+    """
+
+    def __init__(
+        self,
+        session: WTSession,
+        allow_changes: bool = False,
+        elements: tuple[int, ...] = DEFAULT_ELEMENTS,
+        verify: bool = True,
+        check_errors: bool = True,
+    ) -> None:
+        self._session = session
+        self._allow_changes = allow_changes
+        self._elements = tuple(elements)
+        self._verify = verify
+        self._check_errors = check_errors
+
+    # -- Sperre und Basisoperationen ---------------------------------------
+
+    @property
+    def allow_changes(self) -> bool:
+        """True, wenn dieses Objekt schreiben darf."""
+        return self._allow_changes
+
+    @property
+    def elements(self) -> tuple[int, ...]:
+        """Die bestueckten Elemente, gegen die Sync-Quellen geprueft werden."""
+        return self._elements
+
+    def _require_writable(self) -> None:
+        if not self._allow_changes:
+            raise DeviceConfigLocked(
+                "Schreibzugriff auf die Motorauswertung abgelehnt: MotorConfig "
+                "wurde mit allow_changes=False erzeugt."
+            )
+
+    def _query(self, node: str) -> str:
+        return strip_response_header(self._session.query(f"{node}?"))
+
+    def _write(
+        self,
+        command: str,
+        query_node: str,
+        matches: Callable[[str], bool],
+        label: str,
+    ) -> None:
+        """Senden, zuruecklesen, Fehlerqueue pruefen - wie in den Nachbarklassen."""
+        self._require_writable()
+        _log.info("SET %s", command)
+        self._session.write(command)
+
+        if self._verify:
+            actual = self._query(query_node)
+            if not matches(actual):
+                raise WTError(f"{label}: Geraet meldet {actual!r} nach '{command}'")
+            _log.info("  verifiziert: %s = %s", query_node, actual)
+
+        if self._check_errors:
+            self._session.assert_no_error(label)
+
+    def _require_element(self, element: int, was: str) -> None:
+        """Elementnummer gegen die bestueckte Liste halten."""
+        if element not in self._elements:
+            raise WTError(
+                f"{was}: Element {element} ist nicht bestueckt "
+                f"(bestueckt: {self._elements})"
+            )
+
+    # -- Der Eingangstyp gatet die uebrigen Parameter -----------------------
+
+    def _require_type(
+        self, signal: _MotorSignal, erwartet: MotorInputType, was: str
+    ) -> None:
+        """Vor einem typgebundenen Set-Kommando den Eingangstyp pruefen.
+
+        Das Handbuch nennt RANGe/AUTO nur fuer ANALog und PRANge/PULSe/RATE
+        nur fuer PULSe gueltig. Ohne diese Vorabfrage kaeme der Fehler erst
+        aus der Rueckleseprobe - als "Geraet meldet X" und damit ohne den
+        einen Satz, der weiterhilft: der Eingangstyp passt nicht. Es kostet
+        eine Abfrage und erspart eine Ratestunde.
+        """
+        ist = self._signal_type(signal)
+        if ist is not erwartet:
+            aufruf = f"set_{signal.prefix}_type(MotorInputType.{erwartet.name})"
+            raise WTError(
+                f"{was}: der {signal.label}eingang steht auf {ist.value}, der "
+                f"Parameter gilt aber nur fuer {erwartet.value}. "
+                f"Zuerst {aufruf} aufrufen."
+            )
+
+    # -- Gemeinsame Bausteine beider Signaleingaenge ------------------------
+
+    def _signal_type(self, signal: _MotorSignal) -> MotorInputType:
+        token = canonical_enum_token(
+            self._query(f"{signal.value}:TYPE"), MOTOR_TYPE_TOKENS
+        )
+        for kind in MotorInputType:
+            if kind.value.upper() == token:
+                return kind
+        raise WTError(
+            f"Unbekannte Eingangsart {token!r} am {signal.label}eingang; "
+            "erwartet: ANALog, PULSe"
+        )
+
+    def _set_signal_type(self, signal: _MotorSignal, kind: MotorInputType | str) -> None:
+        token = kind.value if isinstance(kind, MotorInputType) else str(kind)
+        if canonical_enum_token(token, MOTOR_TYPE_TOKENS) not in MOTOR_TYPE_TOKENS:
+            raise WTError(f"Eingangsart {kind!r} unzulaessig; erlaubt: ANALog, PULSe")
+        node = f"{signal.value}:TYPE"
+        self._write(
+            f"{node} {token}",
+            node,
+            lambda actual: enum_match(token, actual, MOTOR_TYPE_TOKENS),
+            f"Eingangsart {signal.label} setzen",
+        )
+
+    def _signal_range_v(self, signal: _MotorSignal) -> float:
+        return parse_nr3(self._query(f"{signal.value}:RANGe"), f"{signal.label}bereich")
+
+    def _set_signal_range_v(self, signal: _MotorSignal, volts: float) -> None:
+        was = f"{signal.label}bereich setzen"
+        if not any(values_match(volts, stufe) for stufe in MOTOR_ANALOG_RANGES_V):
+            erlaubt = ", ".join(f"{stufe:g}" for stufe in MOTOR_ANALOG_RANGES_V)
+            raise WTError(
+                f"{was}: {volts} V ist keine Stufe des Analogeingangs; "
+                f"erlaubt: {erlaubt} V"
+            )
+        self._require_type(signal, MotorInputType.ANALOG, was)
+        node = f"{signal.value}:RANGe"
+        # ZU VERIFIZIEREN: Das Handbuch zeigt als Beispiel die
+        # Einheitenschreibweise (:MOTOR:SPEED:RANGE 20V), die Syntaxangabe
+        # nennt aber nur <Voltage>. Hier steht die reine NRf-Form - dieselbe
+        # Entscheidung wie in wt3000_input, wo sie am Geraet belegt ist. Lehnt
+        # das Geraet sie ab, faengt die Rueckleseprobe es ab.
+        self._write(
+            f"{node} {format_nrf(volts)}",
+            node,
+            lambda actual: values_match(volts, parse_nr3(actual, was)),
+            was,
+        )
+
+    def _signal_auto(self, signal: _MotorSignal) -> bool:
+        node = f"{signal.value}:AUTO"
+        return parse_boolean(self._query(node), node)
+
+    def _set_signal_auto(self, signal: _MotorSignal, enabled: bool) -> None:
+        was = f"Autorange {signal.label} setzen"
+        self._require_type(signal, MotorInputType.ANALOG, was)
+        node = f"{signal.value}:AUTO"
+        parameter = "ON" if enabled else "OFF"
+        self._write(
+            f"{node} {parameter}",
+            node,
+            lambda actual: parse_boolean(actual, node) is bool(enabled),
+            was,
+        )
+
+    def _signal_pulse_range(self, signal: _MotorSignal) -> tuple[float, float]:
+        return parse_motor_pair(
+            self._query(f"{signal.value}:PRANge"), f"{signal.label}-Pulsbereich"
+        )
+
+    def _set_signal_pulse_range(
+        self,
+        signal: _MotorSignal,
+        upper: float,
+        lower: float,
+        minimum: float,
+        maximum: float,
+    ) -> None:
+        was = f"{signal.label}-Pulsbereich setzen"
+        for name, wert in (("oberer Wert", upper), ("unterer Wert", lower)):
+            if not minimum <= wert <= maximum:
+                raise WTError(
+                    f"{was}: {name} {wert} liegt ausserhalb {minimum:g}..{maximum:g}"
+                )
+        if upper < lower:
+            raise WTError(
+                f"{was}: oberer Wert {upper:g} liegt unter dem unteren {lower:g}. "
+                "Das Handbuch verlangt die Reihenfolge (oben, unten)."
+            )
+        self._require_type(signal, MotorInputType.PULSE, was)
+        node = f"{signal.value}:PRANge"
+        self._write(
+            f"{node} {format_nrf(upper)},{format_nrf(lower)}",
+            node,
+            lambda actual: self._pair_matches((upper, lower), actual, was),
+            was,
+        )
+
+    def _signal_scaling(self, signal: _MotorSignal) -> float:
+        return parse_nr3(
+            self._query(f"{signal.value}:SCALing"), f"{signal.label}-Skalierung"
+        )
+
+    def _signal_unit(self, signal: _MotorSignal) -> str:
+        return parse_motor_unit(self._query(f"{signal.value}:UNIT"))
+
+    @staticmethod
+    def _pair_matches(erwartet: tuple[float, float], actual: str, was: str) -> bool:
+        gemeldet = parse_motor_pair(actual, was)
+        return all(values_match(a, b) for a, b in zip(erwartet, gemeldet))
+
+    def _set_scaling(self, node: str, factor: float, was: str) -> None:
+        """Gemeinsamer Pfad fuer die drei Skalierungsfaktoren."""
+        if not MOTOR_SCALING_MIN <= factor <= MOTOR_SCALING_MAX:
+            raise WTError(
+                f"{was}: {factor} liegt ausserhalb "
+                f"{MOTOR_SCALING_MIN}..{MOTOR_SCALING_MAX}"
+            )
+        self._write(
+            f"{node} {format_nrf(factor)}",
+            node,
+            lambda actual: values_match(factor, parse_nr3(actual, was)),
+            was,
+        )
+
+    def _set_unit(self, node: str, text: str, was: str) -> None:
+        """Gemeinsamer Pfad fuer die drei Einheitentexte.
+
+        Die Einheit ist reine BESCHRIFTUNG - das Handbuch sagt zu allen drei
+        Knoten ausdruecklich, dass sie das Rechenergebnis nicht beeinflusst.
+        Sie steht trotzdem im Backup, weil eine Messdatei mit Nm anders zu
+        lesen ist als eine mit lbf-ft.
+        """
+        wert = str(text)
+        if len(wert) > MOTOR_UNIT_MAX_CHARS:
+            raise WTError(
+                f"{was}: {wert!r} hat {len(wert)} Zeichen, erlaubt sind "
+                f"hoechstens {MOTOR_UNIT_MAX_CHARS}"
+            )
+        if '"' in wert:
+            raise WTError(
+                f"{was}: {wert!r} enthaelt ein Anfuehrungszeichen - es begrenzt "
+                "die SCPI-Zeichenkette und kann nicht Teil des Textes sein."
+            )
+        self._write(
+            f'{node} "{wert}"',
+            node,
+            lambda actual: parse_motor_unit(actual) == wert,
+            was,
+        )
+
+    # =======================================================================
+    # Drehzahleingang (':MOTor:SPEed')
+    # =======================================================================
+
+    def speed_type(self) -> MotorInputType:
+        """Eingangsart des Drehzahlsignals: ANALOG oder PULSE."""
+        return self._signal_type(_MotorSignal.SPEED)
+
+    def set_speed_type(self, kind: MotorInputType | str) -> None:
+        """Eingangsart des Drehzahlsignals setzen.
+
+        ZUERST setzen: sie entscheidet, welche der uebrigen Parameter das
+        Geraet ueberhaupt annimmt. Bei ANALOG gelten Bereich und Autorange,
+        bei PULSE der Pulsbereich und die Impulszahl.
+        """
+        self._set_signal_type(_MotorSignal.SPEED, kind)
+
+    def speed_range_v(self) -> float:
+        """Spannungsbereich des Drehzahleingangs in Volt (nur ANALOG)."""
+        return self._signal_range_v(_MotorSignal.SPEED)
+
+    def set_speed_range_v(self, volts: float) -> None:
+        """Spannungsbereich des Drehzahleingangs setzen (nur ANALOG).
+
+        Zulaessig sind die Stufen aus MOTOR_ANALOG_RANGES_V: 1, 2, 5, 10, 20 V.
+        """
+        self._set_signal_range_v(_MotorSignal.SPEED, volts)
+
+    def speed_auto(self) -> bool:
+        """Autorange des Drehzahleingangs (nur ANALOG)."""
+        return self._signal_auto(_MotorSignal.SPEED)
+
+    def set_speed_auto(self, enabled: bool) -> None:
+        """Autorange des Drehzahleingangs schalten (nur ANALOG).
+
+        Fuer Vergleichsmessungen mit Vorsicht zu geniessen - derselbe Vorbehalt
+        wie bei den Strom- und Spannungseingaengen: ein Bereichswechsel faellt
+        mitten in ein Messintervall und macht einzelne Datensaetze unbrauchbar.
+        """
+        self._set_signal_auto(_MotorSignal.SPEED, enabled)
+
+    def speed_pulse_range(self) -> tuple[float, float]:
+        """Drehzahlbereich im Pulsbetrieb als (oben, unten) (nur PULSE)."""
+        return self._signal_pulse_range(_MotorSignal.SPEED)
+
+    def set_speed_pulse_range(self, upper: float, lower: float) -> None:
+        """Drehzahlbereich im Pulsbetrieb setzen (nur PULSE).
+
+        Oberer Wert zuerst - so verlangt es das Handbuch, und so wird hier
+        auch geprueft. Bereich: 0 bis 99999.9999.
+        """
+        self._set_signal_pulse_range(
+            _MotorSignal.SPEED,
+            upper,
+            lower,
+            MOTOR_SPEED_PRANGE_MIN,
+            MOTOR_SPEED_PRANGE_MAX,
+        )
+
+    def speed_pulses(self) -> int:
+        """Impulse je Umdrehung des Drehzahlgebers (nur PULSE)."""
+        return parse_nr1(self._query(_NODE_MOTOR_SPEED_PULSE), _NODE_MOTOR_SPEED_PULSE)
+
+    def set_speed_pulses(self, count: int) -> None:
+        """Impulse je Umdrehung setzen (nur PULSE). 1 bis 9999.
+
+        Der Wert ist eine Eigenschaft des GEBERS, nicht des Motors - er steht
+        auf dessen Datenblatt. Die Polzahl des Motors ist etwas anderes und
+        wird ueber 'set_poles()' gestellt.
+        """
+        was = "Impulse je Umdrehung setzen"
+        if not MOTOR_PULSE_MIN <= int(count) <= MOTOR_PULSE_MAX:
+            raise WTError(
+                f"{was}: {count} liegt ausserhalb "
+                f"{MOTOR_PULSE_MIN}..{MOTOR_PULSE_MAX}"
+            )
+        self._require_type(_MotorSignal.SPEED, MotorInputType.PULSE, was)
+        self._write(
+            f"{_NODE_MOTOR_SPEED_PULSE} {int(count)}",
+            _NODE_MOTOR_SPEED_PULSE,
+            lambda actual: parse_nr1(actual, was) == int(count),
+            was,
+        )
+
+    def speed_scaling(self) -> float:
+        """Skalierungsfaktor der Drehzahlberechnung."""
+        return self._signal_scaling(_MotorSignal.SPEED)
+
+    def set_speed_scaling(self, factor: float) -> None:
+        """Skalierungsfaktor der Drehzahlberechnung setzen (0.0001 bis 99999.9999)."""
+        self._set_scaling(
+            f"{_MotorSignal.SPEED.value}:SCALing", factor, "Drehzahl-Skalierung setzen"
+        )
+
+    def speed_unit(self) -> str:
+        """Einheitentext der Drehzahl, z.B. 'rpm'."""
+        return self._signal_unit(_MotorSignal.SPEED)
+
+    def set_speed_unit(self, text: str) -> None:
+        """Einheitentext der Drehzahl setzen (hoechstens 8 Zeichen).
+
+        Reine Beschriftung; das Rechenergebnis aendert sich dadurch nicht.
+        """
+        self._set_unit(
+            f"{_MotorSignal.SPEED.value}:UNIT", text, "Drehzahl-Einheit setzen"
+        )
+
+    # =======================================================================
+    # Drehmomenteingang (':MOTor:TORQue')
+    # =======================================================================
+
+    def torque_type(self) -> MotorInputType:
+        """Eingangsart des Drehmomentsignals: ANALOG oder PULSE."""
+        return self._signal_type(_MotorSignal.TORQUE)
+
+    def set_torque_type(self, kind: MotorInputType | str) -> None:
+        """Eingangsart des Drehmomentsignals setzen.
+
+        ZUERST setzen - dieselbe Begruendung wie bei 'set_speed_type()'.
+        """
+        self._set_signal_type(_MotorSignal.TORQUE, kind)
+
+    def torque_range_v(self) -> float:
+        """Spannungsbereich des Drehmomenteingangs in Volt (nur ANALOG)."""
+        return self._signal_range_v(_MotorSignal.TORQUE)
+
+    def set_torque_range_v(self, volts: float) -> None:
+        """Spannungsbereich des Drehmomenteingangs setzen (nur ANALOG).
+
+        Dieselben Stufen wie beim Drehzahleingang: 1, 2, 5, 10, 20 V.
+        """
+        self._set_signal_range_v(_MotorSignal.TORQUE, volts)
+
+    def torque_auto(self) -> bool:
+        """Autorange des Drehmomenteingangs (nur ANALOG)."""
+        return self._signal_auto(_MotorSignal.TORQUE)
+
+    def set_torque_auto(self, enabled: bool) -> None:
+        """Autorange des Drehmomenteingangs schalten (nur ANALOG)."""
+        self._set_signal_auto(_MotorSignal.TORQUE, enabled)
+
+    def torque_pulse_range(self) -> tuple[float, float]:
+        """Drehmomentbereich im Pulsbetrieb als (oben, unten) (nur PULSE)."""
+        return self._signal_pulse_range(_MotorSignal.TORQUE)
+
+    def set_torque_pulse_range(self, upper: float, lower: float) -> None:
+        """Drehmomentbereich im Pulsbetrieb setzen (nur PULSE).
+
+        Oberer Wert zuerst. Bereich: -10000 bis 10000 - anders als beim
+        Drehzahleingang sind negative Werte zulaessig, weil ein Motor auch
+        bremsen kann.
+        """
+        self._set_signal_pulse_range(
+            _MotorSignal.TORQUE,
+            upper,
+            lower,
+            MOTOR_TORQUE_PRANGE_MIN,
+            MOTOR_TORQUE_PRANGE_MAX,
+        )
+
+    def torque_rate_upper(self) -> tuple[float, float]:
+        """Oberer Nennwert des Drehmomentsignals als (Wert, Frequenz in Hz)."""
+        return self._torque_rate("UPPer")
+
+    def torque_rate_lower(self) -> tuple[float, float]:
+        """Unterer Nennwert des Drehmomentsignals als (Wert, Frequenz in Hz)."""
+        return self._torque_rate("LOWer")
+
+    def set_torque_rate_upper(self, value: float, frequency_hz: float) -> None:
+        """Oberen Nennwert des Drehmomentsignals setzen (nur PULSE).
+
+        Das Wertepaar aus dem Datenblatt des Drehmomentaufnehmers: welchem
+        Drehmoment welche Signalfrequenz entspricht.
+        """
+        self._set_torque_rate("UPPer", value, frequency_hz, "oberer")
+
+    def set_torque_rate_lower(self, value: float, frequency_hz: float) -> None:
+        """Unteren Nennwert des Drehmomentsignals setzen (nur PULSE)."""
+        self._set_torque_rate("LOWer", value, frequency_hz, "unterer")
+
+    def _torque_rate(self, limit: str) -> tuple[float, float]:
+        node = f"{_NODE_MOTOR_TORQUE_RATE}:{limit}"
+        return parse_motor_pair(self._query(node), f"Drehmoment-Nennwert {limit}")
+
+    def _set_torque_rate(
+        self, limit: str, value: float, frequency_hz: float, name: str
+    ) -> None:
+        was = f"Drehmoment-Nennwert ({name}) setzen"
+        if not MOTOR_TORQUE_PRANGE_MIN <= value <= MOTOR_TORQUE_PRANGE_MAX:
+            raise WTError(
+                f"{was}: {value} liegt ausserhalb "
+                f"{MOTOR_TORQUE_PRANGE_MIN:g}..{MOTOR_TORQUE_PRANGE_MAX:g}"
+            )
+        if not MOTOR_RATE_FREQUENCY_MIN <= frequency_hz <= MOTOR_RATE_FREQUENCY_MAX:
+            raise WTError(
+                f"{was}: Frequenz {frequency_hz} Hz liegt ausserhalb "
+                f"{MOTOR_RATE_FREQUENCY_MIN:g} Hz..{MOTOR_RATE_FREQUENCY_MAX:g} Hz"
+            )
+        self._require_type(_MotorSignal.TORQUE, MotorInputType.PULSE, was)
+        node = f"{_NODE_MOTOR_TORQUE_RATE}:{limit}"
+        self._write(
+            f"{node} {format_nrf(value)},{format_nrf(frequency_hz)}",
+            node,
+            lambda actual: self._pair_matches((value, frequency_hz), actual, was),
+            was,
+        )
+
+    def torque_scaling(self) -> float:
+        """Skalierungsfaktor der Drehmomentberechnung."""
+        return self._signal_scaling(_MotorSignal.TORQUE)
+
+    def set_torque_scaling(self, factor: float) -> None:
+        """Skalierungsfaktor der Drehmomentberechnung setzen."""
+        self._set_scaling(
+            f"{_MotorSignal.TORQUE.value}:SCALing",
+            factor,
+            "Drehmoment-Skalierung setzen",
+        )
+
+    def torque_unit(self) -> str:
+        """Einheitentext des Drehmoments, z.B. 'Nm'."""
+        return self._signal_unit(_MotorSignal.TORQUE)
+
+    def set_torque_unit(self, text: str) -> None:
+        """Einheitentext des Drehmoments setzen (hoechstens 8 Zeichen)."""
+        self._set_unit(
+            f"{_MotorSignal.TORQUE.value}:UNIT", text, "Drehmoment-Einheit setzen"
+        )
+
+    # =======================================================================
+    # Mechanische Leistung, Filter, Polzahl, Synchronisation
+    # =======================================================================
+
+    def pm_scaling(self) -> float:
+        """Skalierungsfaktor der Berechnung der mechanischen Leistung Pm."""
+        return parse_nr3(self._query(_NODE_MOTOR_PM_SCALING), "Pm-Skalierung")
+
+    def set_pm_scaling(self, factor: float) -> None:
+        """Skalierungsfaktor fuer Pm setzen (0.0001 bis 99999.9999)."""
+        self._set_scaling(_NODE_MOTOR_PM_SCALING, factor, "Pm-Skalierung setzen")
+
+    def pm_unit(self) -> str:
+        """Einheitentext der mechanischen Leistung, z.B. 'W'."""
+        return parse_motor_unit(self._query(_NODE_MOTOR_PM_UNIT))
+
+    def set_pm_unit(self, text: str) -> None:
+        """Einheitentext fuer Pm setzen (hoechstens 8 Zeichen)."""
+        self._set_unit(_NODE_MOTOR_PM_UNIT, text, "Pm-Einheit setzen")
+
+    def line_filter(self) -> MotorLineFilter:
+        """Line-Filter der Motoreingaenge.
+
+        ACHTUNG: ein anderer Frequenzsatz als bei 'wt.input.get_line_filter()' -
+        hier OFF, 100 Hz, 50 kHz. Siehe MotorLineFilter.
+        """
+        token = _motor_filter_token(self._query(_NODE_MOTOR_FILTER))
+        for kind in MotorLineFilter:
+            if kind.value == token:
+                return kind
+        raise WTError(
+            f"Unbekannter Motor-Line-Filter {token!r}; erwartet: OFF, 100HZ, 50KHZ"
+        )
+
+    def set_line_filter(self, value: MotorLineFilter | str | float) -> None:
+        """Line-Filter der Motoreingaenge setzen: OFF, 100 Hz oder 50 kHz.
+
+        Angenommen werden MotorLineFilter, die Tokens ('100HZ') und reine
+        Frequenzzahlen (100, 50000) - Letzteres, weil ein Backup die
+        Grenzfrequenz als Zahl fuehren kann.
+        """
+        token = _motor_filter_token(value)
+        if token not in {kind.value for kind in MotorLineFilter}:
+            raise WTError(
+                f"Motor-Line-Filter {value!r} unzulaessig; "
+                "erlaubt: OFF, 100HZ, 50KHZ"
+            )
+        self._write(
+            f"{_NODE_MOTOR_FILTER} {token}",
+            _NODE_MOTOR_FILTER,
+            lambda actual: _motor_filter_token(actual) == token,
+            "Motor-Line-Filter setzen",
+        )
+
+    def poles(self) -> int:
+        """Polzahl des Motors."""
+        return parse_nr1(self._query(_NODE_MOTOR_POLE), _NODE_MOTOR_POLE)
+
+    def set_poles(self, count: int) -> None:
+        """Polzahl des Motors setzen (1 bis 99).
+
+        Sie geht in die Synchrondrehzahl SyncSp und damit in den Schlupf Slip
+        ein. Nicht zu verwechseln mit den Impulsen je Umdrehung des
+        Drehzahlgebers ('set_speed_pulses()').
+        """
+        was = "Polzahl setzen"
+        if not MOTOR_POLE_MIN <= int(count) <= MOTOR_POLE_MAX:
+            raise WTError(
+                f"{was}: {count} liegt ausserhalb {MOTOR_POLE_MIN}..{MOTOR_POLE_MAX}"
+            )
+        self._write(
+            f"{_NODE_MOTOR_POLE} {int(count)}",
+            _NODE_MOTOR_POLE,
+            lambda actual: parse_nr1(actual, was) == int(count),
+            was,
+        )
+
+    def sync_source(self) -> str:
+        """Synchronisationsquelle fuer Drehzahl und Drehmoment.
+
+        'U<x>', 'I<x>', 'EXTERNAL' oder 'NONE'.
+        """
+        return strip_response_header(self._query(_NODE_MOTOR_SYNC)).upper()
+
+    def set_sync_source(self, source: str) -> None:
+        """Synchronisationsquelle setzen: 'U<x>', 'I<x>', 'EXTernal' oder 'NONE'."""
+        token = self._canonical_sync(source, MOTOR_SYNC_FIXED, "Sync-Quelle")
+        self._write(
+            f"{_NODE_MOTOR_SYNC} {token}",
+            _NODE_MOTOR_SYNC,
+            lambda actual: strip_response_header(actual).strip().upper() == token,
+            "Sync-Quelle der Motorauswertung setzen",
+        )
+
+    def sync_speed_source(self) -> str:
+        """Frequenzmessquelle fuer die Synchrondrehzahl SyncSp: 'U<x>' oder 'I<x>'."""
+        return strip_response_header(self._query(_NODE_MOTOR_SSPEED)).upper()
+
+    def set_sync_speed_source(self, source: str) -> None:
+        """Frequenzmessquelle fuer SyncSp setzen: 'U<x>' oder 'I<x>'.
+
+        ANDERS ALS 'set_sync_source()' sind hier weder 'EXTernal' noch 'NONE'
+        zulaessig - die Synchrondrehzahl wird aus einer gemessenen Frequenz
+        gerechnet, und eine externe Taktquelle liefert keine. Das ist keine
+        Vereinfachung dieses Treibers, sondern die Syntax des Handbuchs
+        (6-82: {U<x>|I<x>}).
+        """
+        token = self._canonical_sync(source, frozenset(), "SyncSp-Quelle")
+        self._write(
+            f"{_NODE_MOTOR_SSPEED} {token}",
+            _NODE_MOTOR_SSPEED,
+            lambda actual: strip_response_header(actual).strip().upper() == token,
+            "Frequenzquelle der Synchrondrehzahl setzen",
+        )
+
+    def _canonical_sync(self, source: str, fixed: frozenset[str], was: str) -> str:
+        """Sync-Angabe pruefen und in die Geraeteschreibweise bringen.
+
+        'fixed' nennt die Sonderquellen, die diese Stelle zusaetzlich zu
+        U<x>/I<x> annimmt - fuer SSPeed ist die Menge leer.
+        """
+        token = str(source).strip().upper()
+        canonical = canonical_enum_token(token, fixed) if fixed else token
+        if canonical in fixed:
+            return canonical
+        if len(token) >= 2 and token[0] in {"U", "I"} and token[1:].isdigit():
+            self._require_element(int(token[1:]), f"{was} {source!r}")
+            return token
+        erlaubt = ", ".join(["U<x>", "I<x>", *sorted(fixed)])
+        raise WTError(f"{was} {source!r} unzulaessig; erlaubt: {erlaubt}")
+
+    # =======================================================================
+    # Momentaufnahme
+    # =======================================================================
+
+    def _capture_signal(self, signal: _MotorSignal) -> MotorSignalSettings:
+        """Einen Signaleingang erfassen - NUR die zum Eingangstyp gueltigen Knoten.
+
+        Die Begruendung steht im Kopf des Abschnitts: das Handbuchbeispiel zu
+        ':MOTor:SPEed?' fuehrt auf einem analog eingestellten Geraet die
+        Pulsknoten gar nicht auf. Ob sie einzeln antworten, ist ungeprueft -
+        und ein Timeout mitten in einer Sicherung waere das Gegenteil eines
+        Sicherheitsnetzes.
+        """
+        kind = self._signal_type(signal)
+        analog = kind is MotorInputType.ANALOG
+        pulse_upper = pulse_lower = None
+        if not analog:
+            pulse_upper, pulse_lower = self._signal_pulse_range(signal)
+        return MotorSignalSettings(
+            input_type=kind,
+            scaling=self._signal_scaling(signal),
+            unit=self._signal_unit(signal),
+            range_v=self._signal_range_v(signal) if analog else None,
+            auto=self._signal_auto(signal) if analog else None,
+            pulse_upper=pulse_upper,
+            pulse_lower=pulse_lower,
+        )
+
+    def capture(self) -> MotorSettings:
+        """Vollstaendige Momentaufnahme der Gruppe. Reine Queries."""
+        speed = self._capture_signal(_MotorSignal.SPEED)
+        torque = self._capture_signal(_MotorSignal.TORQUE)
+        return MotorSettings(
+            speed=speed,
+            torque=torque,
+            pm_scaling=self.pm_scaling(),
+            pm_unit=self.pm_unit(),
+            line_filter=self.line_filter(),
+            poles=self.poles(),
+            sync_source=self.sync_source(),
+            sync_speed_source=self.sync_speed_source(),
+            speed_pulses=(
+                self.speed_pulses() if speed.input_type is MotorInputType.PULSE else None
+            ),
+            torque_rate_upper=(
+                self.torque_rate_upper()
+                if torque.input_type is MotorInputType.PULSE
+                else None
+            ),
+            torque_rate_lower=(
+                self.torque_rate_lower()
+                if torque.input_type is MotorInputType.PULSE
+                else None
+            ),
+        )
+
+    def restore(self, settings: MotorSettings) -> None:
+        """Eine Momentaufnahme zurueckschreiben.
+
+        REIHENFOLGE. Der Eingangstyp steht bei beiden Signalen ZUERST: er
+        entscheidet, welche der uebrigen Parameter das Geraet ueberhaupt
+        annimmt. Wuerde er zuletzt gesetzt, liefen die typgebundenen Aufrufe
+        davor gegen den alten Typ - dieselbe Ueberlegung, aus der
+        'restore_input_snapshot()' Crest-Faktor und Wiring vorzieht.
+
+        Ausgelassene Felder ('None') werden NICHT geschrieben. Sie waren zum
+        Zeitpunkt der Sicherung fuer den eingestellten Eingangstyp nicht
+        gueltig, und was nie gelesen wurde, wird auch nicht geraten.
+        """
+        self.set_speed_type(settings.speed.input_type)
+        self.set_torque_type(settings.torque.input_type)
+
+        self._restore_signal(_MotorSignal.SPEED, settings.speed)
+        if settings.speed_pulses is not None:
+            self.set_speed_pulses(settings.speed_pulses)
+
+        self._restore_signal(_MotorSignal.TORQUE, settings.torque)
+        if settings.torque_rate_upper is not None:
+            self.set_torque_rate_upper(*settings.torque_rate_upper)
+        if settings.torque_rate_lower is not None:
+            self.set_torque_rate_lower(*settings.torque_rate_lower)
+
+        self.set_pm_scaling(settings.pm_scaling)
+        self.set_pm_unit(settings.pm_unit)
+        self.set_line_filter(settings.line_filter)
+        self.set_poles(settings.poles)
+        self.set_sync_source(settings.sync_source)
+        self.set_sync_speed_source(settings.sync_speed_source)
+
+    def _restore_signal(
+        self, signal: _MotorSignal, settings: MotorSignalSettings
+    ) -> None:
+        """Die typunabhaengigen und die zum Typ passenden Felder zurueckschreiben."""
+        if settings.range_v is not None:
+            self._set_signal_range_v(signal, settings.range_v)
+        if settings.auto is not None:
+            self._set_signal_auto(signal, settings.auto)
+        if settings.pulse_upper is not None and settings.pulse_lower is not None:
+            grenzen = (
+                (MOTOR_SPEED_PRANGE_MIN, MOTOR_SPEED_PRANGE_MAX)
+                if signal is _MotorSignal.SPEED
+                else (MOTOR_TORQUE_PRANGE_MIN, MOTOR_TORQUE_PRANGE_MAX)
+            )
+            self._set_signal_pulse_range(
+                signal, settings.pulse_upper, settings.pulse_lower, *grenzen
+            )
+        self._set_scaling(
+            f"{signal.value}:SCALing",
+            settings.scaling,
+            f"{signal.label}-Skalierung setzen",
+        )
+        self._set_unit(
+            f"{signal.value}:UNIT", settings.unit, f"{signal.label}-Einheit setzen"
+        )
+
+    def log_summary(self) -> None:
+        """Momentaufnahme ins Protokoll schreiben."""
+        for line in self.capture().describe():
+            _log.info("%s", line)
