@@ -25,6 +25,8 @@ from .wt3000_deviceconfig import (
     HarmonicsSettings,
     IntegrationConfig,
     IntegrationSettings,
+    MotorConfig,
+    MotorSettings,
 )
 from .wt3000_input import InputConfig, InputSnapshot, restore_input_snapshot
 from .wt3000_itemspec import probe_extra_items, restore_item_table, verify_item_table

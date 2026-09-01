@@ -512,6 +512,81 @@ def integrationsantworten() -> dict[str, str]:
 # ---------------------------------------------------------------------------
 
 
+def motor_responses(
+    speed_type: str = "ANALOG",
+    speed_range: str = "20.0E+00",
+    speed_auto: str = "0",
+    speed_scaling: str = "1.0000",
+    speed_unit: str = '"rpm"',
+    torque_type: str = "ANALOG",
+    torque_range: str = "20.0E+00",
+    torque_auto: str = "0",
+    torque_scaling: str = "1.0000",
+    torque_unit: str = '"Nm"',
+    pm_scaling: str = "1.0000",
+    pm_unit: str = '"W"',
+    line_filter: str = "OFF",
+    sync: str = "NONE",
+    poles: str = "2",
+    sspeed: str = "I1",
+    speed_prange: str = "10000.0000,0.0000",
+    speed_pulse: str = "60",
+    torque_prange: str = "50.0000,-50.0000",
+    torque_rate_upper: str = "50.0000,15.000E+03",
+    torque_rate_lower: str = "-50.0000,5.000E+03",
+) -> dict[str, str]:
+    """Alles, was 'MotorConfig.capture()' abfragen kann.
+
+    Die Voreinstellungen sind die des Handbuchbeispiels zu ':MOTor?'
+    (Seite 6-81): beide Eingaenge ANALOG mit 20 V, Skalierung 1, Einheiten
+    'rpm'/'Nm'/'W', Filter OFF, Synchronisation NONE, zwei Pole, SyncSp aus I1.
+
+    Die Pulsknoten stehen mit den Handbuchbeispielen der Seiten 6-82/6-83
+    ebenfalls hier, obwohl 'capture()' sie bei ANALOG gar nicht abfragt -
+    damit ein Test den Pulsfall einstellen kann, ohne die Tabelle zu
+    ergaenzen.
+    """
+    return {
+        ":MOTOR:SPEED:TYPE": speed_type,
+        ":MOTOR:SPEED:RANGE": speed_range,
+        ":MOTOR:SPEED:AUTO": speed_auto,
+        ":MOTOR:SPEED:SCALING": speed_scaling,
+        ":MOTOR:SPEED:UNIT": speed_unit,
+        ":MOTOR:SPEED:PRANGE": speed_prange,
+        ":MOTOR:SPEED:PULSE": speed_pulse,
+        ":MOTOR:TORQUE:TYPE": torque_type,
+        ":MOTOR:TORQUE:RANGE": torque_range,
+        ":MOTOR:TORQUE:AUTO": torque_auto,
+        ":MOTOR:TORQUE:SCALING": torque_scaling,
+        ":MOTOR:TORQUE:UNIT": torque_unit,
+        ":MOTOR:TORQUE:PRANGE": torque_prange,
+        ":MOTOR:TORQUE:RATE:UPPER": torque_rate_upper,
+        ":MOTOR:TORQUE:RATE:LOWER": torque_rate_lower,
+        ":MOTOR:PM:SCALING": pm_scaling,
+        ":MOTOR:PM:UNIT": pm_unit,
+        ":MOTOR:FILTER:LINE": line_filter,
+        ":MOTOR:SYNCHRONIZE": sync,
+        ":MOTOR:POLE": poles,
+        ":MOTOR:SSPEED": sspeed,
+    }
+
+
+#: '*IDN?' eines Geraets MIT Motorauswertung.
+#
+# Der Modellcode traegt '-MV'. Am eingemessenen Geraet war das der
+# zuverlaessige Indikator - '*OPT?' meldete dort KEIN MTR, obwohl
+# ':MOTor:PM?' antwortete. Siehe Kopf von OPTION_REQUIREMENTS.
+MOTOR_IDN: str = "YOKOGAWA,760304-40-MV,0,F5.01"
+
+
+def motor_base_responses(**kwargs) -> dict:
+    """Basisantworten eines Motorgeraets samt Motorgruppe."""
+    table = base_responses(**kwargs)
+    table["*IDN"] = MOTOR_IDN
+    table.update(motor_responses())
+    return table
+
+
 def input_responses(elemente: tuple[int, ...] = (1, 2, 3, 4)) -> dict[str, str]:
     """Alles, was 'InputSnapshot.capture()' abfragt - 17 Knoten je Element.
 

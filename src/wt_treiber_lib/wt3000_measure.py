@@ -171,6 +171,51 @@ def build_harmonics_profile(
     return tuple(specs)
 
 
+#: Die Groessen der Motorauswertung (Handbuch 6-45, Funktionsliste).
+#
+# SPEed    Drehzahl aus dem Drehzahlsignal          [Einheit frei beschriftbar]
+# TORQue   Drehmoment aus dem Drehmomentsignal      [Einheit frei beschriftbar]
+# PM       mechanische Leistung                     [Einheit frei beschriftbar]
+# SYNCsp   Synchrondrehzahl aus Frequenz und Polzahl
+# SLIP     Schlupf
+#
+# Alle fuenf verlangen die Motorauswertung (/MTR bzw. Modellcode '-MV') und
+# KEINE Elementangabe: sie beziehen sich auf den Motor, nicht auf ein
+# Messelement. Das Handbuch sagt zu <Element> ausdruecklich "Not required".
+MOTOR_FUNCTIONS: tuple[str, ...] = ("SPEED", "TORQUE", "PM", "SYNCSP", "SLIP")
+
+
+def build_motor_profile(
+    elements: tuple[str, ...] = ("1", "2", "3"),
+    include_sigma: bool = True,
+) -> tuple[ItemSpec, ...]:
+    """Messprofil fuer eine Motormessung.
+
+    'MotorConfig' stellt die Auswertung ein; dieses Profil macht ihr Ergebnis
+    lesbar - dieselbe Arbeitsteilung wie bei Integration und Oberschwingungen.
+
+    Aufbau:
+
+      1. die fuenf Motorgroessen, je EINMAL und ohne Element
+      2. U, I, P je Element und (auf Wunsch) SIGMA - die elektrische Seite,
+         ohne die ein Wirkungsgrad nicht zu bilden ist
+
+    Der zweite Teil ist der eigentliche Zweck am Pruefstand: ein Motorlauf
+    ohne die aufgenommene elektrische Leistung laesst sich nicht auswerten,
+    und wer sie vergisst, merkt es erst bei der Auswertung. Wer nur die
+    mechanische Seite will, nimmt 'elements=()'.
+
+    'verify=True' kennzeichnet die am Original-WT3000 noch nicht bestaetigten
+    Funktionen; 'build_item_table()' meldet sie beim Bauen.
+    """
+    specs: list[ItemSpec] = [ItemSpec(f, verify=True) for f in MOTOR_FUNCTIONS]
+
+    ziele = list(elements) + (["SIGMA"] if include_sigma and elements else [])
+    for element in ziele:
+        specs.extend(ItemSpec(f, element) for f in ("U", "I", "P"))
+    return tuple(specs)
+
+
 # ---------------------------------------------------------------------------
 # Layer 3 - Snapshot ueber :NUMeric:HOLD
 # ---------------------------------------------------------------------------

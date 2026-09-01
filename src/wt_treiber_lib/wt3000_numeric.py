@@ -141,6 +141,16 @@ class NumericItem:
 # ZU VERIFIZIEREN: Einheiten der neun Oberschwingungsfaktoren
 # am Geraet oder aus IM WT3001E-01EN nachtragen.
 #
+# EBENFALLS NICHT aufgenommen sind die fuenf Groessen der Motorauswertung
+# (SPEed, TORQue, PM, SYNCsp, SLIP - Handbuch 6-45). Bei dreien ist das keine
+# Wissensluecke, sondern die Sache selbst: ihre Einheit ist am Geraet FREI
+# BESCHRIFTBAR (':MOTor:SPEed:UNIT' und Nachbarn, Vorgabe 'rpm', 'Nm', 'W')
+# und damit keine Eigenschaft der Funktion, sondern eine Einstellung. Wer sie
+# braucht, liest sie ueber 'wt.motor.speed_unit()', 'torque_unit()' bzw.
+# 'pm_unit()' - dort steht, was tatsaechlich eingestellt ist. Fuer SYNCsp und
+# SLIP nennt der vorliegende Auszug keine Einheit; ob der Schlupf als
+# Verhaeltnis oder in Prozent kommt, ist ZU VERIFIZIEREN.
+#
 # Die leere Zeichenkette bedeutet "dimensionslos und das ist bekannt"
 # (LAMBDA ist ein Verhaeltnis), None bedeutet "nicht bekannt". Der
 # Unterschied ist der ganze Zweck dieser Tabelle und wird bis in die Ausgabe

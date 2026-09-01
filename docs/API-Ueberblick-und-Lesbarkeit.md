@@ -477,7 +477,7 @@ Geprüft (Spalte „vorher“ / „nachher“):
 | `applied_ranges`, `restore_input_snapshot`, `output_dir`, `setup_logging` | Abläufe/Hilfen | ❌ | ✅ |
 | `GROUP_INTEGRATE`, `GROUP_RUN`, `GROUP_COMPUTATION`, `GROUP_HARMONICS` | Argument von `unlocked(...)` | ❌ | ✅ |
 
-**Folge (vorher):** Der Anwender musste `from wt3000_scpi.wt3000_ranging import RangePlan, RangeSpec`
+**Folge (vorher):** Der Anwender musste `from wt_treiber_lib.wt3000_ranging import RangePlan, RangeSpec`
 schreiben — also die interne Modulschichtung kennen, die ihn nichts angeht. Genau das, was eine
 Fassade verhindern soll. Die Fassade war gebaut, aber der Weg zu ihren Argumenten führte an ihr
 vorbei.
@@ -567,7 +567,7 @@ Abgesichert durch `test_kein_modul_definiert_configlocked_ein_zweites_mal` (prü
 kein Fachmodul die Klasse erneut definiert), `test_jede_sperre_erbt_von_der_gemeinsamen_basis` und
 `test_die_sitzungssperre_bleibt_ausserhalb_der_familie`.
 
-**Rückwärtskompatibel:** `from wt3000_scpi.wt3000_deviceconfig import ConfigLocked` liefert jetzt
+**Rückwärtskompatibel:** `from wt_treiber_lib.wt3000_deviceconfig import ConfigLocked` liefert jetzt
 die Basis und fängt `DeviceConfigLocked` — alle bestehenden Tests und Skripte laufen unverändert.
 
 ### D6 — „Element“ heißt an vier Stellen anders und hat zwei Typen 🟠 ✅ **erledigt (E8)**
@@ -717,8 +717,8 @@ Sortiert nach **Wirkung je Aufwand**.
 `__init__.py` um die in D2 aufgeführten Namen ergänzt, so dass **jedes Argument, das die Fassade
 verlangt, aus `wt_treiber_lib` importierbar ist**. Die Regel steht im Kopf der Datei:
 
-> Wer nur `from wt3000_scpi import ...` schreibt, kommt an jede Anwenderfunktion. Ein Import aus
-> `wt3000_scpi.wt3000_*` ist im Messautomationsskript nie nötig.
+> Wer nur `from wt_treiber_lib import ...` schreibt, kommt an jede Anwenderfunktion. Ein Import aus
+> `wt_treiber_lib.wt3000_*` ist im Messautomationsskript nie nötig.
 
 `__all__`: 60 → **114 Namen**, gegliedert nach Aufgabe statt nach Herkunftsmodul. Kein Verhalten
 geändert, nichts entfernt. Gegenprobe in `tests/test_package_layout.py` (siehe D2).
@@ -1128,7 +1128,7 @@ Damit ist die Dokumentationskette geschlossen und **jede Stufe davon wird ausgef
    Bezeichner behalten, deutsche Doku ausbauen. Neue Namen folgen dieser Regel — `InputLocked`
    und `DeviceConfigLocked` aus E2 sind die ersten.
 2. **Dürfen `stage*`-Skripte aus dem Paket verschwinden,** oder werden sie anderweitig verwendet
-   (z. B. per `python -m wt3000_scpi.stage4_measure` in bestehenden Abläufen)?
+   (z. B. per `python -m wt_treiber_lib.stage4_measure` in bestehenden Abläufen)?
 3. ~~**Ist die Testsuite die Rückversicherung für den Umbau, d. h. läuft sie grün?**~~
    **Beantwortet:** ja — **861 Tests, alle grün**, Laufzeit ~6 s, gerätefrei.
 

@@ -63,6 +63,7 @@ from .wt3000_measure import (
     SampleSink,
     build_harmonics_profile,
     build_integration_profile,
+    build_motor_profile,
     build_standard_profile,
     iter_samples,
     output_paths_of,
@@ -544,6 +545,20 @@ class ItemAccess:
         dieses Profil macht sein Ergebnis lesbar.
         """
         return build_integration_profile()
+
+    @staticmethod
+    def motor_profile(
+        elements: tuple[str, ...] = ("1", "2", "3"),
+        include_sigma: bool = True,
+    ) -> tuple[ItemSpec, ...]:
+        """Messprofil fuer eine Motormessung (Drehzahl, Drehmoment, Pm, Slip).
+
+        Das Gegenstueck zu 'wt.motor': jene Klasse stellt die Auswertung ein,
+        dieses Profil macht ihr Ergebnis lesbar. Es nimmt die elektrische
+        Seite (U, I, P je Element und SIGMA) mit auf - ohne sie laesst sich
+        am Pruefstand kein Wirkungsgrad bilden.
+        """
+        return build_motor_profile(elements, include_sigma)
 
     @staticmethod
     def standard_profile() -> tuple[ItemSpec, ...]:

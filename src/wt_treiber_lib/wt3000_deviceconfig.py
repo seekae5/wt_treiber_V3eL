@@ -2048,9 +2048,13 @@ MOTOR_UNIT_MAX_CHARS: int = 8
 #: Synchronisationsquellen ohne Elementbezug (':MOTor:SYNChronize').
 MOTOR_SYNC_FIXED: frozenset[str] = frozenset({"EXTERNAL", "NONE"})
 
-#: Gruppe fuer die Schreibsperre. Bewusst NICHT in DEFAULT_PROTECTED: kein
-#: Kommando dieser Gruppe verwirft Messwerte, anders als ':INTEGrate:RESet'.
-GROUP_MOTOR: str = "MOTOR"
+# KEINE GROUP_MOTOR-Konstante. Eine Gruppensperre haette hier nichts zu
+# schuetzen: kein Kommando dieser Gruppe verwirft Messwerte, anders als
+# ':INTEGrate:RESet'. Die einfache Sperre 'allow_changes' genuegt, und ein
+# Bezeichner, den niemand benutzt, macht die Paketoberflaeche nur groesser.
+# (GROUP_HARMONICS und GROUP_COMPUTATION daneben sind aus derselben
+# Ueberlegung entstanden, aber trotzdem angelegt worden - sie werden bis
+# heute nirgends referenziert.)
 
 _NODE_MOTOR: str = ":MOTor"
 _NODE_MOTOR_FILTER: str = ":MOTor:FILTer:LINE"

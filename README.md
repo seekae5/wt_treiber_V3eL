@@ -1,4 +1,4 @@
-# wt3000-scpi
+# wt_treiber_lib
 
 Python-Treiber für das **Yokogawa WT3000** (Leistungsmessgerät) über SCPI und die TMCTL-Bibliothek.
 Gedacht für Messautomationsskripte: verbinden, messen, in eine CSV schreiben — und den
@@ -110,7 +110,7 @@ sind der richtige erste Versuch am eingemessenen Aufbau.
 ## Aufbau
 
 ```
-src/wt3000_scpi/     die Bibliothek
+src/wt_treiber_lib/   die Bibliothek
 examples/            sechs lauffaehige Beispielskripte
 docs/                Schnellstart und API-Ueberblick
 tests/               geraetefreie Testsuite
@@ -120,7 +120,7 @@ live_messwerte.py    Anwenderskript mit Kommandozeile
 
 Die Bibliothek ist azyklisch in vier Schichten gegliedert — Transport, SCPI-Fachmodule, Abläufe,
 Fassade. **Für den Anwender zählt nur die oberste:** die Klasse `WT3000`. Ein Import aus
-`wt3000_scpi.wt3000_*` ist im eigenen Skript nie nötig; alles kommt aus `wt_treiber_lib`.
+`wt_treiber_lib.wt3000_*` ist im eigenen Skript nie nötig; alles kommt aus `wt_treiber_lib`.
 
 Die Dateien `src/wt_treiber_lib/stage2…stage5b.py` stammen aus der Entstehungszeit der Bibliothek und
 lösen dieselben Aufgaben **ohne** die Fassade. Als Vorlage für eigenen Code sind sie nicht gedacht
@@ -144,7 +144,7 @@ Der Quelltext ist deutschsprachig kommentiert und durchgehend in ASCII-Umschreib
 
 ## Stand
 
-Version 0.3.0. Am realen WT3000 eingemessen sind die Grundgrößen, Verdrahtung, Messbereiche und
+Version 1.0.0. Am realen WT3000 eingemessen sind die Grundgrößen, Verdrahtung, Messbereiche und
 die Messschleife. Integrations- und Oberschwingungsfunktionen sind implementiert, aber am
 Originalgerät noch nicht durchgängig bestätigt — `build_item_table()` sagt beim Bauen eines
 solchen Profils, wie viele Spalten davon betroffen sind und dass sie `NAN` liefern können, ohne
