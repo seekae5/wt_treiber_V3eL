@@ -52,7 +52,7 @@ with WT3000.connect(read_only=False, allow_changes=True) as wt:
 
 ## Teil B — Die Einstiegspunkte der Fassade
 
-Alles, was der Anwender braucht, hängt an einem `wt`-Objekt. Zwölf Zugänge, davon acht Fachobjekte:
+Alles, was der Anwender braucht, hängt an einem `wt`-Objekt. Dreizehn Zugänge, davon neun Fachobjekte:
 
 | Zugang | Typ | Wofür |
 |---|---|---|
@@ -64,10 +64,11 @@ Alles, was der Anwender braucht, hängt an einem `wt`-Objekt. Zwölf Zugänge, d
 | `wt.integration` | `IntegrationConfig` | Wh-/Ah-Messung (`:INTEGrate`) |
 | `wt.computation` | `ComputationConfig` | Averaging, Wirkungsgrad, Frequenzquelle, S/Q-Formel, Sync-Modus |
 | `wt.harmonics` | `HarmonicsConfig` | Oberschwingungsanalyse (braucht Option /G5 oder /G6) |
+| `wt.motor` | `MotorConfig` | Motorauswertung `:MOTor`: Drehzahl, Drehmoment, Pm, Schlupf (braucht die Motorauswertung — Modellcode `-MV` **oder** Option MTR) |
 | `wt.session` | `WTSession` | Notausgang für SCPI-Kommandos ohne eigene Methode |
 | `wt.config` | `WTConfig` | die benutzten Verbindungsparameter |
 | `wt.read_only` / `wt.allow_changes` | `bool` | Zustand der beiden Schlösser |
-| `wt.backup()` / `wt.restore_backup()` / `wt.applied_ranges()` / `wt.refresh_device()` / `wt.ensured_protocol_state()` | Methoden | Abläufe, siehe Teil C |
+| `wt.backup()` / `wt.restore_backup()` / `wt.applied_ranges()` / `wt.refresh_device()` / `wt.ensured_protocol_state()` / `wt.calibrate_zero()` | Methoden | Abläufe, siehe Teil C |
 
 ---
 
@@ -370,7 +371,48 @@ Option gäbe es sonst einen Schein-Timeout.
 Erfasst werden Steckbrief, Eingangskonfiguration, Bereiche, Item-Tabelle samt Tail, Integration,
 Rechenfunktionen und (falls Option verbaut) Oberschwingungen.
 
-### C.14 Protokollzustand, Diagnose, Fehler
+### C.14 Nullpunktkalibrierung
+
+| Aufgabe | Aufruf | Sperre |
+|---|---|---|
+| Nullpunkt jetzt abgleichen | `wt.calibrate_zero()` | **`read_only=False`** — `allow_changes` wird *nicht* verlangt |
+| Auto-Abgleich während der Integration | `wt.integration.auto_calibration()` / `.set_auto_calibration(True)` | AC |
+
+Die beiden sind **nicht dasselbe**, obwohl sie ähnlich heißen:
+
+| | `wt.calibrate_zero()` | `wt.integration.set_auto_calibration(True)` |
+|---|---|---|
+| SCPI | `*CAL?` | `:INTEGrate:ACAL` |
+| Art | einmalige **Handlung**, jetzt | **Schalter**, wirkt später |
+| Wirkung | gleicht den Nullpegel ab, wie `SHIFT+SINGLE` am Bedienfeld | lässt das Gerät *während* eines Integrationslaufs regelmäßig selbst abgleichen |
+| Dauer | der Aufruf kehrt erst zurück, wenn das Gerät fertig ist | sofort |
+
+Zwei Eigenheiten, die den Aufruf von jedem anderen unterscheiden:
+
+**Die Nur-Lesen-Sperre steht hier von Hand.** `*CAL?` endet auf `?` und ist für
+`WTSession._validate()` deshalb ein Query — die Sitzungssperre würde es anstandslos senden.
+Fachlich ist es aber ein Eingriff: die Erfassung wird unterbrochen, die Nullpunkte verstellt.
+`calibrate_zero()` weist eine Nur-Lesen-Sitzung darum selbst ab, **bevor** etwas auf die Leitung
+geht.
+
+**Der Timeout wird angehoben.** Das Gerät *arbeitet* zwischen Empfang und Antwort; die 5 s aus
+`WTConfig.timeout_ms` reichen dafür nicht. Für die Dauer des Aufrufs gilt
+`WTConfig.calibration_timeout_ms` (Vorgabe 60 s, auch über `WT3000_CALIBRATION_TIMEOUT_MS`
+einstellbar) — danach steht der alte Wert wieder, auch wenn der Aufruf gescheitert ist.
+
+```python
+with WT3000.connect(read_only=False) as wt:
+    wt.calibrate_zero()          # dauert; wirft, wenn das Geraet '1' meldet
+    wt.measure.record_csv("messreihe.csv", max_samples=60)
+```
+
+Abgewiesen wird der Aufruf bei einer laufenden Hintergrundmessung (`wt.measure.start(...)`) —
+die Kalibrierung würde die Messreihe unbrauchbar machen, ohne dass man ihr das hinterher ansieht.
+Ein laufender **Integrationslauf** wird dagegen nur ins Protokoll gewarnt und nicht abgewiesen:
+das Handbuch nennt an `*CAL?` keine solche Bedingung, und ein erfundener Vorbehalt blockierte
+einen Aufruf, der vielleicht zulässig ist (dieselbe Begründung wie bei `set_mode()`).
+
+### C.15 Protokollzustand, Diagnose, Fehler
 
 | Aufgabe | Aufruf | Sperre |
 |---|---|---|
@@ -419,7 +461,7 @@ fehlgeschlagener Zyklus zu einer Zeile mit `SampleMark.MISSING` und NO_DATA in j
 `ErrorPolicy.unattended()` = `max_consecutive=5, reconnect_after=2, max_reconnects=10` — für
 Langzeitläufe ohne Aufsicht. Nur `TmctlError` und `ProtocolError` fallen darunter.
 
-### C.15 Das Sperrsystem in einer Tabelle
+### C.16 Das Sperrsystem in einer Tabelle
 
 | Schloss | Wo gesetzt | Wirkung | Vorgabe |
 |---|---|---|---|

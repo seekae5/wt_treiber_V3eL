@@ -63,6 +63,12 @@ class WTConfig:
     # ZU VERIFIZIEREN: Einheit von TmcSetTimeout (ms angenommen).
     timeout_ms: int = 5000
     drain_timeout_ms: int = 500
+    #: Timeout fuer die wenigen Kommandos, die am Geraet laenger arbeiten als
+    #: eine Abfrage - derzeit allein '*CAL?' (Nullpunktkalibrierung). Der
+    #: gewoehnliche 'timeout_ms' ist dafuer zu knapp: der Aufruf liefe in
+    #: einen TmctlError, waehrend das Geraet weiterkalibriert, und die
+    #: verspaetete Antwort landete in der naechsten fremden Abfrage.
+    calibration_timeout_ms: int = 60000
     read_buffer_size: int = 64 * 1024
     # REMOTE kann fuer Set-Kommandos erforderlich sein und sperrt zugleich das
     # Bedienfeld. Lange Integrationslaeufe sollten diese Wirkung dokumentieren.
@@ -129,6 +135,7 @@ class WTConfig:
 _FELD_TYPEN: dict[str, "Callable[[str], object]"] = {
     "timeout_ms": int,
     "drain_timeout_ms": int,
+    "calibration_timeout_ms": int,
     "read_buffer_size": int,
     "use_remote": lambda text: text.strip().lower() in {"1", "true", "yes", "on", "ja"},
 }

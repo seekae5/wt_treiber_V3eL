@@ -5,7 +5,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "wt_treiber_lib"
-version = "1.1.0"
+version = "1.2.0"
 description = "Treiber-Bibliothek fuer das WT3000 ueber Ether und tmctl.dll"
 requires-python = ">=3.10"
 dependencies = []

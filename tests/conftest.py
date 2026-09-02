@@ -333,12 +333,21 @@ def base_responses(
             "*IDN": IDN,
             # DeviceInfo.read() fragt Identitaet und Optionen ab.
             "*OPT": options,
+            # Nullpunktkalibrierung: 0 = normal beendet. Steht hier und nicht
+            # erst im Kalibriertest, weil 'wt.calibrate_zero()' zur Fassade
+            # gehoert und jeder Test sie ausloesen koennen soll, ohne eine
+            # eigene Antworttabelle zu bauen. Gefragt wird nur, wer fragt.
+            "*CAL": "0",
             ":INPUT:WIRING": wiring,
             ":INPUT:MODULE": modules,
             ":COMMUNICATE:HEADER": header,
             ":NUMERIC:FORMAT": numeric_format,
             ":STATUS:CONDITION": "0",
             ":NUMERIC:HOLD": "0",
+            # 'wt.calibrate_zero()' liest den Integrationszustand, um vor
+            # einem laufenden Zaehlvorgang zu warnen. 'RES' ist die Kurzform,
+            # die das reale Geraet meldet - siehe integrate_responses().
+            ":INTEGRATE:STATE": "RES",
             # Zusaetzlich Rate und Metadaten-Abfragen der Stufenskripte.
             ":RATE": "1.000E+00",
             ":COMMUNICATE": "0,0,0",

@@ -33,7 +33,17 @@ from .wt3000_common import (
     strip_response_header,
 )
 from .wt3000_backup import SessionBackup, device_fingerprint
-from .wt3000_core import TmctlTransport, Transport, WTConfig, WTError, WTSession
+from .wt3000_core import (
+    DeviceError,
+    ProtocolError,
+    ReadOnlyViolation,
+    TmctlError,
+    TmctlTransport,
+    Transport,
+    WTConfig,
+    WTError,
+    WTSession,
+)
 from .wt3000_deviceconfig import (
     ComputationConfig,
     HarmonicsConfig,
@@ -2033,6 +2043,111 @@ class WT3000:
         for meldung in condition_warnings(bits):
             _log.warning("%s", meldung)
         return bits
+
+    # -- Nullpunktkalibrierung ----------------------------------------------
+
+    def calibrate_zero(self) -> None:
+        """Nullpunktkalibrierung ausloesen ('*CAL?', Handbuch 6-114).
+
+        Dasselbe, was am Bedienfeld SHIFT+SINGLE (CAL) ausloest: das Geraet
+        gleicht den Nullpegel seiner Eingangsstufen ab. Der Aufruf KEHRT ERST
+        ZURUECK, wenn das Geraet fertig ist - '*CAL?' ist ein Query, dessen
+        Antwort das Ergebnis traegt (0 = normal beendet, 1 = Fehler erkannt).
+
+        NICHT ZU VERWECHSELN mit 'wt.integration.set_auto_calibration()':
+        jenes ist ein Schalter (':INTEGrate:ACAL'), der das Geraet WAEHREND
+        eines Integrationslaufs regelmaessig selbst abgleichen laesst. Dieses
+        hier ist eine einmalige Handlung, jetzt und auf Zuruf.
+
+        WARUM DIE NUR-LESEN-SPERRE HIER VON HAND STEHT: '*CAL?' endet auf '?'
+        und ist damit fuer 'WTSession._validate()' ein Query - eine
+        Nur-Lesen-Sitzung wuerde es anstandslos senden. Syntaktisch stimmt
+        das, fachlich nicht: die Kalibrierung unterbricht die Erfassung und
+        verstellt die Nullpunkte des Geraets. Eine Sitzung, die zusagt, nichts
+        zu veraendern, darf das nicht tun.
+
+        BEWUSST OHNE VORBEHALT gegen einen laufenden Integrationslauf: das
+        Handbuch nennt an '*CAL?' keine solche Bedingung, und am Geraet
+        geprueft ist sie nicht - siehe die gleichlautende Begruendung bei
+        'IntegrationConfig.set_mode()'. Laeuft die Integration, steht darum
+        nur eine Warnung im Protokoll; weist das Geraet das Kommando ab, kommt
+        der Fall ueber die Fehlerqueue heraus.
+
+        'allow_changes' wird NICHT verlangt: das ist die Sperre der
+        Fachobjekte fuer Einstellwerte, und eine Kalibrierung ist keiner.
+        'read_only=False' genuegt.
+
+        Raises:
+            ReadOnlyViolation: in einer Nur-Lesen-Sitzung.
+            WTError: wenn eine Hintergrundmessung laeuft oder der Timeout
+                ablief.
+            DeviceError: wenn das Geraet '1' meldet oder danach ein Eintrag in
+                der Fehlerqueue steht.
+            ProtocolError: bei einer Antwort, die weder '0' noch '1' ist.
+        """
+        self._require_open()
+
+        if self._read_only:
+            raise ReadOnlyViolation(
+                "Nur-Lesen-Sitzung: die Nullpunktkalibrierung wird nicht ausgeloest. "
+                "'*CAL?' ist zwar ein Query, unterbricht aber die Erfassung und "
+                "verstellt die Nullpunkte des Geraets. Fuer diesen Aufruf "
+                "read_only=False setzen."
+            )
+
+        # Vor der Sitzungssperre: die haette zwar auch angeschlagen, aber mit
+        # einer Meldung ueber Threads statt ueber die Kalibrierung.
+        if self.measure.active is not None:
+            raise WTError(
+                "Eine Hintergrundmessung laeuft. Die Nullpunktkalibrierung "
+                "unterbricht die Erfassung und wuerde die laufende Messreihe "
+                "unbrauchbar machen, ohne dass man ihr das hinterher ansieht. "
+                "Abhilfe: 'wt.measure.active.stop()' vor dem Kalibrieren."
+            )
+
+        try:
+            if self.integration.is_running():
+                _log.warning(
+                    "Ein Integrationslauf laeuft waehrend der Nullpunktkalibrierung. "
+                    "Ob das Geraet das zulaesst, ist nicht belegt - weist es das "
+                    "Kommando ab, erscheint der Grund in der Fehlerqueue."
+                )
+        except WTError as error:
+            # Der Zustand ist nur ein Hinweis. Scheitert das Lesen, ist das
+            # kein Grund, die eigentliche Handlung zu verweigern.
+            _log.debug("Integrationszustand nicht lesbar: %s", error)
+
+        _log.info("Nullpunktkalibrierung wird ausgeloest ('*CAL?') - das dauert")
+        try:
+            antwort = self._session.query_slow(
+                "*CAL?", self._config.calibration_timeout_ms
+            )
+        except TmctlError as error:
+            # Das Geraet kalibriert weiter und antwortet spaeter. Ohne
+            # Abraeumen landete diese '0' in der naechsten fremden Abfrage.
+            self._session.drain_after_failure()
+            raise WTError(
+                "Die Nullpunktkalibrierung hat innerhalb von "
+                f"{self._config.calibration_timeout_ms} ms nicht geantwortet: {error}. "
+                "Das Geraet arbeitet moeglicherweise noch. 'calibration_timeout_ms' "
+                "in der WTConfig heraufsetzen und den Zustand am Bedienfeld pruefen, "
+                "bevor gemessen wird."
+            ) from error
+
+        ergebnis = antwort.strip().lstrip("+")
+        if ergebnis == "1":
+            raise DeviceError(
+                "Die Nullpunktkalibrierung ist fehlgeschlagen ('*CAL?' -> 1). "
+                f"Fehlerqueue: {self._session.read_error_queue()}"
+            )
+        if ergebnis != "0":
+            raise ProtocolError(
+                f"'*CAL?' hat {antwort!r} geliefert, erwartet '0' (normal beendet) "
+                "oder '1' (Fehler erkannt)."
+            )
+
+        self._session.assert_no_error("Nullpunktkalibrierung")
+        _log.info("Nullpunktkalibrierung normal beendet")
 
     def range_backup(self) -> RangeBackup:
         """Ist-Zustand aller Bereiche sichern."""

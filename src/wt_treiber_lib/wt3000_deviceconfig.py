@@ -580,6 +580,11 @@ class IntegrationConfig:
         Energiebilanz ist das unerwuenscht, fuer eine Langzeitmessung mit
         Temperaturgang dagegen erwuenscht - deshalb hier stellbar und nicht
         vorbelegt.
+
+        NICHT ZU VERWECHSELN mit 'wt.calibrate_zero()' ('*CAL?'): das ist eine
+        einmalige Handlung, die den Nullpunkt jetzt abgleicht und erst
+        zurueckkehrt, wenn das Geraet fertig ist. Dieses hier ist ein
+        Schalter, der spaeter wirkt - waehrend eines Integrationslaufs.
         """
         parameter = "ON" if enabled else "OFF"
         self._write(

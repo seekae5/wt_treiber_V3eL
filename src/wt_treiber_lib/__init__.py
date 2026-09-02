@@ -329,7 +329,7 @@ __all__ = [
     "setup_logging",
 ]
 
-__version__ = "1.0.0"
+__version__ = "1.2.0"
 
 # Die Fachmodule des Pakets, in Schichtreihenfolge. Dient der Dokumentation und
 # dem Importtest in tests/test_package_layout.py.

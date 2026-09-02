@@ -144,8 +144,9 @@ Der Quelltext ist deutschsprachig kommentiert und durchgehend in ASCII-Umschreib
 
 ## Stand
 
-Version 1.0.0. Am realen WT3000 eingemessen sind die Grundgrößen, Verdrahtung, Messbereiche und
-die Messschleife. Integrations- und Oberschwingungsfunktionen sind implementiert, aber am
+Version 1.2.0. Am realen WT3000 eingemessen sind die Grundgrößen, Verdrahtung, Messbereiche und
+die Messschleife. Integrations-, Motor- und Oberschwingungsfunktionen sowie die
+Nullpunktkalibrierung (`wt.calibrate_zero()`) sind implementiert, aber am
 Originalgerät noch nicht durchgängig bestätigt — `build_item_table()` sagt beim Bauen eines
 solchen Profils, wie viele Spalten davon betroffen sind und dass sie `NAN` liefern können, ohne
 dass ein Messfehler vorliegt.

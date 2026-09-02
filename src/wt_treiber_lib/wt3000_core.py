@@ -296,6 +296,39 @@ class WTSession:
         with self._exclusive(command):
             return self.decode(self._transport.query(command))
 
+    def query_slow(self, command: str, timeout_ms: int) -> str:
+        """Query mit voruebergehend angehobenem Timeout absetzen.
+
+        Fuer die wenigen Kommandos, bei denen das Geraet zwischen Empfang und
+        Antwort ARBEITET statt nur nachzuschlagen - derzeit allein '*CAL?',
+        die Nullpunktkalibrierung. Der gewoehnliche 'timeout_ms' ist dafuer zu
+        knapp bemessen; ohne diese Methode liefe der Aufruf in einen
+        TmctlError, waehrend das Geraet weiterkalibriert, und die verspaetete
+        Antwort landete in der naechsten fremden Abfrage.
+
+        Als Ganzes gesperrt, aus demselben Grund wie 'drain_after_failure()':
+        die Methode verstellt ueber 'set_timeout()' gemeinsamen
+        Transportzustand und nimmt ihn im 'finally' zurueck. Ein Zugriff
+        dazwischen liefe in den fremden, langen Timeout und wartete dort
+        minutenlang auf ein Geraet, das laengst geantwortet hat.
+
+        Der erhoehte Wert wird auch dann zurueckgenommen, wenn der Query
+        scheitert - das 'finally' ist der eigentliche Zweck dieser Methode.
+        """
+        self._validate(command, expect_query=True)
+        with self._exclusive(command):
+            self._log.info(
+                "'%s' mit angehobenem Timeout (%d ms statt %d ms)",
+                command,
+                timeout_ms,
+                self._config.timeout_ms,
+            )
+            try:
+                self._transport.set_timeout(timeout_ms)
+                return self.decode(self._transport.query(command))
+            finally:
+                self._transport.set_timeout(self._config.timeout_ms)
+
     def query_raw(self, command: str) -> bytes:
         """Wie query(), liefert aber die unveraenderten Rohbytes."""
         self._validate(command, expect_query=True)
